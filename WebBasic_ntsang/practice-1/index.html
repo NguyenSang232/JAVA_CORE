@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Animal Management</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <header>
+            <nav>
+                <a href="#section1" class="nav-link">Home</a>
+                <a href="#section2" class="nav-link">Filter</a>
+                <a href="#section3" class="nav-link">Animals</a>
+            </nav>
+        </header>
+
+        <div id="home-page-view">
+            <section id="section1">
+                <div class="image-wrapper">
+                    <img class="banner-spacer">
+                    <div class="banner-img"></div>
+                    <img src="../practice-1/images/giff.gif" class="gif-img">
+                </div>
+            </section>
+            <div class="container-content">
+                <section id="section2" class="search-wrapper">
+                    <div class="search-container">
+                        <img src="../practice-1/images/icon-wrapper.png"
+                            class="icon-search">
+                        <input type="text" class="input-field"
+                            placeholder="Search for animals......">
+                    </div>
+                </section>
+                <div class="filter-container">
+                    <div>
+                        <div class="filter-row">
+                            <span class="filter-title">Species:</span>
+                            <label><input type="checkbox"> Mammals</label>
+                            <label><input type="checkbox"> Reptile</label>
+                            <label><input type="checkbox"> Fish</label>
+                            <label><input type="checkbox"> Amphibians</label>
+                            <label><input type="checkbox"> Insects</label>
+                            <label><input type="checkbox"> Arachnids</label>
+                        </div>
+                        <div class="filter-row">
+                            <span class="filter-title">Habitat:</span>
+                            <label><input type="checkbox"> Forest</label>
+                            <label><input type="checkbox"> Desert</label>
+                            <label><input type="checkbox"> Ocean</label>
+                            <label><input type="checkbox"> River/Lake</label>
+                            <label><input type="checkbox"> Grassland</label>
+                            <label><input type="checkbox"> Mountain</label>
+                            <label><input type="checkbox"> Urban</label>
+                        </div>
+                        <div class="filter-row">
+                            <span class="filter-title">Diet:</span>
+                            <label><input type="checkbox"> Herbivore</label>
+                            <label><input type="checkbox"> Carnivore</label>
+                            <label><input type="checkbox"> Omnivore</label>
+                            <label><input type="checkbox"> Insectivore</label>
+                        </div>
+                    </div>
+                    <button id="clearFilters" class="clear-btn">
+                        ✖ Clear all
+                    </button>
+                </div>
+                <div class="sort-container">
+                    <label for="sort">SORT</label>
+                    <select id="sort">
+                        <option value="az">A → Z</option>
+                        <option value="za">Z → A</option>
+                    </select>
+                </div>
+                <section id="section3" class="animal-container"></section>
+            </div>
+            <div id="pagination-container" class="pagination-flex"></div>
+        </div>
+        <div class="popup-overlay" id="animal-popup">
+            <div class="popup-content">
+                <button class="popup-close">&times;</button>
+
+                <div class="popup-body">
+                    <div class="popup-slider-container">
+                        <button class="popup-nav prev-popup">&#10094;</button>
+
+                        <div class="popup-images-wrap">
+                            <img src alt class="popup-image-side prev-blur-img">
+                            <img src alt class="popup-image-main">
+                            <img src alt class="popup-image-side next-blur-img">
+                        </div>
+
+                        <button class="popup-nav next-popup">&#10095;</button>
+                    </div>
+
+                    <div class="popup-info">
+                        <h2 class="popup-title"></h2>
+                        <p class="popup-description"></p>
+                        <div class="popup-details">
+                            <div class="detail-item"><strong>Habitat:</strong>
+                                <span class="detail-habitat"></span></div>
+                            <div class="detail-item"><strong>Diet:</strong>
+                                <span class="detail-diet"></span></div>
+                            <div class="detail-item"><strong>Size:</strong>
+                                <span class="detail-size"></span></div>
+                            <div class="detail-item"><strong>Lifespan:</strong>
+                                <span class="detail-lifespan"></span></div>
+                            <div class="detail-item"><strong>Conservation
+                                    Status:</strong> <span
+                                    class="detail-status"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="../practice-1/data/data.js"></script>
+        <script src="script.js"></script>
+    </body>
+</html>

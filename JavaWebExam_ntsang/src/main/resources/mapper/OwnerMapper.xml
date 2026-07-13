@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="training.javaweb.exam.mapper.OwnerMapper">
+
+    <!-- Result Map -->
+    <resultMap id="OwnerDTOMap"
+               type="training.javaweb.exam.dto.OwnerDTO">
+        <id property="id"
+            column="id"/>
+        <result property="name"
+                column="name"/>
+        <result property="phone"
+                column="phone"/>
+        <result property="email"
+                column="email"/>
+        <result property="address"
+                column="address"/>
+    </resultMap>
+    <!-- A1 Create Owner -->
+    <insert id="insert"
+            parameterType="training.javaweb.exam.entity.Owner"
+            useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO owners
+        (
+            name,
+            phone,
+            email,
+            address,
+            deleted_at,
+            created_at,
+            updated_at
+        )
+        VALUES
+        (
+            #{name},
+            #{phone},
+            #{email},
+            #{address},
+            false,
+            NOW(),
+            NOW()
+        )
+    </insert>
+    <!-- A2 List Owner -->
+    <select id="findAll"
+            resultMap="OwnerDTOMap">
+        SELECT
+        o.*,
+        CASE
+            WHEN u.id IS NULL
+            THEN false
+            ELSE true
+        END AS has_account
+        FROM owners o
+        LEFT JOIN users u
+        ON o.id = u.owner_id
+        WHERE o.deleted_at=false
+        ORDER BY o.id DESC
+    </select>
+    <!-- A3 Owner detail + Pet -->
+    <select id="findDetail"
+            resultType="training.javaweb.exam.dto.OwnerDTO">
+        SELECT
+        o.id,
+        o.full_name,
+        o.phone,
+        o.email,
+        o.address
+        FROM owners o
+        WHERE o.id=#{id}
+        AND o.deleted=false
+    </select>
+    <!-- lấy owner tạo account -->
+    <select id="findDTOById"
+            resultType="training.javaweb.exam.dto.OwnerDTO">
+        SELECT *
+        FROM owners
+        WHERE id=#{id}
+        AND deleted=false
+    </select>
+
+    <!-- A4 Update -->
+    <update id="update">
+        UPDATE owners
+        SET
+        full_name=#{fullName},
+        phone=#{phone},
+        email=#{email},
+        address=#{address},
+        updated_at=NOW()
+        WHERE id=#{id}
+    </update>
+    <!-- A5 Search -->
+    <select id="search"
+            resultMap="OwnerDTOMap">
+        SELECT
+        o.*,
+        CASE
+            WHEN u.id IS NULL
+            THEN false
+            ELSE true
+        END AS has_account
+        FROM owners o
+        LEFT JOIN users u
+        ON o.id=u.owner_id
+        WHERE
+        o.deleted=false
+        AND
+        (
+            o.full_name LIKE CONCAT('%',#{keyword},'%')
+            OR
+            o.phone LIKE CONCAT('%',#{keyword},'%')
+        )
+    </select>
+    <!-- A7 Soft delete -->
+    <update id="softDelete">
+        UPDATE owners
+        SET
+        deleted=true,
+        updated_at=NOW()
+        WHERE id=#{id}
+    </update>
+</mapper>

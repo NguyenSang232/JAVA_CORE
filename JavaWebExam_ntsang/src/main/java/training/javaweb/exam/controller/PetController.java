@@ -1,83 +1,91 @@
 package training.javaweb.exam.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import training.javaweb.exam.dto.PetDTO;
+import training.javaweb.exam.dto.request.PetRequestDTO;
+import training.javaweb.exam.dto.response.PetResponseDTO;
 import training.javaweb.exam.service.PetService;
 
 @RestController
 @RequestMapping("/api/pets")
 @CrossOrigin("*")
+@Tag(name = "Pet Management", description = "API quản lý thú cưng")
 public class PetController {
 
-    @Autowired
-    private PetService petService;
+	@Autowired
+	private PetService petService;
 
-    @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody PetDTO dto,
-                                    BindingResult result) {
+	@GetMapping
+	@Operation(summary = "B2 Get all pets", description = "Lấy danh sách tất cả thú cưng")
+	public ResponseEntity<List<PetResponseDTO>> findAll() {
 
-        if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body(result.getFieldErrors());
-        }
+		return ResponseEntity.ok(petService.findAll());
+	}
 
-        petService.createPet(dto);
-        return ResponseEntity.ok("Pet created successfully.");
-    }
+	@GetMapping("/{id}")
+	@Operation(summary = "B3 Get pet by id", description = "Lấy thông tin chi tiết thú cưng theo ID")
+	public ResponseEntity<PetResponseDTO> findDetail(@PathVariable Long id) {
 
-    @GetMapping
-    public ResponseEntity<?> getAll() {
-        return ResponseEntity.ok(petService.getAll());
-    }
+		return ResponseEntity.ok(petService.findDetail(id));
+	}
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getDetail(@PathVariable Long id) {
-        return ResponseEntity.ok(petService.getDetail(id));
-    }
+	@PostMapping
+	@Operation(summary = "B1 Create pet", description = "Tạo mới thông tin thú cưng")
+	public ResponseEntity<PetResponseDTO> create(@Valid @RequestBody PetRequestDTO request) {
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id,
-                                    @Valid @RequestBody PetDTO dto,
-                                    BindingResult result) {
+		return ResponseEntity.ok(petService.create(request));
+	}
 
-        if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body(result.getFieldErrors());
-        }
+	@PutMapping("/{id}")
+	@Operation(summary = "B4 Update pet", description = "Cập nhật thông tin thú cưng")
+	public ResponseEntity<PetResponseDTO> update(@PathVariable Long id, @Valid @RequestBody PetRequestDTO request) {
 
-        petService.update(id, dto);
-        return ResponseEntity.ok("Pet updated successfully.");
-    }
+		petService.update(id, request);
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
-        petService.delete(id);
-        return ResponseEntity.ok("Pet deleted successfully.");
-    }
+		return ResponseEntity.ok(petService.findDetail(id));
+	}
 
-    @GetMapping("/type/{type}")
-    public ResponseEntity<?> findByType(@PathVariable String type) {
-        return ResponseEntity.ok(petService.findByType(type));
-    }
+	@DeleteMapping("/{id}")
+	@Operation(summary = "B5 Delete pet", description = "Xóa mềm thú cưng theo ID")
+	public ResponseEntity<String> delete(@PathVariable Long id) {
 
-    @GetMapping("/owner/{ownerId}")
-    public ResponseEntity<?> findByOwner(@PathVariable Long ownerId) {
-        return ResponseEntity.ok(petService.findByOwnerId(ownerId));
-    }
+		petService.delete(id);
 
-    @GetMapping("/my-pets/{userId}")
-    public ResponseEntity<?> myPets(@PathVariable Long userId) {
-        return ResponseEntity.ok(petService.findMyPets(userId));
-    }
+		return ResponseEntity.ok("Delete pet success");
+	}
 
-    @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(@PathVariable Long id,
-                                          @RequestParam String status) {
+	@GetMapping("/type/{type}")
+	@Operation(summary = "B6 Find pet by type", description = "Tìm thú cưng theo loại (Dog, Cat...)")
+	public ResponseEntity<List<PetResponseDTO>> findByType(@PathVariable String type) {
 
-        petService.updateStatus(id, status);
-        return ResponseEntity.ok("Pet status updated successfully.");
-    }
+		return ResponseEntity.ok(petService.findByType(type));
+	}
+
+	@GetMapping("/owner/{ownerId}")
+	@Operation(summary = "B7 Find pets by owner", description = "Lấy danh sách thú cưng của chủ nuôi")
+	public ResponseEntity<List<PetResponseDTO>> findByOwner(@PathVariable Long ownerId) {
+
+		return ResponseEntity.ok(petService.findByOwnerId(ownerId));
+	}
+
+	@GetMapping("/my/{userId}")
+	@Operation(summary = "B8 Get user's pets", description = "Lấy danh sách thú cưng của người dùng hiện tại")
+	public ResponseEntity<List<PetResponseDTO>> findMyPets(@PathVariable Long userId) {
+		return ResponseEntity.ok(petService.findMyPets(userId));
+	}
 }

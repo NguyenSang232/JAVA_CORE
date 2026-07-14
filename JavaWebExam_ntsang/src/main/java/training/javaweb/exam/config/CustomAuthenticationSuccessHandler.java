@@ -16,32 +16,22 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class CustomAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
-    private final RequestCache requestCache = new HttpSessionRequestCache();
+	private final RequestCache requestCache = new HttpSessionRequestCache();
 
-    @Override
-    public void onAuthenticationSuccess(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        Authentication authentication)
-            throws IOException, ServletException {
-
-        // Kiểm tra có URL được lưu trước khi đăng nhập không
-        SavedRequest savedRequest = requestCache.getRequest(request, response);
-
-        if (savedRequest != null) {
-            // Quay lại đúng URL mà người dùng muốn truy cập
-            super.onAuthenticationSuccess(request, response, authentication);
-            return;
-        }
-
-        // Không có SavedRequest -> chuyển hướng theo quyền
-        boolean isAdmin = authentication.getAuthorities()
-                .stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-
-        if (isAdmin) {
-            response.sendRedirect("/admin.html");
-        } else {
-            response.sendRedirect("/home.html");
-        }
-    }
+	@Override
+	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+			Authentication authentication) throws IOException, ServletException {
+		SavedRequest savedRequest = requestCache.getRequest(request, response);
+		if (savedRequest != null) {
+			super.onAuthenticationSuccess(request, response, authentication);
+			return;
+		}
+		boolean isAdmin = authentication.getAuthorities().stream()
+				.anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+		if (isAdmin) {
+			response.sendRedirect("/admin.html");
+		} else {
+			response.sendRedirect("/home.html");
+		}
+	}
 }

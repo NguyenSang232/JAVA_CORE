@@ -1,238 +1,69 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
-
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-
 <mapper namespace="training.javaweb.exam.mapper.CareNoteMapper">
 
-
-
-    <resultMap id="CareNoteDTOMap"
-               type="training.javaweb.exam.dto.CareNoteDTO">
-
-
-        <id property="id"
-            column="id"/>
-
-
-        <result property="boardingRecordId"
-                column="boarding_record_id"/>
-
-
-        <result property="note"
-                column="note"/>
-
-
-        <result property="createdAt"
-                column="created_at"/>
-
-
-        <result property="updatedAt"
-                column="updated_at"/>
-
-
+    <resultMap id="CareNoteDTOMap" type="training.javaweb.exam.dto.CareNoteDTO">
+        <id property="id" column="id"/>
+        <result property="boardingRecordId" column="boarding_record_id"/>
+        <result property="note" column="note"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
-
-
-
-
-
     <!-- D1 ADD NOTE -->
-
     <insert id="insert"
             parameterType="training.javaweb.exam.entity.CareNote"
             useGeneratedKeys="true"
             keyProperty="id">
-
-
-        INSERT INTO care_notes
-        (
-
+        INSERT INTO care_notes (
             boarding_record_id,
-
             note,
-
             created_at,
-
             updated_at
-
-        )
-
-
-        VALUES
-
-        (
-
+        ) VALUES (
             #{boardingRecordId},
-
             #{note},
-
             NOW(),
-
             NOW()
-
         )
-
-
     </insert>
 
-
-
-
-
-
-
-
-
     <!-- D2 ADMIN VIEW -->
-
-
-    <select id="findByBoardingId"
-            resultMap="CareNoteDTOMap">
-
-
+    <select id="findByBoardingId" resultMap="CareNoteDTOMap">
         SELECT *
-
-
         FROM care_notes
-
-
-        WHERE boarding_record_id=#{boardingId}
-
-
+        WHERE boarding_record_id = #{boardingId}
         ORDER BY created_at DESC
-
-
-
     </select>
-
-
-
-
-
-
-
-
 
     <!-- CUSTOMER VIEW NOTE -->
-
-
-    <select id="findMyNotes"
-            resultMap="CareNoteDTOMap">
-
-
-        SELECT
-
-
-        c.*
-
-
+    <select id="findMyNotes" resultMap="CareNoteDTOMap">
+        SELECT c.*
         FROM care_notes c
-
-
-        JOIN boarding_records b
-
-
-        ON c.boarding_record_id=b.id
-
-
-        JOIN pets p
-
-
-        ON b.pet_id=p.id
-
-
-        JOIN owners o
-
-
-        ON p.owner_id=o.id
-
-
-        JOIN users u
-
-
-        ON o.id=u.owner_id
-
-
-
-        WHERE
-
-
-        u.id=#{userId}
-
-
-        AND
-
-
-        b.id=#{boardingId}
-
-
-
+        JOIN boarding_records b ON c.boarding_record_id = b.id
+        JOIN pets p             ON b.pet_id = p.id
+        JOIN owners o           ON p.owner_id = o.id
+        JOIN users u            ON o.id = u.owner_id
+        WHERE u.id = #{userId}
+          AND b.id = #{boardingId}
         ORDER BY c.created_at DESC
-
-
-
     </select>
 
-
-
-
-
-
-
-
-
     <!-- UPDATE NOTE -->
-
-
     <update id="update">
-
-
         UPDATE care_notes
-
-
-        SET
-
-
-        note=#{note},
-
-
-        updated_at=NOW()
-
-
-        WHERE id=#{id}
-
-
-
+        SET note = #{note},
+            updated_at = NOW()
+        WHERE id = #{id}
     </update>
 
-
-
-
-
-
-
-
-
     <!-- DELETE NOTE -->
-
-
     <delete id="delete">
-
-
         DELETE FROM care_notes
-
-
-        WHERE id=#{id}
-
-
-
+        WHERE id = #{id}
     </delete>
-
-
 
 </mapper>

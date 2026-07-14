@@ -18,8 +18,7 @@ public class CareNote {
 		super();
 	}
 
-	public CareNote(Long id, Long boardingRecordId, String note, LocalDateTime createdAt,
-			LocalDateTime updatedAt) {
+	public CareNote(Long id, Long boardingRecordId, String note, LocalDateTime createdAt, LocalDateTime updatedAt) {
 		super();
 		this.id = id;
 		this.boardingRecordId = boardingRecordId;

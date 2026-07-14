@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import training.javaweb.exam.dto.BoardingRecordDTO;
+import training.javaweb.exam.dto.response.BoardingRecordResponseDTO;
 import training.javaweb.exam.entity.BoardingRecord;
 import training.javaweb.exam.mapper.BoardingRecordMapper;
 
@@ -20,39 +20,35 @@ public class BoardingRecordRepository {
 		mapper.insert(record);
 	}
 
-	public List<BoardingRecordDTO> findAll() {
+	public List<BoardingRecordResponseDTO> findAll() {
 		return mapper.findAll();
 	}
 
-	public BoardingRecordDTO findDetail(Long id) {
+	public BoardingRecordResponseDTO findDetail(Long id) {
 		return mapper.findDetail(id);
 	}
 
-	public void checkout(BoardingRecord record) {
-		mapper.checkout(record);
-	}
-
-	public List<BoardingRecordDTO> findCurrentBoarding() {
+	public List<BoardingRecordResponseDTO> findCurrentBoarding() {
 		return mapper.findCurrentBoarding();
 	}
 
-	public List<BoardingRecordDTO> findHistoryByPet(Long petId) {
+	public List<BoardingRecordResponseDTO> findHistoryByPet(Long petId) {
 		return mapper.findHistoryByPet(petId);
 	}
 
-	public List<BoardingRecordDTO> findHistoryByOwner(Long ownerId) {
+	public List<BoardingRecordResponseDTO> findHistoryByOwner(Long ownerId) {
 		return mapper.findHistoryByOwner(ownerId);
 	}
 
-	public List<BoardingRecordDTO> findByDate(LocalDate from, LocalDate to) {
+	public List<BoardingRecordResponseDTO> findByDate(LocalDate from, LocalDate to) {
 		return mapper.findByDate(from, to);
 	}
 
-	public List<BoardingRecordDTO> findMyCurrentBoarding(Long userId) {
+	public List<BoardingRecordResponseDTO> findMyCurrentBoarding(Long userId) {
 		return mapper.findMyCurrentBoarding(userId);
 	}
 
-	public List<BoardingRecordDTO> findMyHistory(Long userId) {
+	public List<BoardingRecordResponseDTO> findMyHistory(Long userId) {
 		return mapper.findMyHistory(userId);
 	}
 

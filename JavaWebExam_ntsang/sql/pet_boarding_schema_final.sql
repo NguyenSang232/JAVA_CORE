@@ -44,6 +44,8 @@ CREATE TABLE pets (
 
 ALTER TABLE pets
 add COLUMN updated_at datetime;
+ALTER TABLE pets
+add COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
 -- ================================================================
 -- TABLE: boarding_records
 -- ================================================================
@@ -63,6 +65,10 @@ CREATE TABLE boarding_records (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE boarding_records
 add COLUMN updated_at datetime;
+ALTER TABLE boarding_records
+add COLUMN price_per_day BIGINT;
+ALTER TABLE boarding_records
+add COLUMN expected_day datetime;
 -- ================================================================
 -- TABLE: care_notes
 -- ================================================================

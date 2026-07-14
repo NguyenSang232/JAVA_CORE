@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import training.javaweb.exam.dto.OwnerDTO;
+import training.javaweb.exam.dto.response.OwnerDTO;
 import training.javaweb.exam.entity.Owner;
 
 @Mapper

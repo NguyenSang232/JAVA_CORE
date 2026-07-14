@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import training.javaweb.exam.dto.BoardingRecordDTO;
+import training.javaweb.exam.dto.response.BoardingRecordResponseDTO;
 import training.javaweb.exam.entity.BoardingRecord;
 
 @Mapper
@@ -13,22 +13,20 @@ public interface BoardingRecordMapper {
 
 	void insert(BoardingRecord record);
 
-	List<BoardingRecordDTO> findAll();
+	List<BoardingRecordResponseDTO> findAll();
 
-	BoardingRecordDTO findDetail(Long id);
+	BoardingRecordResponseDTO findDetail(Long id);
 
-	void checkout(BoardingRecord record);
+	List<BoardingRecordResponseDTO> findCurrentBoarding();
 
-	List<BoardingRecordDTO> findCurrentBoarding();
+	List<BoardingRecordResponseDTO> findHistoryByPet(Long petId);
 
-	List<BoardingRecordDTO> findHistoryByPet(Long petId);
+	List<BoardingRecordResponseDTO> findHistoryByOwner(Long ownerId);
 
-	List<BoardingRecordDTO> findHistoryByOwner(Long ownerId);
+	List<BoardingRecordResponseDTO> findByDate(LocalDate from, LocalDate to);
 
-	List<BoardingRecordDTO> findByDate(LocalDate from, LocalDate to);
+	List<BoardingRecordResponseDTO> findMyCurrentBoarding(Long userId);
 
-	List<BoardingRecordDTO> findMyCurrentBoarding(Long userId);
-
-	List<BoardingRecordDTO> findMyHistory(Long userId);
+	List<BoardingRecordResponseDTO> findMyHistory(Long userId);
 
 }

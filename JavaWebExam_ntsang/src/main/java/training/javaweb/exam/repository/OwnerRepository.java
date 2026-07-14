@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import training.javaweb.exam.dto.OwnerDTO;
+import training.javaweb.exam.dto.response.OwnerDTO;
 import training.javaweb.exam.entity.Owner;
 import training.javaweb.exam.mapper.OwnerMapper;
 

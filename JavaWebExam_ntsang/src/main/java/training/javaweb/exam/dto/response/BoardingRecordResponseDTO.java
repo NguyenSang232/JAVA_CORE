@@ -1,14 +1,19 @@
-package training.javaweb.exam.entity;
+package training.javaweb.exam.dto.response;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
-public class BoardingRecord {
+import training.javaweb.exam.dto.CareNoteDTO;
+
+public class BoardingRecordResponseDTO {
 
 	private Long id;
 
 	private Long petId;
+
+	private String petName;
+
+	private String ownerName;
 
 	private LocalDate checkInDate;
 
@@ -24,30 +29,23 @@ public class BoardingRecord {
 
 	private Long totalFee;
 
-	// BOARDING | RETURNED
 	private String status;
 
 	private String notes;
 
-	private LocalDateTime createdAt;
+//	private List<CareNote> careNote;
 
-	private LocalDateTime updatedAt;
-
-	// Join
-	private Pet pet;
-
-	private List<CareNote> careNotes;
-
-	public BoardingRecord() {
+	public BoardingRecordResponseDTO() {
 		super();
 	}
 
-	public BoardingRecord(Long id, Long petId, LocalDate checkInDate, LocalDate expectedReturn,
-			LocalDate actualCheckOut, Long pricePerDay, Long baseFee, Long lateFee, Long totalFee, String status,
-			String notes, LocalDateTime createdAt, LocalDateTime updatedAt, Pet pet, List<CareNote> careNotes) {
+	public BoardingRecordResponseDTO(Long petId, String petName, String ownerName, LocalDate checkInDate,
+			LocalDate expectedReturn, LocalDate actualCheckOut, Long pricePerDay, Long baseFee, Long lateFee,
+			Long totalFee, String status, String notes, List<CareNoteDTO> careNotes) {
 		super();
-		this.id = id;
 		this.petId = petId;
+		this.petName = petName;
+		this.ownerName = ownerName;
 		this.checkInDate = checkInDate;
 		this.expectedReturn = expectedReturn;
 		this.actualCheckOut = actualCheckOut;
@@ -57,10 +55,6 @@ public class BoardingRecord {
 		this.totalFee = totalFee;
 		this.status = status;
 		this.notes = notes;
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
-		this.pet = pet;
-		this.careNotes = careNotes;
 	}
 
 	public Long getId() {
@@ -77,6 +71,22 @@ public class BoardingRecord {
 
 	public void setPetId(Long petId) {
 		this.petId = petId;
+	}
+
+	public String getPetName() {
+		return petName;
+	}
+
+	public void setPetName(String petName) {
+		this.petName = petName;
+	}
+
+	public String getOwnerName() {
+		return ownerName;
+	}
+
+	public void setOwnerName(String ownerName) {
+		this.ownerName = ownerName;
 	}
 
 	public LocalDate getCheckInDate() {
@@ -150,37 +160,4 @@ public class BoardingRecord {
 	public void setNotes(String notes) {
 		this.notes = notes;
 	}
-
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
-
-	public LocalDateTime getUpdatedAt() {
-		return updatedAt;
-	}
-
-	public void setUpdatedAt(LocalDateTime updatedAt) {
-		this.updatedAt = updatedAt;
-	}
-
-	public Pet getPet() {
-		return pet;
-	}
-
-	public void setPet(Pet pet) {
-		this.pet = pet;
-	}
-
-	public List<CareNote> getCareNotes() {
-		return careNotes;
-	}
-
-	public void setCareNotes(List<CareNote> careNotes) {
-		this.careNotes = careNotes;
-	}
-
 }

@@ -24,8 +24,9 @@ public class SecurityConfig {
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable()).userDetailsService(customUserDetailsService)
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/login", "/login.html", "/auth/**", "/api/**", "/static/**", "/admin.html",
-								"/style/**", "/js/**")
+						.requestMatchers("/login", "/login.html", "/auth/**", "/api/owners/**", "/api/users/**",
+								"/api/pets/**", "/static/**", "/admin.html", "/swagger-ui.html", "/swagger-ui/**",
+								"/v3/api-docs/**", "/style/**", "/js/**")
 						.permitAll().requestMatchers("/admin/**").hasRole("ADMIN").requestMatchers("/users/**")
 						.hasAnyRole("USER", "ADMIN").anyRequest().authenticated())
 				.formLogin(form -> form.loginPage("/login.html").loginProcessingUrl("/login")

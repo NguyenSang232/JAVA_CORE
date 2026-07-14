@@ -4,26 +4,26 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import training.javaweb.exam.dto.PetDTO;
+import training.javaweb.exam.dto.response.PetResponseDTO;
 import training.javaweb.exam.entity.Pet;
 
 @Mapper
 public interface PetMapper {
 	void insert(Pet pet);
 
-	List<PetDTO> findAll();
+	List<PetResponseDTO> findAll();
 
-	PetDTO findDetail(Long id);
+	PetResponseDTO findDetail(Long id);
 
 	void update(Pet pet);
 
 	void softDelete(Long id);
 
-	List<PetDTO> findByType(String type);
+	List<PetResponseDTO> findByType(String type);
 
-	List<PetDTO> findByOwnerId(Long ownerId);
+	List<PetResponseDTO> findByOwnerId(Long ownerId);
 
-	List<PetDTO> findMyPets(Long userId);
+	List<PetResponseDTO> findMyPets(Long userId);
 
 	void updateStatus(Long id, String status);
 }

@@ -5,10 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import training.javaweb.exam.dto.OwnerDTO;
-import training.javaweb.exam.dto.PetDTO;
+import training.javaweb.exam.dto.request.OwnerRequestDTO;
+import training.javaweb.exam.dto.response.OwnerDTO;
 import training.javaweb.exam.entity.Owner;
-import training.javaweb.exam.entity.Pet;
 import training.javaweb.exam.repository.OwnerRepository;
 
 @Service
@@ -17,10 +16,23 @@ public class OwnerService {
 	@Autowired
 	private OwnerRepository ownerRepository;
 
-	// Create
-	public void createOwner(OwnerDTO ownerDto) {
-		Owner newOwner = toEntity(ownerDto);
-		ownerRepository.insert(newOwner);
+	public OwnerDTO createOwner(OwnerRequestDTO dto) {
+		Owner owner = toEntity(dto);
+
+		ownerRepository.insert(owner);
+
+		return ownerRepository.findDTOById(owner.getId());
+	}
+
+	// Update
+	public OwnerDTO update(Long id, OwnerRequestDTO dto) {
+
+		Owner owner = toEntity(dto);
+		owner.setId(id);
+
+		ownerRepository.update(owner);
+
+		return ownerRepository.findDTOById(id);
 	}
 
 	// Read All
@@ -38,13 +50,6 @@ public class OwnerService {
 		return ownerRepository.findDTOById(id);
 	}
 
-	// Update
-	public void update(Long id, OwnerDTO ownerDto) {
-		Owner owner = toEntity(ownerDto);
-		owner.setId(id);
-		ownerRepository.update(owner);
-	}
-
 	// Search
 	public List<OwnerDTO> search(String keyword) {
 		return ownerRepository.search(keyword);
@@ -57,26 +62,40 @@ public class OwnerService {
 
 	// ---------------------- Convert ----------------------
 
-	// Pet Entity -> PetDTO
-	private PetDTO convertPetToDTO(Pet pet) {
-		if (pet == null) {
-			return null;
-		}
-
-		PetDTO dto = new PetDTO();
-		dto.setId(pet.getId());
-		dto.setName(pet.getName());
-		dto.setType(pet.getType());
-		dto.setBreed(pet.getBreed());
-		dto.setAge(pet.getAge());
-		dto.setWeight(pet.getWeight());
-		dto.setOwnerId(pet.getOwnerId());
-
-		return dto;
-	}
+//	// Pet Entity -> PetDTO
+//	private PetDTO convertPetToDTO(Pet pet) {
+//		if (pet == null) {
+//			return null;
+//		}
+//
+//		PetDTO dto = new PetDTO();
+//		dto.setId(pet.getId());
+//		dto.setName(pet.getName());
+//		dto.setType(pet.getType());
+//		dto.setBreed(pet.getBreed());
+//		dto.setAge(pet.getAge());
+//		dto.setWeight(pet.getWeight());
+//		dto.setOwnerId(pet.getOwnerId());
+//
+//		return dto;
+//	}
 
 	// Owner Entity -> OwnerDTO
+	public Owner toEntity(OwnerRequestDTO dto) {
+		if (dto == null) {
+			return null;
+		}
+		Owner owner = new Owner();
+		owner.setName(dto.getName());
+		owner.setPhone(dto.getPhone());
+		owner.setEmail(dto.getEmail());
+		owner.setAddress(dto.getAddress());
+		return owner;
+	}
+
+	// OwnerDTO -> Owner Entity
 	public OwnerDTO toDTO(Owner owner) {
+
 		if (owner == null) {
 			return null;
 		}
@@ -88,31 +107,7 @@ public class OwnerService {
 		dto.setEmail(owner.getEmail());
 		dto.setAddress(owner.getAddress());
 
-		// Nếu Owner có List<Pet> thì mở phần này
-//		if (owner.getPets() != null) {
-//			dto.setPets(owner.getPets()
-//					.stream()
-//					.map(this::convertPetToDTO)
-//					.toList());
-//		}
-
 		return dto;
-	}
-
-	// OwnerDTO -> Owner Entity
-	public Owner toEntity(OwnerDTO dto) {
-		if (dto == null) {
-			return null;
-		}
-
-		Owner owner = new Owner();
-		owner.setId(dto.getId());
-		owner.setName(dto.getName());
-		owner.setPhone(dto.getPhone());
-		owner.setEmail(dto.getEmail());
-		owner.setAddress(dto.getAddress());
-
-		return owner;
 	}
 
 }

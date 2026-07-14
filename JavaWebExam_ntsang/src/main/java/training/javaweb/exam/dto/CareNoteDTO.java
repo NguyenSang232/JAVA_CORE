@@ -18,8 +18,7 @@ public class CareNoteDTO {
 		super();
 	}
 
-	public CareNoteDTO(Long id, Long boardingRecordId, String note, LocalDateTime createdAt,
-			LocalDateTime updatedAt) {
+	public CareNoteDTO(Long id, Long boardingRecordId, String note, LocalDateTime createdAt, LocalDateTime updatedAt) {
 		super();
 		this.id = id;
 		this.boardingRecordId = boardingRecordId;

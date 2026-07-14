@@ -1,12 +1,14 @@
-package training.javaweb.exam.entity;
+package training.javaweb.exam.dto.response;
 
 import java.time.LocalDateTime;
 
-public class Pet {
+public class PetResponseDTO {
 
 	private Long id;
 
 	private Long ownerId;
+
+	private String ownerName;
 
 	private String name;
 
@@ -26,28 +28,9 @@ public class Pet {
 
 	private LocalDateTime updatedAt;
 
-	public Pet() {
+	public PetResponseDTO() {
 		super();
 	}
-
-	public Pet(Long id, Long ownerId, String name, String type, String breed, Double weight, Integer age, String image,
-			Boolean deleted, LocalDateTime createdAt, LocalDateTime updatedAt, Owner owner) {
-		super();
-		this.id = id;
-		this.ownerId = ownerId;
-		this.name = name;
-		this.type = type;
-		this.breed = breed;
-		this.weight = weight;
-		this.age = age;
-		this.image = image;
-		this.deletedAt = deleted;
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
-		this.owner = owner;
-	}
-
-	private Owner owner;
 
 	public Long getId() {
 		return id;
@@ -63,6 +46,14 @@ public class Pet {
 
 	public void setOwnerId(Long ownerId) {
 		this.ownerId = ownerId;
+	}
+
+	public String getOwnerName() {
+		return ownerName;
+	}
+
+	public void setOwnerName(String ownerName) {
+		this.ownerName = ownerName;
 	}
 
 	public String getName() {
@@ -135,14 +126,6 @@ public class Pet {
 
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
-	}
-
-	public Owner getOwner() {
-		return owner;
-	}
-
-	public void setOwner(Owner owner) {
-		this.owner = owner;
 	}
 
 }

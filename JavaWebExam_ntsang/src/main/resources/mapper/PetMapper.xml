@@ -1,189 +1,151 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
-
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="training.javaweb.exam.mapper.PetMapper">
-    <!-- Result Map -->
-    <resultMap id="PetDTOMap"
-               type="training.javaweb.exam.dto.PetDTO">
-        <id property="id"
-            column="id"/>
-        <result property="ownerId"
-                column="owner_id"/>
-        <result property="ownerName"
-                column="owner_name"/>
-        <result property="name"
-                column="name"/>
-        <result property="type"
-                column="type"/>
-        <result property="breed"
-                column="breed"/>
-        <result property="gender"
-                column="gender"/>
-        <result property="birthDate"
-                column="birth_date"/>
-        <result property="weight"
-                column="weight"/>
-        <result property="color"
-                column="color"/>
-        <result property="vaccinated"
-                column="vaccinated"/>
-        <result property="image"
-                column="image"/>
-        <result property="note"
-                column="note"/>
-        <result property="status"
-                column="status"/>
+
+    <!-- ================= Result Map ================= -->
+    <resultMap id="PetDTOMap" type="training.javaweb.exam.dto.response.PetResponseDTO">
+        <id property="id" column="id"/>
+        <result property="ownerId" column="owner_id"/>
+        <result property="ownerName" column="owner_name"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="breed" column="breed"/>
+        <result property="weight" column="weight"/>
+        <result property="age" column="age"/>
+        <result property="image" column="image_url"/>
+        <result property="deletedAt" column="deleted_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
     </resultMap>
-    <!-- B1 Create Pet -->
+
+    <!-- ================= Create ================= -->
     <insert id="insert"
             parameterType="training.javaweb.exam.entity.Pet"
             useGeneratedKeys="true"
             keyProperty="id">
-        INSERT INTO pets
-        (
+        INSERT INTO pets (
             owner_id,
             name,
             type,
             breed,
-            gender,
-            birth_date,
             weight,
-            color,
-            vaccinated,
-            image,
-            note,
-            status,
-            deleted,
+            age,
+            image_url,
+            deleted_at,
             created_at,
             updated_at
-
-        )
-        VALUES
-        (
+        ) VALUES (
             #{ownerId},
             #{name},
             #{type},
             #{breed},
-            #{gender},
-            #{birthDate},
             #{weight},
-            #{color},
-            #{vaccinated},
+            #{age},
             #{image},
-            #{note},
-            'AT_HOME',
             false,
             NOW(),
             NOW()
         )
-
     </insert>
 
-    <!-- B2 List Pet -->
-    <select id="findAll"
-            resultMap="PetDTOMap">
-        SELECT
-        p.*,
-        o.full_name AS owner_name
+    <!-- ================= Find All ================= -->
+    <select id="findAll" resultMap="PetDTOMap">
+        SELECT p.*,
+               o.name AS owner_name
         FROM pets p
-        JOIN owners o
-        ON p.owner_id=o.id
-        WHERE
-        p.deleted=false
-        AND
-        o.deleted=false
+        JOIN owners o ON p.owner_id = o.id
+        WHERE p.deleted_at = false
         ORDER BY p.id DESC
     </select>
-    <!-- B3 Detail -->
-    <select id="findDetail"
-            resultMap="PetDTOMap">
-        SELECT
-        p.*,
-        o.full_name AS owner_name
+
+    <!-- ================= Detail ================= -->
+    <select id="findDetail" parameterType="long" resultMap="PetDTOMap">
+        SELECT p.*,
+               o.name AS owner_name
         FROM pets p
-        JOIN owners o
-        ON p.owner_id=o.id
-        WHERE
-        p.id=#{id}
-        AND p.deleted=false
+        JOIN owners o ON p.owner_id = o.id
+        WHERE p.id = #{id}
+          AND p.deleted_at = false
     </select>
-    <!-- B4 Update -->
-    <update id="update">
+
+    <!-- ================= Update ================= -->
+    <update id="update" parameterType="training.javaweb.exam.entity.Pet">
         UPDATE pets
-        SET
-        owner_id=#{ownerId},
-        name=#{name},
-        type=#{type},
-        breed=#{breed},
-        gender=#{gender},
-        birth_date=#{birthDate},
-        weight=#{weight},
-        color=#{color},
-        vaccinated=#{vaccinated},
-        image=#{image},
-        note=#{note},
-        updated_at=NOW()
-        WHERE id=#{id}
+        <set>
+            <if test="ownerId != null">
+                owner_id = #{ownerId},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="breed != null">
+                breed = #{breed},
+            </if>
+            <if test="weight != null">
+                weight = #{weight},
+            </if>
+            <if test="age != null">
+                age = #{age},
+            </if>
+            <if test="image != null">
+                image_url = #{image},
+            </if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
     </update>
-    <!-- B5 Soft Delete -->
+
+    <!-- ================= Soft Delete ================= -->
     <update id="softDelete">
         UPDATE pets
-        SET
-        deleted=true,
-        updated_at=NOW()
-        WHERE id=#{id}
+        SET deleted_at = true,
+            updated_at = NOW()
+        WHERE id = #{id}
     </update>
-    <!-- B6 Filter Type -->
-    <select id="findByType"
-            resultMap="PetDTOMap">
-        SELECT
-        p.*,
-        o.full_name AS owner_name
+
+    <!-- ================= Find By Type ================= -->
+    <select id="findByType" parameterType="string" resultMap="PetDTOMap">
+        SELECT p.*,
+               o.name AS owner_name
         FROM pets p
-        JOIN owners o
-        ON p.owner_id=o.id
-        WHERE
-        p.type=#{type}
-        AND p.deleted=false
+        JOIN owners o ON p.owner_id = o.id
+        WHERE p.type = #{type}
+          AND p.deleted_at = false
     </select>
-    <!-- B7 Pet theo Owner -->
-    <select id="findByOwnerId"
-            resultMap="PetDTOMap">
-        SELECT
-        p.*,
-        o.full_name AS owner_name
+
+    <!-- ================= Find By Owner ================= -->
+    <select id="findByOwnerId" parameterType="long" resultMap="PetDTOMap">
+        SELECT p.*,
+               o.name AS owner_name
         FROM pets p
-        JOIN owners o
-        ON p.owner_id=o.id
-        WHERE
-        p.owner_id=#{ownerId}
-        AND p.deleted=false
+        JOIN owners o ON p.owner_id = o.id
+        WHERE p.owner_id = #{ownerId}
+          AND p.deleted_at = false
     </select>
-    <!-- B8 Customer xem pet của mình -->
-    <select id="findMyPets"
-            resultMap="PetDTOMap">
-        SELECT
-        p.*,
-        o.full_name AS owner_name
+
+    <!-- ================= My Pets ================= -->
+    <select id="findMyPets" parameterType="long" resultMap="PetDTOMap">
+        SELECT p.*,
+               o.name AS owner_name
         FROM pets p
-        JOIN owners o
-        ON p.owner_id=o.id
-        JOIN users u
-        ON o.id=u.owner_id
-        WHERE
-        u.id=#{userId}
-        AND p.deleted=false
+        JOIN owners o ON p.owner_id = o.id
+        JOIN users u  ON o.id = u.owner_id
+        WHERE u.id = #{userId}
+          AND p.deleted_at = false
     </select>
-    <!-- update trạng thái Pet -->
+
+    <!-- ================= Update Status ================= -->
     <update id="updateStatus">
         UPDATE pets
-        SET
-        status=#{status},
-        updated_at=NOW()
-        WHERE id=#{id}
+        SET status = #{status},
+            updated_at = NOW()
+        WHERE id = #{id}
     </update>
+
 </mapper>

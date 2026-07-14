@@ -51,7 +51,7 @@
         )
         VALUES
         (
-            #{phone},
+            #{username},
             #{password},
             #{role},
             #{ownerId},

@@ -1,558 +1,151 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
-
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-
 <mapper namespace="training.javaweb.exam.mapper.BoardingRecordMapper">
 
-
-
-<resultMap id="BoardingDTOMap"
-           type="training.javaweb.exam.dto.BoardingRecordDTO">
-
-
-    <id property="id"
-        column="id"/>
-
-
-    <result property="petId"
-            column="pet_id"/>
-
-
-    <result property="petName"
-            column="pet_name"/>
-
-
-    <result property="ownerName"
-            column="owner_name"/>
-
-
-    <result property="checkInDate"
-            column="check_in_date"/>
-
-
-    <result property="expectedReturn"
-            column="expected_return"/>
-
-
-    <result property="actualCheckOut"
-            column="actual_check_out"/>
-
-
-    <result property="pricePerDay"
-            column="price_per_day"/>
-
-
-    <result property="baseFee"
-            column="base_fee"/>
-
-
-    <result property="lateFee"
-            column="late_fee"/>
-
-
-    <result property="totalFee"
-            column="total_fee"/>
-
-
-    <result property="status"
-            column="status"/>
-
-
-    <result property="notes"
-            column="notes"/>
-
-
-</resultMap>
-
-
-
-
-
-<!-- C1 CREATE -->
-
-<insert id="insert"
-        parameterType="training.javaweb.exam.entity.BoardingRecord"
-        useGeneratedKeys="true"
-        keyProperty="id">
-
-
-INSERT INTO boarding_records
-(
-
-pet_id,
-
-check_in_date,
-
-expected_return,
-
-price_per_day,
-
-status,
-
-notes,
-
-created_at,
-
-updated_at
-
-)
-
-
-VALUES
-
-(
-
-#{petId},
-
-#{checkInDate},
-
-#{expectedReturn},
-
-#{pricePerDay},
-
-'BOARDING',
-
-#{notes},
-
-NOW(),
-
-NOW()
-
-)
-
-
-</insert>
-
-
-
-
-
-
-
-<!-- C2 LIST -->
-
-
-<select id="findAll"
-        resultMap="BoardingDTOMap">
-
-
-SELECT
-
-
-b.*,
-
-
-p.name AS pet_name,
-
-
-o.full_name AS owner_name
-
-
-FROM boarding_records b
-
-
-JOIN pets p
-
-ON b.pet_id=p.id
-
-
-JOIN owners o
-
-ON p.owner_id=o.id
-
-
-ORDER BY b.id DESC
-
-
-
-</select>
-
-
-
-
-
-
-
-
-
-<!-- C3 DETAIL -->
-
-
-<select id="findDetail"
-        resultMap="BoardingDTOMap">
-
-
-SELECT
-
-
-b.*,
-
-
-p.name AS pet_name,
-
-
-o.full_name AS owner_name
-
-
-FROM boarding_records b
-
-
-JOIN pets p
-
-ON b.pet_id=p.id
-
-
-JOIN owners o
-
-ON p.owner_id=o.id
-
-
-WHERE b.id=#{id}
-
-
-
-</select>
-
-
-
-
-
-
-
-
-
-<!-- C4 CHECKOUT -->
-
-
-<update id="checkout"
-        parameterType="training.javaweb.exam.entity.BoardingRecord">
-
-
-UPDATE boarding_records
-
-
-SET
-
-
-actual_check_out=#{actualCheckOut},
-
-
-base_fee=#{baseFee},
-
-
-late_fee=#{lateFee},
-
-
-total_fee=#{totalFee},
-
-
-status='RETURNED',
-
-
-updated_at=NOW()
-
-
-WHERE id=#{id}
-
-
-
-</update>
-
-
-
-
-
-
-
-
-
-<!-- C5 CURRENT BOARDING -->
-
-
-<select id="findCurrentBoarding"
-        resultMap="BoardingDTOMap">
-
-
-SELECT
-
-
-b.*,
-
-
-p.name AS pet_name,
-
-
-o.full_name AS owner_name
-
-
-FROM boarding_records b
-
-
-JOIN pets p
-
-ON b.pet_id=p.id
-
-
-JOIN owners o
-
-ON p.owner_id=o.id
-
-
-WHERE b.status='BOARDING'
-
-
-ORDER BY b.check_in_date DESC
-
-
-
-</select>
-
-
-
-
-
-
-
-
-
-<!-- C6 HISTORY PET -->
-
-
-<select id="findHistoryByPet"
-        resultMap="BoardingDTOMap">
-
-
-SELECT
-
-
-b.*,
-
-
-p.name AS pet_name,
-
-
-o.full_name AS owner_name
-
-
-FROM boarding_records b
-
-
-JOIN pets p
-
-ON b.pet_id=p.id
-
-
-JOIN owners o
-
-ON p.owner_id=o.id
-
-
-WHERE
-
-
-p.id=#{petId}
-
-
-ORDER BY b.check_in_date DESC
-
-
-
-</select>
-
-
-
-
-
-
-
-
-
-<!-- C7 HISTORY OWNER -->
-
-
-<select id="findHistoryByOwner"
-        resultMap="BoardingDTOMap">
-
-
-SELECT
-
-
-b.*,
-
-
-p.name AS pet_name,
-
-
-o.full_name AS owner_name
-
-
-FROM boarding_records b
-
-
-JOIN pets p
-
-ON b.pet_id=p.id
-
-
-JOIN owners o
-
-ON p.owner_id=o.id
-
-
-WHERE
-
-
-o.id=#{ownerId}
-
-
-ORDER BY b.check_in_date DESC
-
-
-
-</select>
-
-
-
-
-
-
-
-
-
-<!-- C8 DATE SEARCH -->
-
-
-<select id="findByDate"
-        resultMap="BoardingDTOMap">
-
-
-SELECT
-
-
-b.*,
-
-
-p.name AS pet_name,
-
-
-o.full_name AS owner_name
-
-
-FROM boarding_records b
-
-
-JOIN pets p
-
-ON b.pet_id=p.id
-
-
-JOIN owners o
-
-ON p.owner_id=o.id
-
-
-WHERE
-
-
-b.check_in_date BETWEEN #{from} AND #{to}
-
-
-ORDER BY b.check_in_date DESC
-
-
-
-</select>
-
-
-
-
-
-
-
-
-
-<!-- C9 CUSTOMER CURRENT -->
-
-
-	<select id="findMyCurrentBoarding"
-	        resultMap="BoardingDTOMap">
-			SELECT
-			b.*,
-			p.name AS pet_name,
-			o.full_name AS owner_name
-			FROM boarding_records b
-			JOIN pets p
-			ON b.pet_id=p.id			
-			JOIN owners o			
-			ON p.owner_id=o.id						
-			JOIN users u			
-			ON o.id=u.owner_id			
-			WHERE
-			u.id=#{userId}
-			AND b.status='BOARDING'
-	</select>
-
-
-
-
-
-
-
-
-
-<!-- C10 CUSTOMER HISTORY -->
-
-
-<select id="findMyHistory"
-        resultMap="BoardingDTOMap">
-
-
-SELECT
-
-
-b.*,
-
-
-p.name AS pet_name,
-
-
-o.full_name AS owner_name
-
-
-FROM boarding_records b
-
-
-JOIN pets p
-
-ON b.pet_id=p.id
-
-
-JOIN owners o
-
-ON p.owner_id=o.id
-
-
-JOIN users u
-
-ON o.id=u.owner_id
-
-
-WHERE
-
-
-u.id=#{userId}
-
-
-ORDER BY b.check_in_date DESC
-
-
-
-</select>
-
-
+    <resultMap id="BoardingDTOMap" type="training.javaweb.exam.dto.response.BoardingRecordResponseDTO">
+        <id property="id" column="id"/>
+        <result property="petId" column="pet_id"/>
+        <result property="petName" column="pet_name"/>
+        <result property="ownerName" column="owner_name"/>
+        <result property="checkInDate" column="check_in_date"/>
+        <result property="expectedReturn" column="expected_return"/>
+        <result property="actualCheckOut" column="actual_check_out"/>
+        <result property="pricePerDay" column="price_per_day"/>
+        <result property="baseFee" column="base_fee"/>
+        <result property="lateFee" column="late_fee"/>
+        <result property="totalFee" column="total_fee"/>
+        <result property="status" column="status"/>
+        <result property="notes" column="notes"/>
+    </resultMap>
+
+    <!-- C1 CREATE -->
+    <insert id="insert"
+            parameterType="training.javaweb.exam.entity.BoardingRecord"
+            useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO boarding_records (
+            pet_id,
+            check_in_date,
+            expected_day,
+            price_per_day,
+            base_fee,
+            status,
+            notes,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{petId},
+            #{checkInDate},
+            #{expectedReturn},
+            #{pricePerDay},
+            #{baseFee},
+            'BOARDING',
+            #{notes},
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <!-- C2 LIST -->
+    <select id="findAll" resultMap="BoardingDTOMap">
+        SELECT b.*,
+               p.name AS pet_name,
+               o.name AS owner_name
+        FROM boarding_records b
+        JOIN pets p ON b.pet_id = p.id
+        JOIN owners o ON p.owner_id = o.id
+        ORDER BY b.id DESC
+    </select>
+
+    <!-- C3 DETAIL -->
+    <select id="findDetail" resultMap="BoardingDTOMap">
+        SELECT b.*,
+               p.name AS pet_name,
+               o.name AS owner_name,
+               re.note,
+               re.created_at
+        FROM boarding_records b
+        JOIN pets p ON b.pet_id = p.id
+        JOIN owners o ON p.owner_id = o.id
+        JOIN care_notes re ON b.id = re.boarding_record_id
+        WHERE b.id = #{id}
+    </select>
+    
+    <!-- C5 CURRENT BOARDING -->
+    <select id="findCurrentBoarding" resultMap="BoardingDTOMap">
+        SELECT b.*,
+               p.name AS pet_name,
+               o.full_name AS owner_name
+        FROM boarding_records b
+        JOIN pets p ON b.pet_id = p.id
+        JOIN owners o ON p.owner_id = o.id
+        WHERE b.status = 'BOARDING'
+        ORDER BY b.check_in_date DESC
+    </select>
+
+    <!-- C6 HISTORY PET -->
+    <select id="findHistoryByPet" resultMap="BoardingDTOMap">
+        SELECT b.*,
+               p.name AS pet_name,
+               o.name AS owner_name
+        FROM boarding_records b
+        JOIN pets p ON b.pet_id = p.id
+        JOIN owners o ON p.owner_id = o.id
+        WHERE p.id = #{petId}
+        ORDER BY b.check_in_date DESC
+    </select>
+
+    <!-- C7 HISTORY OWNER -->
+    <select id="findHistoryByOwner" resultMap="BoardingDTOMap">
+        SELECT b.*,
+               p.name AS pet_name,
+               o.name AS owner_name
+        FROM boarding_records b
+        JOIN pets p ON b.pet_id = p.id
+        JOIN owners o ON p.owner_id = o.id
+        WHERE o.id = #{ownerId}
+        ORDER BY b.check_in_date DESC
+    </select>
+
+    <!-- C8 DATE SEARCH -->
+    <select id="findByDate" resultMap="BoardingDTOMap">
+        SELECT b.*,
+               p.name AS pet_name,
+               o.name AS owner_name
+        FROM boarding_records b
+        JOIN pets p ON b.pet_id = p.id
+        JOIN owners o ON p.owner_id = o.id
+        WHERE b.check_in_date BETWEEN #{from} AND #{to}
+        ORDER BY b.check_in_date DESC
+    </select>
+
+    <!-- C9 CUSTOMER CURRENT -->
+    <select id="findMyCurrentBoarding" resultMap="BoardingDTOMap">
+        SELECT b.*,
+               p.name AS pet_name,
+               o.name AS owner_name
+        FROM boarding_records b
+        JOIN pets p ON b.pet_id = p.id			
+        JOIN owners o ON p.owner_id = o.id						
+        JOIN users u ON o.id = u.owner_id			
+        WHERE u.id = #{userId}
+          AND b.status = 'BOARDING'
+    </select>
+
+    <!-- C10 CUSTOMER HISTORY -->
+    <select id="findMyHistory" resultMap="BoardingDTOMap">
+        SELECT b.*,
+               p.name AS pet_name,
+               o.name AS owner_name
+        FROM boarding_records b
+        JOIN pets p ON b.pet_id = p.id
+        JOIN owners o ON p.owner_id = o.id
+        JOIN users u ON o.id = u.owner_id
+        WHERE u.id = #{userId}
+        ORDER BY b.check_in_date DESC
+    </select>
 
 </mapper>

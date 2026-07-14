@@ -52,4 +52,8 @@ public class BoardingRecordRepository {
 		return mapper.findMyHistory(userId);
 	}
 
+	public void checkOut(BoardingRecord boardingRecord) {
+    mapper.checkOut(boardingRecord);
+}
+
 }

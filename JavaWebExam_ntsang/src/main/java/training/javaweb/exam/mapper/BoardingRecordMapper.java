@@ -17,6 +17,8 @@ public interface BoardingRecordMapper {
 
 	BoardingRecordResponseDTO findDetail(Long id);
 
+	void checkOut(BoardingRecord boardingRecord);
+
 	List<BoardingRecordResponseDTO> findCurrentBoarding();
 
 	List<BoardingRecordResponseDTO> findHistoryByPet(Long petId);

@@ -33,8 +33,8 @@ public class BoardingRecordResponseDTO {
 
 	private String notes;
 
-//	private List<CareNote> careNote;
-
+	private List<CareNoteResponseDTO> careNotes;
+	
 	public BoardingRecordResponseDTO() {
 		super();
 	}

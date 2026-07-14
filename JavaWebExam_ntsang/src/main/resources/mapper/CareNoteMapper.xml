@@ -65,5 +65,21 @@
         DELETE FROM care_notes
         WHERE id = #{id}
     </delete>
+    <select id="findByBoardingRecordId"
+        resultType="training.javaweb.exam.dto.response.CareNoteResponseDTO">
 
+    SELECT
+        id,
+        boarding_record_id,
+        note,
+        created_at,
+        updated_at
+
+    FROM care_notes
+
+    WHERE boarding_record_id = #{boardingRecordId}
+
+    ORDER BY created_at ASC
+
+</select>
 </mapper>

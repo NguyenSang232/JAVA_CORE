@@ -1,6 +1,7 @@
 package training.javaweb.exam.service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,12 +11,16 @@ import training.javaweb.exam.dto.request.BoardingRecordRequestDTO;
 import training.javaweb.exam.dto.response.BoardingRecordResponseDTO;
 import training.javaweb.exam.entity.BoardingRecord;
 import training.javaweb.exam.repository.BoardingRecordRepository;
+import training.javaweb.exam.repository.CareNoteRepository;
 
 @Service
 public class BoardingRecordService {
 
 	@Autowired
 	private BoardingRecordRepository boardingRecordRepository;
+
+	@Autowired
+	private CareNoteRepository careNoteRepository;
 
 	// Check-in
 	public BoardingRecordResponseDTO create(BoardingRecordRequestDTO dto) {
@@ -32,8 +37,17 @@ public class BoardingRecordService {
 
 	// Chi tiết
 	public BoardingRecordResponseDTO getDetail(Long id) {
-		return boardingRecordRepository.findDetail(id);
-	}
+
+    BoardingRecordResponseDTO response = boardingRecordRepository.findDetail(id);
+
+    if (response == null) {
+        return null;
+    }
+
+  //  response.setCareNotes(careNoteRepository.findByBoardingRecordId(id));
+
+    return response;
+}
 
 	// Đang gửi
 	public List<BoardingRecordResponseDTO> getCurrentBoarding() {
@@ -65,6 +79,47 @@ public class BoardingRecordService {
 		return boardingRecordRepository.findMyHistory(userId);
 	}
 
+
+	// Checkout
+	public void checkOut(Long boardingId, LocalDate actualCheckOut) {
+
+    // Lấy thông tin boarding hiện tại
+    BoardingRecordResponseDTO record = boardingRecordRepository.findDetail(boardingId);
+
+    if (record == null) {
+        throw new RuntimeException("Boarding record not found");
+    }
+
+    // Số ngày đã gửi
+    long actualDays = ChronoUnit.DAYS.between(
+            record.getCheckInDate(),
+            actualCheckOut);
+
+    // Số ngày dự kiến
+    long expectedDays = ChronoUnit.DAYS.between(
+            record.getCheckInDate(),
+            record.getExpectedReturn());
+
+    // Phí cơ bản
+    long baseFee = expectedDays * record.getPricePerDay();
+
+    // Phí trễ
+    long lateFee = 0;
+    if (actualDays > expectedDays) {
+        lateFee = (actualDays - expectedDays) * record.getPricePerDay();
+    }
+
+    // Tổng phí
+    long totalFee = baseFee + lateFee;
+
+    BoardingRecord entity = new BoardingRecord();
+    entity.setId(boardingId);
+    entity.setActualCheckOut(actualCheckOut);
+    entity.setLateFee(lateFee);
+    entity.setTotalFee(totalFee);
+
+    boardingRecordRepository.checkOut(entity);
+}
 	// DTO -> Entity
 	public BoardingRecord toEntity(BoardingRecordRequestDTO dto) {
 		if (dto == null)

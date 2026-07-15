@@ -38,16 +38,16 @@ public class BoardingRecordService {
 	// Chi tiết
 	public BoardingRecordResponseDTO getDetail(Long id) {
 
-    BoardingRecordResponseDTO response = boardingRecordRepository.findDetail(id);
+		BoardingRecordResponseDTO response = boardingRecordRepository.findDetail(id);
 
-    if (response == null) {
-        return null;
-    }
+		if (response == null) {
+			return null;
+		}
 
-  //  response.setCareNotes(careNoteRepository.findByBoardingRecordId(id));
+		response.setCareNote(careNoteRepository.findByBoardingId(id));
 
-    return response;
-}
+		return response;
+	}
 
 	// Đang gửi
 	public List<BoardingRecordResponseDTO> getCurrentBoarding() {
@@ -79,47 +79,33 @@ public class BoardingRecordService {
 		return boardingRecordRepository.findMyHistory(userId);
 	}
 
-
 	// Checkout
 	public void checkOut(Long boardingId, LocalDate actualCheckOut) {
+		BoardingRecordResponseDTO record = boardingRecordRepository.findDetail(boardingId);
+		if (record == null) {
+			throw new RuntimeException("Boarding record not found");
+		}
+		// Số ngày đã gửi
+		long actualDays = ChronoUnit.DAYS.between(record.getCheckInDate(), actualCheckOut);
+		// Số ngày dự kiến
+		long expectedDays = ChronoUnit.DAYS.between(record.getCheckInDate(), record.getExpectedReturn());
+		// Phí cơ bản
+		long baseFee = expectedDays * record.getPricePerDay();
+		// Phí trễ
+		long lateFee = 0;
+		if (actualDays > expectedDays) {
+			lateFee = (actualDays - expectedDays) * record.getPricePerDay();
+		}
+		// Tổng phí
+		long totalFee = baseFee + lateFee;
+		BoardingRecord entity = new BoardingRecord();
+		entity.setId(boardingId);
+		entity.setActualCheckOut(actualCheckOut);
+		entity.setLateFee(lateFee);
+		entity.setTotalFee(totalFee);
+		boardingRecordRepository.checkOut(entity);
+	}
 
-    // Lấy thông tin boarding hiện tại
-    BoardingRecordResponseDTO record = boardingRecordRepository.findDetail(boardingId);
-
-    if (record == null) {
-        throw new RuntimeException("Boarding record not found");
-    }
-
-    // Số ngày đã gửi
-    long actualDays = ChronoUnit.DAYS.between(
-            record.getCheckInDate(),
-            actualCheckOut);
-
-    // Số ngày dự kiến
-    long expectedDays = ChronoUnit.DAYS.between(
-            record.getCheckInDate(),
-            record.getExpectedReturn());
-
-    // Phí cơ bản
-    long baseFee = expectedDays * record.getPricePerDay();
-
-    // Phí trễ
-    long lateFee = 0;
-    if (actualDays > expectedDays) {
-        lateFee = (actualDays - expectedDays) * record.getPricePerDay();
-    }
-
-    // Tổng phí
-    long totalFee = baseFee + lateFee;
-
-    BoardingRecord entity = new BoardingRecord();
-    entity.setId(boardingId);
-    entity.setActualCheckOut(actualCheckOut);
-    entity.setLateFee(lateFee);
-    entity.setTotalFee(totalFee);
-
-    boardingRecordRepository.checkOut(entity);
-}
 	// DTO -> Entity
 	public BoardingRecord toEntity(BoardingRecordRequestDTO dto) {
 		if (dto == null)

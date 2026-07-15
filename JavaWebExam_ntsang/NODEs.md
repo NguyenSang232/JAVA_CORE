@@ -40,11 +40,30 @@ Branch: `java-web/exam`
 + Xóa người dùng
 - Hoàn thành file exception để xử lý exception.
 - **Khó khăn:** Ở bảng boarding_records hiện tại chỉ có một cột base_fee chỉ là tổng tiền sau cho lần gửi như chưa có price_per_date để có thể dễ dang tính toán hơm.
-Hiện tại chưa có cột expected_return để xác định được ngày trả dự kiến khiến cho chưa có căn tính đế biết tại sao nó trễ và trễ bao nhiêu ngày.
-- **Cách giải quyết:** Thêm trường price_per_day + expected_return vào bảng boarding _record để có thể dễ dàng tính toán hơn
+Hiện tại chưa có cột expected_day để xác định được ngày trả dự kiến khiến cho chưa có căn tính đế biết tại sao nó trễ và trễ bao nhiêu ngày.
+- **Cách giải quyết:** Thêm trường price_per_day + expected_day vào bảng boarding _record để có thể dễ dàng tính toán hơn
  Ở chỗ tiền cho từng ngày thì sẽ chia thanh từng nhóm như là Cat: 100.000/ngày, Dog: 150.000/ngày, Bird: 60.000/ngày
-- **Commit:** `[Day 2] ...`
+- **Commit:** `[e3e349d]`
 - **Ref mục Quyết định thiết kế (nếu có):** 
+
+### Day 3 — 15/07/2026
+- **Đã làm:** 
+- Ở nhóm chức năng BoardingRecords
++ C1 Tạo mới phiếu gửi
++ C2 Hiển thị tất cả phiếu gửi
++ C3 Xem chi tiết
++ C4 Trả thú nuôi
++ C5 Danh sách thú nuôi theo trạng thái đang gửi
++ C6 Lịch sử gửi theo thú cưng
++ C7 Lịch sử gửi theo chủ nuôi
++ C8 Tìm phiếu gửi theo thời gian
++ C9 Phiếu đang gửi của tôi
++ C10 Lịch sử gửi của tôi theo mới nhất
++ D1 Thêm ghi chú chăm sóc vào phiếu gửi
++ D2 Xem danh sách ghi chú của một phiếu gửi
+- **Khó khăn:** Vấn đề về giá gửi cho từng loại thú cưng cho từng ngày hiện tại vẫn chưa chắc chắn.
+- **Cách giải quyết:** Ban đầu sẽ tạo Entity giá cho từng nhóm động vật (hiện tại vẫn chưa chốt vì vẫn còn chạy thử dữ liệu trên swagger
+**Commit:** `[Day 3] ...`
 
 ## 2. Quyết định thiết kế (các phần đề không đặc tả đầy đủ)
 > Schema và quyết định cách làm.

@@ -9,18 +9,12 @@ public class OwnerDTO {
 
 	private Long id;
 
-	@NotBlank(message = "Full name cannot be blank")
-	@Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters")
 	private String name;
 
-	@NotBlank(message = "Phone cannot be blank")
-	@Size(min = 10, max = 11, message = "Phone must be between 10 and 11 characters")
 	private String phone;
 
-	@Email(message = "Email format is invalid")
 	private String email;
 
-	@NotBlank(message = "Address cannot be blank")
 	private String address;
 
 //	private List<PetDTO> pets;

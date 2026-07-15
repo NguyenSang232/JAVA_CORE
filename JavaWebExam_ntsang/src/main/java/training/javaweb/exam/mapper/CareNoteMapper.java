@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import training.javaweb.exam.dto.CareNoteDTO;
+import training.javaweb.exam.dto.response.CareNoteResponseDTO;
 import training.javaweb.exam.entity.CareNote;
 
 @Mapper
@@ -12,12 +12,12 @@ public interface CareNoteMapper {
 
 	void insert(CareNote careNote);
 
-	List<CareNoteDTO> findByBoardingId(Long boardingId);
+	CareNoteResponseDTO findById(Long id);
 
-	List<CareNoteDTO> findMyNotes(Long userId, Long boardingId);
+	List<CareNoteResponseDTO> findAll();
 
-	void update(CareNote careNote);
+	List<CareNoteResponseDTO> findByBoardingId(Long boardingId);
 
-	void delete(Long id);
+	List<CareNoteResponseDTO> findMyNotes(Long userId, Long boardingId);
 
 }

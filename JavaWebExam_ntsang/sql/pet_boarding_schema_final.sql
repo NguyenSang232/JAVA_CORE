@@ -3,11 +3,11 @@
 -- Java Web Exam
 -- ================================================================
 
-CREATE DATABASE IF NOT EXISTS pet_boarding
+CREATE DATABASE IF NOT EXISTS pet_boarding_ntsang
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-USE pet_boarding;
+USE pet_boarding_ntsang;
 
 -- ================================================================
 -- TABLE: owners
@@ -24,7 +24,7 @@ CREATE TABLE owners (
 ALTER TABLE owners
 add COLUMN updated_at datetime;
 ALTER TABLE owners
-add COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
+add COLUMN deleted_at BOOLEAN NOT NULL DEFAULT FALSE;
 -- ================================================================
 -- TABLE: pets
 -- ================================================================
@@ -45,7 +45,7 @@ CREATE TABLE pets (
 ALTER TABLE pets
 add COLUMN updated_at datetime;
 ALTER TABLE pets
-add COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
+add COLUMN deleted_at BOOLEAN NOT NULL DEFAULT FALSE;
 -- ================================================================
 -- TABLE: boarding_records
 -- ================================================================

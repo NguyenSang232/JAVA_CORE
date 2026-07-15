@@ -53,7 +53,6 @@ public class BoardingRecordRepository {
 	}
 
 	public void checkOut(BoardingRecord boardingRecord) {
-    mapper.checkOut(boardingRecord);
-}
-
+		mapper.checkOut(boardingRecord);
+	}
 }

@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import training.javaweb.exam.dto.CareNoteDTO;
+import training.javaweb.exam.dto.response.CareNoteResponseDTO;
 import training.javaweb.exam.entity.CareNote;
 import training.javaweb.exam.mapper.CareNoteMapper;
 
@@ -19,19 +19,19 @@ public class CareNoteRepository {
 		mapper.insert(note);
 	}
 
-	public List<CareNoteDTO> findByBoardingId(Long boardingId) {
+	public List<CareNoteResponseDTO> getAll() {
+		return mapper.findAll();
+	}
+
+	public CareNoteResponseDTO findById(Long id) {
+		return mapper.findById(id);
+	}
+
+	public List<CareNoteResponseDTO> findByBoardingId(Long boardingId) {
 		return mapper.findByBoardingId(boardingId);
 	}
 
-	public List<CareNoteDTO> findMyNotes(Long userId, Long boardingId) {
+	public List<CareNoteResponseDTO> findMyNotes(Long userId, Long boardingId) {
 		return mapper.findMyNotes(userId, boardingId);
-	}
-
-	public void update(CareNote note) {
-		mapper.update(note);
-	}
-
-	public void delete(Long id) {
-		mapper.delete(id);
 	}
 }

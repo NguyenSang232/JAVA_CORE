@@ -3,7 +3,7 @@ package training.javaweb.exam.dto.request;
 import java.time.LocalDate;
 import java.util.List;
 
-import training.javaweb.exam.dto.CareNoteDTO;
+import training.javaweb.exam.dto.response.CareNoteResponseDTO;
 
 public class BoardingRecordRequestDTO {
 
@@ -30,7 +30,8 @@ public class BoardingRecordRequestDTO {
 	}
 
 	public BoardingRecordRequestDTO(Long petId, LocalDate checkInDate, LocalDate expectedReturn, Long pricePerDay,
-			Long baseFee, Long lateFee, Long totalFee, String status, String notes, List<CareNoteDTO> careNotes) {
+			Long baseFee, Long lateFee, Long totalFee, String status, String notes,
+			List<CareNoteResponseDTO> careNotes) {
 		super();
 		this.petId = petId;
 		this.checkInDate = checkInDate;

@@ -25,7 +25,8 @@ public class SecurityConfig {
 		http.csrf(csrf -> csrf.disable()).userDetailsService(customUserDetailsService)
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/login", "/login.html", "/auth/**", "/api/owners/**", "/api/users/**",
-								"/api/pets/**", "/static/**", "/admin.html", "/swagger-ui.html", "/swagger-ui/**",
+								"/api/care-notes/**", "/api/boarding-records/**", "/api/pets/**", "/static/**",
+								"/api/pets/owner/**", "/admin.html", "/swagger-ui.html", "/swagger-ui/**",
 								"/v3/api-docs/**", "/style/**", "/js/**")
 						.permitAll().requestMatchers("/admin/**").hasRole("ADMIN").requestMatchers("/users/**")
 						.hasAnyRole("USER", "ADMIN").anyRequest().authenticated())

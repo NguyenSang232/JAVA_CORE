@@ -5,13 +5,19 @@
 
 <mapper namespace="training.javaweb.exam.mapper.CareNoteMapper">
 
-    <resultMap id="CareNoteDTOMap" type="training.javaweb.exam.dto.CareNoteDTO">
+    <resultMap id="CareNoteDTOMap" type="training.javaweb.exam.dto.response.CareNoteResponseDTO">
         <id property="id" column="id"/>
         <result property="boardingRecordId" column="boarding_record_id"/>
         <result property="note" column="note"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
+    
+      <select id="findAll" resultMap="CareNoteDTOMap">
+        SELECT *
+        FROM care_notes
+        ORDER BY created_at DESC
+    </select>
 
     <!-- D1 ADD NOTE -->
     <insert id="insert"
@@ -21,16 +27,14 @@
         INSERT INTO care_notes (
             boarding_record_id,
             note,
-            created_at,
-            updated_at
+            created_at
         ) VALUES (
             #{boardingRecordId},
             #{note},
-            NOW(),
             NOW()
-        )
+         )
     </insert>
-
+	
     <!-- D2 ADMIN VIEW -->
     <select id="findByBoardingId" resultMap="CareNoteDTOMap">
         SELECT *
@@ -38,7 +42,14 @@
         WHERE boarding_record_id = #{boardingId}
         ORDER BY created_at DESC
     </select>
-
+	
+	 <!-- D2 ADMIN VIEW -->
+    <select id="findById" resultMap="CareNoteDTOMap">
+        SELECT *
+        FROM care_notes
+        WHERE id = #{id}
+    </select>
+	
     <!-- CUSTOMER VIEW NOTE -->
     <select id="findMyNotes" resultMap="CareNoteDTOMap">
         SELECT c.*
@@ -65,21 +76,5 @@
         DELETE FROM care_notes
         WHERE id = #{id}
     </delete>
-    <select id="findByBoardingRecordId"
-        resultType="training.javaweb.exam.dto.response.CareNoteResponseDTO">
 
-    SELECT
-        id,
-        boarding_record_id,
-        note,
-        created_at,
-        updated_at
-
-    FROM care_notes
-
-    WHERE boarding_record_id = #{boardingRecordId}
-
-    ORDER BY created_at ASC
-
-</select>
 </mapper>

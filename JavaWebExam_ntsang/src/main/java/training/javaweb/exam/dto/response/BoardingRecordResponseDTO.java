@@ -3,8 +3,6 @@ package training.javaweb.exam.dto.response;
 import java.time.LocalDate;
 import java.util.List;
 
-import training.javaweb.exam.dto.CareNoteDTO;
-
 public class BoardingRecordResponseDTO {
 
 	private Long id;
@@ -33,15 +31,23 @@ public class BoardingRecordResponseDTO {
 
 	private String notes;
 
-	private List<CareNoteResponseDTO> careNotes;
-	
+	private List<CareNoteResponseDTO> careNote;
+
+	public List<CareNoteResponseDTO> getCareNote() {
+		return careNote;
+	}
+
+	public void setCareNote(List<CareNoteResponseDTO> careNote) {
+		this.careNote = careNote;
+	}
+
 	public BoardingRecordResponseDTO() {
 		super();
 	}
 
 	public BoardingRecordResponseDTO(Long petId, String petName, String ownerName, LocalDate checkInDate,
 			LocalDate expectedReturn, LocalDate actualCheckOut, Long pricePerDay, Long baseFee, Long lateFee,
-			Long totalFee, String status, String notes, List<CareNoteDTO> careNotes) {
+			Long totalFee, String status, String notes, List<CareNoteResponseDTO> careNotes) {
 		super();
 		this.petId = petId;
 		this.petName = petName;

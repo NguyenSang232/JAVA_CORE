@@ -34,9 +34,4 @@ public class CareNoteRepository {
 	public void delete(Long id) {
 		mapper.delete(id);
 	}
-
-	public List<CareNoteDTO> findByBoardingRecordId(Long boardingRecordId) {
-        return mapper.findByBoardingId(boardingRecordId);
-    }
-
 }

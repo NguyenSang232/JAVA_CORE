@@ -1,0 +1,112 @@
+<!-- HEADER -->
+            <header class="topbar">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Tổng quan</p>
+                </div>
+                <button class="primary-btn">+ Tạo phiếu gửi</button>
+            </header>
+            <!-- STATISTIC -->
+            <section class="cards">
+                <div class="card">
+                    <i class="fa-solid fa-user"></i>
+                    <div>
+                        <h2 id="owner-count">6</h2>
+                        <p>CHỦ NUÔI</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <i class="fa-solid fa-paw"></i>
+                    <div>
+                        <h2 id="pet-count">8</h2>
+                        <p>THÚ CƯNG</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-house"></i>
+                    <div>
+                        <h2>3</h2>
+                        <p>ĐANG GỬI</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-money-bill"></i>
+                    <div>
+                        <h2>3.520.000đ</h2>
+                        <p>DOANH THU</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-note-sticky"></i>
+                    <div>
+                        <h2>7</h2>
+                        <p>GHI CHÚ</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MAIN GRID -->
+            <section class="dashboard-grid">
+                <!-- BOARDING TABLE -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Phiếu gửi gần đây</h3>
+                        <div class="filter">
+                            <button>Tất cả</button>
+                            <button>Đang gửi</button>
+                            <button>Đã trả</button>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>THÚ CƯNG</th>
+                                <th>CHỦ NUÔI</th>
+                                <th>CHECK-IN</th>
+                                <th>TRẠNG THÁI</th>
+                                <th>PHÍ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="boarding-table"></tbody>
+                    </table>
+                </div>
+
+                <!-- RIGHT SIDE -->
+                <div class="right-content">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>Doanh thu 2025</h3>
+                            <strong>25.370.000đ</strong>
+                        </div>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>Phân bố loài</h3>
+                        </div>
+
+                        <div id="pet-type-statistic">
+                            <div class="pet-row">
+                                <span>🐶 Dog</span>
+                                <b>38%</b>
+                            </div>
+                            <div class="progress">
+                                <div style="width:38%"></div>
+                            </div>
+
+                            <div class="pet-row">
+                                <span>🐱 Cat</span>
+                                <b>25%</b>
+                            </div>
+                            <div class="progress">
+                                <div style="width:25%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>

@@ -121,3 +121,213 @@ button:hover{
     color:#777;
     font-size:14px;
 }
+
+/* ===============================
+   MODAL DETAIL STYLES
+================================= */
+
+/* Lớp phủ nền tối phía sau */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Độ mờ vừa phải để nổi bật modal */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Kích hoạt hiển thị modal */
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Khung nội dung Modal */
+.modal-container {
+    background: white;
+    width: 100%;
+    max-width: 550px;
+    border-radius: 24px; /* Bo góc lớn sang trọng */
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-overlay.active .modal-container {
+    transform: translateY(0);
+}
+
+/* Header Modal */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 28px 15px;
+}
+
+.modal-header h2 {
+    font-size: 22px;
+    color: #111;
+    font-weight: 700;
+}
+
+/* Nút X đóng góc trên */
+.modal-close-btn {
+    background: #f1f3f5;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 16px;
+    transition: 0.2s;
+}
+
+.modal-close-btn:hover {
+    background: #e2e6ea;
+    color: #333;
+}
+
+/* Body Modal */
+.modal-body {
+    padding: 0 28px 24px;
+    max-height: 70vh; /* Giới hạn chiều cao và tự động cuộn nếu quá dài */
+    overflow-y: auto;
+}
+
+/* Bảng thông tin chi tiết */
+.info-table {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 25px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 0;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #a0a0a0;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Helper Classes */
+.info-value i {
+    color: #555;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.text-gray {
+    color: #bbb;
+}
+
+.text-dark {
+    color: #111;
+}
+
+/* Care Notes Section */
+.care-notes-section {
+    margin-top: 15px;
+}
+
+.section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #a0a0a0;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.care-logs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Thẻ nhật ký chăm sóc màu xám bo tròn */
+.care-log-item {
+    background: #f8f9fa;
+    border-left: 3px solid #6c757d; /* Viền trái màu xám đặc trưng */
+    padding: 12px 16px;
+    border-radius: 4px 12px 12px 4px;
+}
+
+.log-text {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 4px;
+}
+
+.log-time {
+    font-size: 12px;
+    color: #a0a0a0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Footer Modal */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 15px 28px 24px;
+}
+
+/* Nút Đóng góc dưới */
+.btn-close-action {
+    background: white;
+    border: 1.5px solid #e2e6ea;
+    color: #495057;
+    padding: 10px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-close-action:hover {
+    background: #f8f9fa;
+    border-color: #ced4da;
+    color: #212529;
+}

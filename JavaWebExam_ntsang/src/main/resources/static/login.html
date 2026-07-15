@@ -1,69 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Pet Boarding Login</title>
+    <head>
+        <meta charset="UTF-8">
+        <title>Pet Boarding Login</title>
 
-    <link rel="stylesheet" href="style/login.css">
+        <link rel="stylesheet" href="style/login.css">
 
-</head>
-<body>
-<div class="container">
-    <div class="login-card">
-        <div class="logo">
-            🐾
+    </head>
+    <body>
+        <div class="container">
+            <div class="login-card">
+                <div class="logo">
+                    🐾
+                </div>
+                <h1>
+                    Pet Boarding
+                </h1>
+                <p class="subtitle">
+                    Pet care management system
+                </p>
+                <form action="/login" method="post">
+                    <div class="input-group">
+                        <label>
+                            Phone Number
+                        </label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Enter your username"
+                            required>
+                    </div>
+                    <div class="input-group">
+                        <label>
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required>
+                    </div>
+                    <div class="options">
+                        <label>
+                            <input type="checkbox">
+                            Remember me
+                        </label>
+                    </div>
+                    <button type="submit">
+                        Login
+                    </button>
+                    <p id="message"></p>
+                </form>
+                <div class="footer">
+                    <span>
+                        🐶 Caring pets, happy owners
+                    </span>
+                </div>
+            </div>
         </div>
-        <h1>
-            Pet Boarding
-        </h1>
-        <p class="subtitle">
-            Pet care management system
-        </p>
-        <form action="/login" method="post">
-            <div class="input-group">
-                <label>
-                    Phone Number
-                </label>
-                <input 
-                    type="text"
-                    id="username"
-					name="username"
-                    placeholder="Enter your username"
-                    required
-                >
+        <!-- ================= MODAL DETAIL ================= -->
+        <div class="modal-overlay" id="detailModal">
+            <div class="modal-container">
+                <!-- Header -->
+                <div class="modal-header">
+                    <h2>Chi tiết phiếu gửi</h2>
+                    <button class="modal-close-btn" onclick="closeModal()">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <!-- Table Info -->
+                    <div class="info-table">
+                        <div class="info-row">
+                            <span class="info-label">THÚ CƯNG</span>
+                            <span class="info-value"><i
+                                    class="fa-solid fa-paw"></i> Milo
+                                (Dog)</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">CHECK-IN</span>
+                            <span class="info-value">20/05/2025</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">THỰC TẾ TRẢ</span>
+                            <span class="info-value">—</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">SỐ NGÀY</span>
+                            <span class="info-value font-bold">4 ngày</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">TỔNG PHÍ</span>
+                            <span class="info-value text-gray">Chưa tính</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">TRẠNG THÁI</span>
+                            <span class="info-value">
+                                <span class="status boarding">● Đang gửi</span>
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">GHI CHÚ</span>
+                            <span class="info-value font-bold text-dark">Cho ăn
+                                2 lần/ngày, không ăn xúc xích</span>
+                        </div>
+                    </div>
+
+                    <!-- Care Notes Section -->
+                    <div class="care-notes-section">
+                        <h4 class="section-title">
+                            <i class="fa-regular fa-pen-to-square"></i> GHI CHÚ
+                            CHĂM SÓC
+                        </h4>
+
+                        <div class="care-logs">
+                            <!-- Log Item 1 -->
+                            <div class="care-log-item">
+                                <p class="log-text">Milo đã được tắm buổi sáng,
+                                    rất vui vẻ</p>
+                                <span class="log-time"><i
+                                        class="fa-regular fa-clock"></i>
+                                    20/05/2025 09:30</span>
+                            </div>
+                            <!-- Log Item 2 -->
+                            <div class="care-log-item">
+                                <p class="log-text">Ăn hết khẩu phần trưa, chơi
+                                    đùa với nhân viên</p>
+                                <span class="log-time"><i
+                                        class="fa-regular fa-clock"></i>
+                                    20/05/2025 12:15</span>
+                            </div>
+                            <!-- Log Item 3 -->
+                            <div class="care-log-item">
+                                <p class="log-text">Ngủ ngoan buổi chiều</p>
+                                <span class="log-time"><i
+                                        class="fa-regular fa-clock"></i>
+                                    20/05/2025 15:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button class="btn-close-action"
+                        onclick="closeModal()">Đóng</button>
+                </div>
             </div>
-            <div class="input-group">
-                <label>
-                    Password
-                </label>
-                <input 
-                    type="password"
-                    id="password"
-					name="password"
-                    placeholder="Enter your password"
-                    required
-                >
-            </div>
-            <div class="options">
-                <label>
-                    <input type="checkbox">
-                    Remember me
-                </label>
-            </div>
-          <button type="submit">
-                Login
-            </button>
-            <p id="message"></p>
-        </form>
-        <div class="footer">
-            <span>
-                🐶 Caring pets, happy owners
-            </span>
         </div>
-    </div>
-</div>
-<script src="js/login.js"></script>
-</body>
+        <script src="js/login.js"></script>
+    </body>
 
 </html>

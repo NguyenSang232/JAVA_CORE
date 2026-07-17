@@ -6,6 +6,7 @@ Branch: `java-web/exam`
 ## 1. Nhật ký hàng ngày
 > Bắt buộc cập nhật mỗi ngày làm việc trước khi commit (theo yêu cầu đề bài).          
 ### Day 1 — 13/07/2026
+
 - **Đã làm:** 
 + Tìm hiểu về thiết kế dữ liệu, xem luồng hoạt động của dữ liệu và giao diện mẫu.
 + Viết các file entity và response, mapper.xml
@@ -63,8 +64,33 @@ Hiện tại chưa có cột expected_day để xác định được ngày tr�
 + D2 Xem danh sách ghi chú của một phiếu gửi
 - **Khó khăn:** Vấn đề về giá gửi cho từng loại thú cưng cho từng ngày hiện tại vẫn chưa chắc chắn.
 - **Cách giải quyết:** Ban đầu sẽ tạo Entity giá cho từng nhóm động vật (hiện tại vẫn chưa chốt vì vẫn còn chạy thử dữ liệu trên swagger
-**Commit:** `[Day 3] ...`
+**Commit:** `[29a9621]`
+### Day 4 — 16/07/2026
+- **Đã làm:** 
+- Thực hiện cơ bản giao diện thống kê:
++ Giao diện quản lý chung (tổng số người dùng, biểu đồ thống kê).
++ Giao diện quản lý Chủ nuôi, Thú nuôi.
++ Kết hợp các API thực hiện tương tác với giao diện trong phần Pets.
++ Các phần như Owner, CareNote, BorardingRecord đã viết các giao diện và gọi API nhưng chưa chạy hết các trường hợp, chưa validation các trường dữ liệu khi
+thực hiện các thao tác.
++ Tách file .js ra thành nhiều file nhỏ ở tương ứng với mỗi màn hình để dễ dàng quản lý cũng như chỉnh sửa sau này.
+- **Khó khăn:** Các chức năng sắp xếp, lọc hiện tại chỉ load dữ liệu một lần ròi thực hiện trên đó chưa có lấy dữ liệu trực tiếp từ API
+- **Cách giải quyết:** Ngày mai sẽ tiếp tục thực hiện hoàn chỉnh các chức năng, Thực hiện sắp xếp, tìm kiếm dựa trên dữ liệu từ API.
++ Tiếp tục hoàn chỉnh giao diện.
+**Commit:** `[a21bd43]`
 
+### Day 5 — 17/07/2026
+- **Đã làm:** 
+- Thực hiện cơ bản giao diện thống kê:
++ Update Giao diện quản lý chung (tổng số người dùng, biểu đồ thống kê).
++ Update Giao diện quản lý Chủ nuôi, Thú nuôi.
++ Kết hợp các API thực hiện tương tác với giao diện trong phần Pets và Owner.
++ Kết hợp khoảng 60% các API đã viết kết hợp với giao diện.
+- **Khó khăn:** Chưa phân quyền cho role ADMIN, hiện tại đang permitAll().
+- **Cách giải quyết:** Sẽ tạo một bảng đơn giá cho từng loại vật dựa trên giá trả đúng hạn của data sample mẫu. 
+Chỗ dữ liệu mẫu em thấy cho một comment là no discount ==> có thể sẽ thêm trường tích điểm cho owners. Ví dụ nếu số tiền tích lũy trên 3tr thì sẽ giảm 3%,
+5tr là 5% và trên 10tr là sẽ 10%.
+**Commit:** `[Day5]`
 ## 2. Quyết định thiết kế (các phần đề không đặc tả đầy đủ)
 > Schema và quyết định cách làm.
 > Miễn là **nhất quán** và **giải thích được lý do** ở đây.
@@ -80,8 +106,9 @@ Thêm chức năng xóa nếu xóa cứng thì sẽ mất thông tin ở các b�
 + Bảng boarding_records: Vì theo giao diện mẫu lúc tạo chi tiết phiếu gửi có để trống chỗ "Thời gian trả thực tế" nên cần thêm cột updated_at để lấy thống kê và hiển thị được thông tin chính xác nhất.
 - **Thay đổi schema (nếu có):** 
 + pets: thêm updated_at, deleted_at
-+ owner: thêm updated_at, deleted_at.
++ owner: thêm updated_at, deleted_at. (dự định sẽ thêm cột customer_money)
 + boarding_records: thêm updated_at, price_per_day, expected_return;
 + users: có thể sẽ thêm updated_at, delete_at.
++ price: quan hệ 1 - 1 với bảng pets
 ## 3. Ghi chú kỹ thuật khác
 - Điểm chưa hoàn thành hoặc biết còn lỗi (nếu deadline không đủ thời gian).

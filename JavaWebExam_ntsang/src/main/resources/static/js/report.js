@@ -4,14 +4,15 @@
 window.onload = function () {
     showDashboard();
 };
-
 /* =====================================================
    SHOW DASHBOARD
 ===================================================== */
-async function showDashboard() {
-    setActiveMenu("menu-dashboard");
+async function showReports() {
+    setActiveMenu("menu-reports");
+
     const mainView = document.getElementById("content");
     if (!mainView) return;
+
     mainView.innerHTML = `
         <div class="dashboard-container">
             <header class="dashboard-header">
@@ -68,7 +69,6 @@ async function showDashboard() {
                         <h4>Doanh thu</h4>
                     </div>
                 </div>
-
                 <div class="summary-card">
                     <div class="card-top">
                         <div class="icon-wrapper">📝</div>
@@ -86,44 +86,21 @@ async function showDashboard() {
                 <!-- PANEL TRÁI: PHIẾU GỬI GẦN ĐÂY -->
                 <div class="panel">
                     <div class="panel-title-area">
-                        <h3>Phiếu gửi gần đây <span class="count-badge" id="recent-count">0</span></h3>
-                        <div class="filter-group">
-                            <button class="filter-btn active" onclick="filterRecent('ALL', this)">Tất cả</button>
-                            <button class="filter-btn" onclick="filterRecent('BOARDING', this)">Đang gửi</button>
-                            <button class="filter-btn" onclick="filterRecent('RETURNED', this)">Đã trả</button>
-                        </div>
+                        <h3>Doanh thu theo tháng </h3>
                     </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Thú cưng</th>
-                                <th>Chủ nuôi</th>
-                                <th>Check-in</th>
-                                <th>Trạng thái</th>
-                                <th>Phí</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="recent-boarding">
-                            <tr>
-                                <td colspan="6" style="text-align: center;">Đang tải dữ liệu...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+					<div class="panel">
+					  <div class="chart-header">
+					   <h3 id="chart-year-title">Doanh thu 2026</h3>
+					   <span class="total-amount" id="chart-total-amount">0đ</span>
+					   </div>
+					   <div class="chart-body">
+					    <canvas id="boardingChart"></canvas>
+					    </div>
+					    </div>
                 </div>
 
                 <!-- PANEL PHẢI: BIỂU ĐỒ & BẢNG TIẾN TRÌNH PHÂN BỐ -->
                 <div class="right-dashboard">
-                    <!-- BIỂU ĐỒ DOANH THU -->
-                    <div class="panel">
-                        <div class="chart-header">
-                            <h3 id="chart-year-title">Doanh thu 2026</h3>
-                            <span class="total-amount" id="chart-total-amount">0đ</span>
-                        </div>
-                        <div class="chart-body">
-                            <canvas id="boardingChart"></canvas>
-                        </div>
-                    </div>
 
                     <!-- PHÂN BỐ LOÀI THÚ CƯNG (PROGRESS BARS) -->
                     <div class="panel">
@@ -344,154 +321,13 @@ function drawPetTypeChart(data) {
 /* =====================================================
    ACTIVE MENU
 ===================================================== */
-/* =====================================================
-   BOARDING MODAL LOGIC (JAVASCRIPT)
-===================================================== */
-
-/**
- * Mở modal tạo phiếu gửi và nạp danh sách thú cưng từ API
- */
-async function openBoardingModal() {
-    const modal = document.getElementById("boarding-modal");
-    const petSelect = document.getElementById("modal-pet-select");
-    const ownerInput = document.getElementById("modal-owner-name");
-    const form = document.getElementById("boarding-form");
-    
-    if (!modal || !petSelect) return;
-
-    // Reset lại toàn bộ form và ô nhập liệu
-    form.reset();
-    if (ownerInput) ownerInput.value = "";
-    
-    // Đặt ngày Check-in mặc định là ngày hôm nay
-    const today = new Date().toISOString().split('T')[0];
-    const checkInInput = document.getElementById("modal-check-in");
-    if (checkInInput) checkInInput.value = today;
-
-    // Hiển thị modal bằng cách đổi display sang flex (khớp với CSS .modal-overlay mới tách)
-    modal.style.display = "flex";
-
-    try {
-        // Gọi API lấy danh sách thú cưng
-        const response = await fetch(API.pets);
-        const allPets = await response.json();
-
-        // Lọc bỏ những thú cưng đang trong trạng thái gửi ("BOARDING") để tránh trùng lặp
-        const activePetIds = boardings
-            .filter(b => b.status === "BOARDING")
-            .map(b => b.petId);
-
-        const availablePets = allPets.filter(p => !activePetIds.includes(p.id));
-
-        // Nạp danh sách thú cưng vào thẻ select
-        petSelect.innerHTML = `
-            <option value="">-- Chọn thú cưng --</option>
-            ${availablePets.map(p => `
-                <option value="${p.id}" data-owner-id="${p.ownerId}">${p.name} (${p.type})</option>
-            `).join("")}
-        `;
-    } catch (error) {
-        console.error("Lỗi khi tải danh sách thú cưng vào modal:", error);
-        showToast("Không thể tải danh sách thú cưng", "error");
-    }
-}
-
-/**
- * Đóng modal tạo phiếu gửi
- */
-function closeBoardingModal() {
-    const modal = document.getElementById("boarding-modal");
-    if (modal) {
-        modal.style.display = "none";
-    }
-}
-
-/**
- * Tự động tìm và hiển thị tên chủ nuôi khi chọn thú cưng
- */
-async function onModalPetChange() {
-    const petSelect = document.getElementById("modal-pet-select");
-    const ownerInput = document.getElementById("modal-owner-name");
-    
-    if (!petSelect || !ownerInput) return;
-
-    const selectedOption = petSelect.options[petSelect.selectedIndex];
-    const ownerId = selectedOption.getAttribute("data-owner-id");
-
-    if (!ownerId) {
-        ownerInput.value = "";
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API.owners}/${ownerId}`);
-        const owner = await response.json();
-        ownerInput.value = owner ? owner.name : "Không xác định";
-    } catch (error) {
-        ownerInput.value = "Lỗi tải thông tin chủ nuôi";
-        console.error("Lỗi truy xuất thông tin chủ nuôi:", error);
-    }
-}
-
-/**
- * Xử lý sự kiện submit form - Gửi dữ liệu phiếu mới lên server
- */
-async function saveBoarding(event) {
-    event.preventDefault();
-
-    const petSelect = document.getElementById("modal-pet-select");
-    const petId = Number(petSelect.value);
-    
-    if (!petId) {
-        showToast("Vui lòng chọn một thú cưng hợp lệ!", "error");
-        return;
-    }
-
-    // Phân tích thông tin thú cưng được chọn
-    const selectedOption = petSelect.options[petSelect.selectedIndex];
-    const petText = selectedOption.text; 
-    const petName = petText.split(" (")[0];
-    
-    // Xác định icon/loài dựa trên text hiển thị
-    let petType = "Other";
-    if (petText.toLowerCase().includes("dog")) petType = "Dog";
-    else if (petText.toLowerCase().includes("cat")) petType = "Cat";
-    else if (petText.toLowerCase().includes("bird")) petType = "Bird";
-    else if (petText.toLowerCase().includes("rabbit")) petType = "Rabbit";
-
-    // Xây dựng Object dữ liệu gửi lên API
-    const newBoarding = {
-        petId: petId,
-        petName: petName,
-        petType: petType,
-        ownerName: document.getElementById("modal-owner-name").value,
-        checkInDate: document.getElementById("modal-check-in").value,
-        expectedReturn: document.getElementById("modal-expected-return").value,
-        totalFee: Number(document.getElementById("modal-total-fee").value) || 0,
-        status: "BOARDING",
-        createdAt: new Date().toISOString()
-    };
-
-    try {
-        const response = await fetch(API.boarding, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(newBoarding)
-        });
-
-        if (response.ok) {
-            showToast("Tạo phiếu gửi thú cưng thành công!", "success");
-            closeBoardingModal();
-            
-            // Tải lại toàn bộ dữ liệu trên Dashboard để cập nhật bảng và biểu đồ tức thì
-            await loadDashboardData(); 
-        } else {
-            showToast("Không thể tạo phiếu gửi. Vui lòng thử lại!", "error");
-        }
-    } catch (error) {
-        console.error("Lỗi kết nối khi lưu phiếu gửi:", error);
-        showToast("Lỗi kết nối đến máy chủ", "error");
+function setActiveMenu(id) {
+    const menus = document.querySelectorAll(".sidebar li");
+    menus.forEach(item => {
+        item.classList.remove("active");
+    });
+    const current = document.getElementById(id);
+    if (current) {
+        current.classList.add("active");
     }
 }

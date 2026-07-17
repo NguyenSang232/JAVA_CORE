@@ -29,8 +29,7 @@
         INSERT INTO boarding_records (
             pet_id,
             check_in_date,
-            expected_day,
-            price_per_day,
+            expected_day,       
             base_fee,
             status,
             notes,
@@ -39,8 +38,7 @@
         ) VALUES (
             #{petId},
             #{checkInDate},
-            #{expectedReturn},
-            #{pricePerDay},
+            #{expectedReturn},    
             #{baseFee},
             'BOARDING',
             #{notes},

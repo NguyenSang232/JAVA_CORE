@@ -13,13 +13,7 @@ public class BoardingRecordRequestDTO {
 
 	private LocalDate expectedReturn;
 
-	private Long pricePerDay;
-
 	private Long baseFee;
-
-	private Long lateFee;
-
-	private Long totalFee;
 
 	private String status;
 
@@ -30,16 +24,12 @@ public class BoardingRecordRequestDTO {
 	}
 
 	public BoardingRecordRequestDTO(Long petId, LocalDate checkInDate, LocalDate expectedReturn, Long pricePerDay,
-			Long baseFee, Long lateFee, Long totalFee, String status, String notes,
-			List<CareNoteResponseDTO> careNotes) {
+			Long baseFee, String status, String notes, List<CareNoteResponseDTO> careNotes) {
 		super();
 		this.petId = petId;
 		this.checkInDate = checkInDate;
 		this.expectedReturn = expectedReturn;
-		this.pricePerDay = pricePerDay;
 		this.baseFee = baseFee;
-		this.lateFee = lateFee;
-		this.totalFee = totalFee;
 		this.status = status;
 		this.notes = notes;
 	}
@@ -68,36 +58,12 @@ public class BoardingRecordRequestDTO {
 		this.expectedReturn = expectedReturn;
 	}
 
-	public Long getPricePerDay() {
-		return pricePerDay;
-	}
-
-	public void setPricePerDay(Long pricePerDay) {
-		this.pricePerDay = pricePerDay;
-	}
-
 	public Long getBaseFee() {
 		return baseFee;
 	}
 
 	public void setBaseFee(Long baseFee) {
 		this.baseFee = baseFee;
-	}
-
-	public Long getLateFee() {
-		return lateFee;
-	}
-
-	public void setLateFee(Long lateFee) {
-		this.lateFee = lateFee;
-	}
-
-	public Long getTotalFee() {
-		return totalFee;
-	}
-
-	public void setTotalFee(Long totalFee) {
-		this.totalFee = totalFee;
 	}
 
 	public String getStatus() {

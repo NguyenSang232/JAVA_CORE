@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import training.javaweb.exam.dto.request.PetRequestDTO;
 import training.javaweb.exam.dto.response.PetResponseDTO;
@@ -30,7 +32,16 @@ public class PetService {
 	}
 
 	public PetResponseDTO findDetail(Long id) {
-		return petRepository.findDetail(id);
+		if (id == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID thú cưng không hợp lệ!");
+		}
+		PetResponseDTO pet = petRepository.findDetail(id);
+		if (pet == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"Thú cưng với ID " + id + " không tồn tại hoặc đã bị xóa khỏi hệ thống!");
+		}
+
+		return pet;
 	}
 
 	public PetResponseDTO update(Long id, PetRequestDTO request) {

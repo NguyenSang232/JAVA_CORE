@@ -49,11 +49,11 @@ public class BoardingRecordController {
 		return ResponseEntity.ok(boardingRecordService.getDetail(id));
 	}
 
-	@PutMapping("/{id}/checkout")
+	@PutMapping("/checkout/{id}")
 	@Operation(summary = "C4 Checkout boarding record", description = "Checkout để nhận thú cưng")
 	public ResponseEntity<BoardingRecordResponseDTO> checkOut(@PathVariable Long id,
 			@RequestBody CheckOutRequestDTO request) {
-		boardingRecordService.checkOut(id, request.getActualCheckOut());
+		boardingRecordService.checkOut(id, request.getActualCheckOut(), request.getBaseFee());
 		BoardingRecordResponseDTO response = boardingRecordService.getDetail(id);
 		return ResponseEntity.ok(response);
 	}

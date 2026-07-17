@@ -106,17 +106,14 @@ body {
     text-align: center;
 }
 
-/* Hiệu ứng di chuột (Hover) & Trạng thái đang kích hoạt (Active) */
-.sidebar a:hover,
-.sidebar a.active {
+.menu a:hover,
+.menu a.active {
     background: rgba(255, 255, 255, 0.15);
     color: #ffffff;
-    transform: translateX(4px); /* Nhích nhẹ sang phải tạo cảm giác phản hồi tốt */
+    transform: translateX(4px); 
 }
-
-/* Biến đổi riêng nút Logout nằm tách biệt ở cuối */
 #menu-logout {
-    margin-top: auto; /* Đẩy nút logout xuống tận cùng sidebar */
+    margin-top: auto;
     color: #ff8a80;
 }
 
@@ -135,292 +132,159 @@ body {
     padding: 30px;
     transition: all 0.3s ease;
 }
-/* ==========================================================================
-   3. DASHBOARD COMPONENTS
-   ========================================================================== */
-
-/* Header Topbar */
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+/* Custom cho Modal Chi Tiết */
+.boarding-detail-box {
+    width: 450px;
+    max-width: 90%;
+    border-radius: 20px; /* Bo góc tròn mịn như ảnh */
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
-.topbar h1 {
-  font-size: 32px;
-  color: #1e3c72;
-}
-
-.topbar p {
-  color: #777;
-  margin-top: 5px;
-}
-
-/* Statistics Cards Grid */
-.cards {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.card {
-  background: white;
-  padding: 20px;
-  border-radius: 18px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  transition: 0.3s;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-}
-
-.card i {
-  width: 45px;
-  height: 45px;
-  border-radius: 12px;
-  background: #e3f2fd;
-  color: #1e88e5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.card h2 {
-  font-size: 28px;
-  color: #1e3c72;
-}
-
-.card p {
-  color: #888;
-  font-size: 13px;
-  font-weight: 600;
-  margin-top: 2px;
-}
-
-/* Dashboard Content Grid */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 25px;
-}
-
-/* Panels */
-.panel {
-  background: white;
-  padding: 25px;
-  border-radius: 18px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-  margin-bottom: 25px;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.total-inf{
-	display: flex;
-	flex-direction: row;
-}
-.panel-header h3 {
-  color: #1e3c72;
-  font-size: 18px;
-}
-
-/* Filter Buttons */
-.filter {
-  display: flex;
-  gap: 8px;
-}
-
-.filter button {
-  border: none;
-  padding: 6px 15px;
-  border-radius: 20px;
-  background: #f1f3f5;
-  color: #555;
-  font-weight: 500;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.filter button:hover {
-  background: #e2e6ea;
-}
-
-/* Data Tables */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th {
-  background: #f6f8fc;
-  padding: 12px;
-  text-align: left;
-  color: #777;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-td {
-  padding: 14px 12px;
-  border-bottom: 1px solid #eee;
-  font-size: 14px;
-}
-
-
-tbody tr:hover {
-  background: #f8fbff;
-}
-/* Status Badges */
-.status {
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  display: inline-block;
-}
-
-.status.boarding {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.status.returned {
-  background: #d4edda;
-  color: #155724;
-}
-
-/* Pet Distribution Progress Bars */
-.pet-row {
-  display: flex;
-  justify-content: space-between;
-  margin: 15px 0 8px;
-  font-size: 14px;
-}
-
-.progress {
-  width: 100%;
-  height: 6px;
-  background: #eee;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.progress div {
-  height: 100%;
-  background: #283048;
-  border-radius: 10px;
-}
-
-/* Charts styling */
-canvas {
-  max-height: 280px;
-  width: 100%;
-}
-
-/* ==========================================================================
-   4. LOGIN PAGE VIEW (Tách biệt hoàn toàn để tránh đè layout)
-   ========================================================================== */
-
-.login-page {
-  height: 100vh;
-  background: linear-gradient(rgba(46, 125, 50, 0.75), rgba(46, 125, 50, 0.75)),
-    url("https://images.unsplash.com/photo-1450778869180-41d0601e046e");
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.login-page .container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.login-card {
-  width: 400px;
-  background: white;
-  padding: 40px;
-  border-radius: 25px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-  text-align: center;
-}
-
-.login-card .logo {
-  font-size: 60px;
-  margin-bottom: 10px;
-}
-
-.login-card h1 {
-  color: #2e7d32;
-  font-size: 32px;
-  margin-bottom: 20px;
-}
-
-/* ==========================================================================
-   5. RESPONSIVE (MEDIA QUERIES)
-   ========================================================================== */
-
-@media (max-width: 1400px) {
-  .cards {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 992px) {
-  .sidebar {
-    width: 80px;
-    padding: 25px 5px;
-  }
-
-  .sidebar li {
-    justify-content: center;
-    padding: 0;
-  }
-
-  .sidebar li span {
-    display: none; /* Ẩn chữ menu ở màn hình vừa và nhỏ */
-  }
-
-  .content {
-    margin-left: 80px;
-    width: calc(100% - 80px);
-  }
-
-  .cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 576px) {
-  .cards {
-    grid-template-columns: 1fr;
-  }
-
-  .topbar {
+/* Grid thông tin hàng ngang */
+.detail-info-grid {
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
+    gap: 12px;
+    margin-bottom: 20px;
+}
 
-  .login-card {
-    width: 90%;
-    padding: 25px;
-  }
+.detail-row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.detail-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #999;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 14px;
+    color: #111;
+    font-weight: 500;
+}
+
+/* Khu vực ghi chú chăm sóc */
+.care-notes-section {
+    margin-top: 24px;
+}
+
+.care-notes-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: #bbb;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+}
+
+.care-notes-list {
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+/* Item ghi chú chăm sóc giống trong ảnh */
+.care-note-item {
+    background: #f5f5f7;
+    border-left: 3px solid #666;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.care-note-content {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111;
+}
+
+.care-note-time {
+    font-size: 11px;
+    color: #aaa;
+}
+
+/* Khung nhập ghi chú nhanh */
+.care-note-input-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.care-note-input-group input {
+    flex: 1;
+    border: 1px solid #e5e5e7;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    outline: none;
+    transition: border 0.2s;
+}
+
+.care-note-input-group input:focus {
+    border-color: #999;
+}
+
+.btn-add-care-note {
+    background: #555558;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-add-care-note:hover {
+    background: #333;
+}
+
+/* Footer điều hướng */
+.modal-actions-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    border-top: 1px solid #eee;
+    padding-top: 16px;
+}
+
+.btn-footer-close {
+    background: #fff;
+    border: 1px solid #e5e5e7;
+    color: #555;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-footer-close:hover {
+    background: #f5f5f7;
+}
+
+.btn-footer-checkout {
+    background: #555558;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-footer-checkout:hover {
+    background: #333;
 }

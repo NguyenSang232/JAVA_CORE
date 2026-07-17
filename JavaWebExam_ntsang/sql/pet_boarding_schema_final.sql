@@ -66,9 +66,9 @@ CREATE TABLE boarding_records (
 ALTER TABLE boarding_records
 add COLUMN updated_at datetime;
 ALTER TABLE boarding_records
-add COLUMN price_per_day BIGINT;
-ALTER TABLE boarding_records
 add COLUMN expected_day datetime;
+ALTER TABLE boaring_records 
+add COLUMN price_per_day
 -- ================================================================
 -- TABLE: care_notes
 -- ================================================================

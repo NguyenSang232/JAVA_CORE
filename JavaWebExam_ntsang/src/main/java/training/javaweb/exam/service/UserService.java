@@ -3,6 +3,7 @@ package training.javaweb.exam.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import training.javaweb.exam.dto.request.UserRequestDTO;
 import training.javaweb.exam.dto.response.UserResponseDTO;
@@ -20,13 +21,22 @@ public class UserService {
 	private PasswordEncoder passwordEncoder;
 
 	// ==================== Create ====================
-	public UserResponseDTO create(UserRequestDTO dto) {
-		User user = toEntity(dto);
-		user.setPassword(passwordEncoder.encode(dto.getPassword()));
-		user.setEnabled(true);
-		userRepository.insert(user);
-		return toDTO(userRepository.findById(user.getId()));
-	}
+@Transactional // BẮT BUỘC: Đảm bảo dữ liệu được commit đồng bộ
+    public UserResponseDTO create(UserRequestDTO dto) {
+        User user = toEntity(dto);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setEnabled(true);
+        
+        // Kiểm tra xem dữ liệu ownerId truyền từ JS xuống đã có chưa
+        if (dto.getOwnerId() == null) {
+            throw new IllegalArgumentException("ownerId không được để trống!");
+        }
+        user.setOwnerId(dto.getOwnerId()); // Đảm bảo trường owner_id được gán trọn vẹn
+        
+        // Thực hiện chèn vào DB. MyBatis tự sinh id của USER (ví dụ sinh ra id = 1)
+        userRepository.insert(user); 
+        return toDTO(user); 
+    }
 
 	// ==================== Get By Id ====================
 	public UserResponseDTO getById(Long id) {
@@ -40,6 +50,10 @@ public class UserService {
 	// ==================== Find Username ====================
 	public User findByUsername(String username) {
 		return userRepository.findByUsername(username);
+	}
+	 public UserResponseDTO findByOwnerId(Long ownerId) {
+		User getOnwer = userRepository.findByOwnerId(ownerId);
+		return toDTO(getOnwer);
 	}
 
 	// ==================== Check Owner ====================

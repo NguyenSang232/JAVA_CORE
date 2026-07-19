@@ -113,7 +113,7 @@ async function renderBoardingTable(data) {
             const statusText = record.status === "BOARDING" ? "Đang gửi" : "Đã trả";
             const feeText = record.status === "RETURNED" || record.totalFee > 0 ? formatMoney(record.totalFee) : "—";
             return `
-                <tr style="cursor: pointer;" onclick="event.stopPropagation(); showBoardingDetail(${record.id})">
+                <tr style="cursor: pointer;" onclick="showBoardingDetail(${record.id})">
                     <td>${record.id}</td>
                     <td>
                         <div class="pet-cell">
@@ -134,7 +134,7 @@ async function renderBoardingTable(data) {
                     <td>
                         <div class="action-group" onclick="event.stopPropagation();">
                             ${checkoutBtn}
-                            <button class="action-btn edit" title="Chỉnh sửa" onclick="editBoarding(${record.id})">✏️</button>
+                            <button class="action-btn edit" title="Chỉnh sửa" onclick="event.stopPropagation(); editBoarding(${record.id})">✏️</button>
                             <button class="action-btn delete" title="Xóa" onclick="deleteBoarding(${record.id})">🗑️</button>
                         </div>
                     </td>
@@ -275,7 +275,7 @@ async function openBoardingModal(record = null) {
         const response = await fetch(API.pets);
         const allPets = await response.json();
 
-        const activePetIds = boardingRecords
+        const activePetIds = boardings
             .filter(b => b.status === "BOARDING" && (!record || b.id !== record.id))
             .map(b => b.petId);
 

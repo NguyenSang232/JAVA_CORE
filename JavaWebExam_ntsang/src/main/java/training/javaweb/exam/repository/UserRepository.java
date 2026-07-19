@@ -25,6 +25,10 @@ public class UserRepository {
 		return userMapper.countByOwnerId(ownerId);
 	}
 
+	public User findByOwnerId(Long id) {
+		return userMapper.findByOwnerId(id);
+	}
+
 	public void updatePassword(Long id, String password) {
 		userMapper.updatePassword(id, password);
 	}

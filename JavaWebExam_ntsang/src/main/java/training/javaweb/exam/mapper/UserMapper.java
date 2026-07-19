@@ -20,4 +20,5 @@ public interface UserMapper {
 
 	User findById(Long id);
 
+	User findByOwnerId(Long id);
 }

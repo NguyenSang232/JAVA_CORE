@@ -1,17 +1,16 @@
-/* =====================================================
-   INIT
-===================================================== */
 window.onload = function () {
     showDashboard();
 };
-
 /* =====================================================
    SHOW DASHBOARD
 ===================================================== */
+
 async function showDashboard() {
-    setActiveMenu("menu-dashboard");
+    if (typeof setActiveMenu === "function") setActiveMenu("menu-dashboard");
+    
     const mainView = document.getElementById("content");
     if (!mainView) return;
+    
     mainView.innerHTML = `
         <div class="dashboard-container">
             <header class="dashboard-header">
@@ -19,16 +18,11 @@ async function showDashboard() {
                 <button class="btn-create" onclick="openBoardingModal()">+ Tạo phiếu gửi</button>
             </header>
 
-            <div class="dashboard-tabs">
-                <div class="tab-item">Tổng quan</div>
-            </div>
-
-            <!-- HÀNG THẺ TỔNG HỢP (SUMMARY CARDS) -->
             <section class="summary-cards">
                 <div class="summary-card">
                     <div class="card-top">
                         <div class="icon-wrapper">👤</div>
-                        <div class="trend-badge">↑ +3</div>
+                        <div class="trend-badge" id="trend-owner" style="display: none;"></div>
                     </div>
                     <div class="card-bottom">
                         <h2 id="total-owner">...</h2>
@@ -39,7 +33,7 @@ async function showDashboard() {
                 <div class="summary-card">
                     <div class="card-top">
                         <div class="icon-wrapper">🐾</div>
-                        <div class="trend-badge">↑ +5</div>
+                        <div class="trend-badge" id="trend-pet" style="display: none;"></div>
                     </div>
                     <div class="card-bottom">
                         <h2 id="total-pet">...</h2>
@@ -61,7 +55,7 @@ async function showDashboard() {
                 <div class="summary-card">
                     <div class="card-top">
                         <div class="icon-wrapper">💰</div>
-                        <div class="trend-badge">↑ +12%</div>
+                        <div class="trend-badge" id="trend-revenue" style="display: none;"></div>
                     </div>
                     <div class="card-bottom">
                         <h2 id="total-revenue">0đ</h2>
@@ -72,18 +66,16 @@ async function showDashboard() {
                 <div class="summary-card">
                     <div class="card-top">
                         <div class="icon-wrapper">📝</div>
-                        <div class="trend-badge">↑ +8</div>
+                        <div class="trend-badge" id="trend-notes" style="display: none;"></div>
                     </div>
                     <div class="card-bottom">
-                        <h2 id="total-notes">7</h2>
+                        <h2 id="total-notes">0</h2>
                         <h4>Ghi chú</h4>
                     </div>
                 </div>
             </section>
 
-            <!-- LƯỚI NỘI DUNG CHÍNH (MAIN CONTENT GRID) -->
             <section class="dashboard-content">
-                <!-- PANEL TRÁI: PHIẾU GỬI GẦN ĐÂY -->
                 <div class="panel">
                     <div class="panel-title-area">
                         <h3>Phiếu gửi gần đây <span class="count-badge" id="recent-count">0</span></h3>
@@ -94,45 +86,21 @@ async function showDashboard() {
                         </div>
                     </div>
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Thú cưng</th>
-                                <th>Chủ nuôi</th>
-                                <th>Check-in</th>
-                                <th>Trạng thái</th>
-                                <th>Phí</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="recent-boarding">
-                            <tr>
-                                <td colspan="6" style="text-align: center;">Đang tải dữ liệu...</td>
-                            </tr>
-                        </tbody>
+                        <thead><tr><th>Thú cưng</th><th>Chủ nuôi</th><th>Check-in</th><th>Trạng thái</th><th>Phí</th><th></th></tr></thead>
+                        <tbody id="recent-boarding"></tbody>
                     </table>
                 </div>
-
-                <!-- PANEL PHẢI: BIỂU ĐỒ & BẢNG TIẾN TRÌNH PHÂN BỐ -->
                 <div class="right-dashboard">
-                    <!-- BIỂU ĐỒ DOANH THU -->
                     <div class="panel">
                         <div class="chart-header">
                             <h3 id="chart-year-title">Doanh thu 2026</h3>
                             <span class="total-amount" id="chart-total-amount">0đ</span>
                         </div>
-                        <div class="chart-body">
-                            <canvas id="boardingChart"></canvas>
-                        </div>
+                        <canvas id="boardingChart"></canvas>
                     </div>
-
-                    <!-- PHÂN BỐ LOÀI THÚ CƯNG (PROGRESS BARS) -->
                     <div class="panel">
-                        <div class="panel-title-area" style="margin-bottom: 10px;">
-                            <h3>Phân bố loài</h3>
-                        </div>
-                        <div class="pet-type-distribution" id="pet-type-container">
-                            <p style="color: #999; font-size: 13px;">Đang tính toán...</p>
-                        </div>
+                        <h3>Phân bố loài</h3>
+                        <div id="pet-type-container"></div>
                     </div>
                 </div>
             </section>
@@ -143,45 +111,90 @@ async function showDashboard() {
 }
 
 /* =====================================================
-   LOAD DASHBOARD DATA
+   LOAD DASHBOARD DATA & TÍNH TOÁN XU HƯỚNG
+===================================================== */
+/* =====================================================
+   LOAD DASHBOARD DATA & TÍNH TOÁN XU HƯỚNG
 ===================================================== */
 async function loadDashboardData() {
     try {
-        const [ownerData, petData, boardingData] = await Promise.all([
+        const [ownerData, petData, boardingData, noteData] = await Promise.all([
             fetch(API.owners).then(res => res.json()),
             fetch(API.pets).then(res => res.json()),
-            fetch(API.boarding).then(res => res.json())
+            fetch(API.boarding).then(res => res.json()),
+            fetch(API.careNotes || '/api/care-notes').then(res => res.json()).catch(() => [])
         ]);
 
-        owners = ownerData;
-        pets = petData;
-        boardings = boardingData;
+        owners = ownerData || [];
+        pets = petData || [];
+        boardings = boardingData || [];
 
-        // Cập nhật các thẻ số liệu tổng quan
+        // 1. Cập nhật số liệu tổng
         document.getElementById("total-owner").textContent = owners.length;
         document.getElementById("total-pet").textContent = pets.length;
+        document.getElementById("total-notes").textContent = noteData.length || 0;
+        document.getElementById("total-boarding").textContent = boardings.filter(i => i.status === "BOARDING").length;
+
+        const totalRevenue = boardings.reduce((sum, item) => sum + (item.totalFee ?? item.baseFee ?? 0), 0);
+        document.getElementById("total-revenue").textContent = formatMoney(totalRevenue);
+        document.getElementById("chart-total-amount").textContent = formatMoney(totalRevenue);
+
+        // 2. Logic tính xu hướng (Hôm nay: 2026-07-19)
+        const today = "2026-07-19";
+
+        // Hàm hỗ trợ kiểm tra và lọc ngày an toàn
+        const isDateToday = (dateStr) => {
+            if (!dateStr) return false;
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return false; // Tránh lỗi Invalid time
+            return d.toISOString().split('T')[0] === today;
+        };
+
+        // Tính toán các chỉ số xu hướng
+        const newOwners = owners.filter(i => isDateToday(i.createdAt)).length;
+        const newPets = pets.filter(i => isDateToday(i.createdAt)).length;
+        const newNotes = noteData.filter(i => isDateToday(i.createdAt)).length;
         
-        const currentBoarding = boardings.filter(item => item.status === "BOARDING").length;
-        document.getElementById("total-boarding").textContent = currentBoarding;
+        const revToday = boardings
+            .filter(i => isDateToday(i.checkInDate))
+            .reduce((s, i) => s + (i.totalFee || i.baseFee || 0), 0);
 
-        const revenue = boardings.reduce((sum, item) => sum + (item.totalFee ?? 0), 0);
-        document.getElementById("total-revenue").textContent = formatMoney(revenue);
-        document.getElementById("chart-total-amount").textContent = formatMoney(revenue);
+        // Render kết quả
+        renderSimpleTrend("trend-owner", newOwners);
+        renderSimpleTrend("trend-pet", newPets);
+        renderSimpleTrend("trend-notes", newNotes);
+        renderSimpleTrend("trend-revenue", revToday, true);
 
-        // Đổ dữ liệu vào bảng và biểu đồ
-        renderRecentBoarding(boardings);
+        // Render các thành phần còn lại
+        renderRecent(boardings);
         drawBoardingChart(boardings);
         drawPetTypeChart(pets);
-    } catch (error) {
-        console.error("Dashboard error:", error);
-        showToast("Không thể tải dữ liệu Dashboard", "error");
+
+    } catch (e) {
+        console.error("Dashboard error:", e);
     }
 }
 
+function renderSimpleTrend(id, val, isMoney = false) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    // Luôn hiển thị để bạn biết hệ thống đã chạy
+    el.style.display = "inline-block";
+    
+    // Nếu > 0 thì hiện màu xanh, nếu = 0 thì hiện màu xám trung tính
+    if (val > 0) {
+        el.textContent = isMoney ? `+${formatMoney(val)}` : `+${val}`;
+        el.style.color = "#15803d"; // Màu xanh
+    } else {
+        el.textContent = "+0";
+        el.style.color = "#999999"; // Màu xám
+    }
+}
 /* =====================================================
    RENDER RECENT BOARDING
 ===================================================== */
-function renderRecentBoarding(data) {
+function renderRecent(data) {
     const tableBody = document.getElementById("recent-boarding");
     const countBadge = document.getElementById("recent-count");
     if (!tableBody) return;
@@ -192,16 +205,16 @@ function renderRecentBoarding(data) {
         return;
     }
 
-    // Sắp xếp lấy 5 phiếu gửi mới tạo gần đây nhất
+    // Sắp xếp lấy 5 phiếu gửi mới tạo gần đây nhất (Phòng ngừa trường hợp createdAt bị thiếu)
     const recent = [...data]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
         .slice(0, 5);
 
     if (countBadge) countBadge.textContent = recent.length;
 
     tableBody.innerHTML = recent.map(item => {
         const statusText = item.status === "BOARDING" ? "Đang gửi" : "Đã trả";
-        const feeText = item.status === "RETURNED" ? formatMoney(item.totalFee) : "—";
+        const feeText = item.status === "RETURNED" ? formatMoney(item.totalFee ?? item.baseFee) : "—";
         const petIcon = typeof getPetIcon === "function" ? getPetIcon(item.petType) : "🐾";
 
         return `
@@ -211,14 +224,14 @@ function renderRecentBoarding(data) {
                         <div class="pet-avatar-mini">${petIcon}</div>
                         <div class="pet-meta">
                             <strong>${item.petName ?? "Thú cưng"}</strong>
-                            <small>${item.petBreed ?? "Giống loại"}</small>
+                            <small>${item.petBreed ?? item.petType ?? "Giống loại"}</small>
                         </div>
                     </div>
                 </td>
                 <td class="owner-cell">${item.ownerName ?? "Người dùng"}</td>
                 <td>${formatDate(item.checkInDate)}</td>
                 <td>
-                    <span class="status-oval">${statusText}</span>
+                    <span class="status-oval status-${(item.status ?? 'boarding').toLowerCase()}">${statusText}</span>
                 </td>
                 <td class="fee-cell">${feeText}</td>
                 <td>
@@ -230,28 +243,27 @@ function renderRecentBoarding(data) {
 }
 
 /* =====================================================
-   FILTER RECENT (HÀM BỔ TRỢ BỘ LỌC TẠI CHỖ)
+   FILTER RECENT (BỘ LỌC CHAY TẠI CHỖ)
 ===================================================== */
 function filterRecent(status, btnElement) {
-    // Đổi trạng thái nút bấm active
     const buttons = btnElement.parentElement.querySelectorAll(".filter-btn");
     buttons.forEach(btn => btn.classList.remove("active"));
     btnElement.classList.add("active");
 
     if (status === "ALL") {
-        renderRecentBoarding(boardings);
+        renderRecent(boardings);
     } else {
         const filtered = boardings.filter(item => item.status === status);
-        renderRecentBoarding(filtered);
+        renderRecent(filtered);
     }
 }
 
 /* =====================================================
-   BOARDING CHART (BIỂU ĐỒ CỘT DOANH THU THEO THÁNG)
+   BOARDING CHART (BIỂU ĐỒ DOANH THU THEO THÁNG)
 ===================================================== */
 function drawBoardingChart(data) {
     const canvas = document.getElementById("boardingChart");
-    if (!canvas) return;
+    if (!canvas || typeof Chart === "undefined") return; // Tránh sập ứng dụng nếu thiếu thư viện Chart.js
 
     if (window.revenueChart) {
         window.revenueChart.destroy();
@@ -263,8 +275,7 @@ function drawBoardingChart(data) {
     data.forEach(item => {
         if (item.checkInDate) {
             const month = new Date(item.checkInDate).getMonth();
-            // Cộng dồn phí thu được của các phiếu gửi theo từng tháng
-            values[month] += (item.totalFee ?? 0);
+            values[month] += (item.totalFee ?? item.baseFee ?? 0);
         }
     });
 
@@ -283,35 +294,27 @@ function drawBoardingChart(data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-                x: {
-                    grid: { display: false }
-                },
-                y: {
-                    beginAtZero: true,
-                    grid: { color: "#f5f5f5" },
-                    ticks: { maxTicksLimit: 5 }
-                }
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, grid: { color: "#f5f5f5" }, ticks: { maxTicksLimit: 5 } }
             }
         }
     });
 }
 
 /* =====================================================
-   DRAW PET TYPE (CHUYỂN THÀNH PROGRESS BARS GIỐNG ẢNH)
+   DRAW PET TYPE PROGRESS BARS
 ===================================================== */
 function drawPetTypeChart(data) {
     const container = document.getElementById("pet-type-container");
     if (!container) return;
+    
     if (!data || data.length === 0) {
         container.innerHTML = `<p style="color: #999; font-size: 13px;">Chưa có dữ liệu phân bố</p>`;
         return;
     }
+    
     const types = {};
     data.forEach(p => {
         const type = p.type || "Other";
@@ -319,8 +322,6 @@ function drawPetTypeChart(data) {
     });
 
     const totalPets = data.length;
-    
-    // Sắp xếp các loài có số lượng từ cao xuống thấp
     const sortedTypes = Object.entries(types).sort((a, b) => b[1] - a[1]);
 
     container.innerHTML = sortedTypes.map(([type, count]) => {
@@ -328,13 +329,13 @@ function drawPetTypeChart(data) {
         const petIcon = typeof getPetIcon === "function" ? getPetIcon(type) : "🐾";
 
         return `
-            <div class="distribution-row">
-                <div class="distribution-meta">
+            <div class="distribution-row" style="margin-bottom: 12px;">
+                <div class="distribution-meta" style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
                     <span class="type-label">${petIcon} ${type}</span>
-                    <span class="stats-data">${count} <span>${percentage}%</span></span>
+                    <span class="stats-data"><strong>${count}</strong> <span style="color:#888; font-size:11px;">(${percentage}%)</span></span>
                 </div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" style="width: ${percentage}%;"></div>
+                <div class="progress-bar-bg" style="background:#eee; border-radius:4px; height:8px; width:100%; overflow:hidden;">
+                    <div class="progress-bar-fill" style="width: ${percentage}%; background:#555; height:100%; border-radius:4px;"></div>
                 </div>
             </div>
         `;
@@ -342,156 +343,48 @@ function drawPetTypeChart(data) {
 }
 
 /* =====================================================
-   ACTIVE MENU
+   HELPER UTILS (CÁC HÀM BỔ TRỢ ĐỊNH DẠNG TRÁNH LỖI)
 ===================================================== */
-/* =====================================================
-   BOARDING MODAL LOGIC (JAVASCRIPT)
-===================================================== */
+function formatMoney(amount) {
+    if (!amount) return "0đ";
+    return new Intl.NumberFormat('vi-VN').format(amount) + "đ";
+}
 
-/**
- * Mở modal tạo phiếu gửi và nạp danh sách thú cưng từ API
- */
-async function openBoardingModal() {
-    const modal = document.getElementById("boarding-modal");
-    const petSelect = document.getElementById("modal-pet-select");
-    const ownerInput = document.getElementById("modal-owner-name");
-    const form = document.getElementById("boarding-form");
-    
-    if (!modal || !petSelect) return;
-
-    // Reset lại toàn bộ form và ô nhập liệu
-    form.reset();
-    if (ownerInput) ownerInput.value = "";
-    
-    // Đặt ngày Check-in mặc định là ngày hôm nay
-    const today = new Date().toISOString().split('T')[0];
-    const checkInInput = document.getElementById("modal-check-in");
-    if (checkInInput) checkInInput.value = today;
-
-    // Hiển thị modal bằng cách đổi display sang flex (khớp với CSS .modal-overlay mới tách)
-    modal.style.display = "flex";
-
+function formatDate(dateStr) {
+    if (!dateStr) return "—";
     try {
-        // Gọi API lấy danh sách thú cưng
-        const response = await fetch(API.pets);
-        const allPets = await response.json();
-
-        // Lọc bỏ những thú cưng đang trong trạng thái gửi ("BOARDING") để tránh trùng lặp
-        const activePetIds = boardings
-            .filter(b => b.status === "BOARDING")
-            .map(b => b.petId);
-
-        const availablePets = allPets.filter(p => !activePetIds.includes(p.id));
-
-        // Nạp danh sách thú cưng vào thẻ select
-        petSelect.innerHTML = `
-            <option value="">-- Chọn thú cưng --</option>
-            ${availablePets.map(p => `
-                <option value="${p.id}" data-owner-id="${p.ownerId}">${p.name} (${p.type})</option>
-            `).join("")}
-        `;
-    } catch (error) {
-        console.error("Lỗi khi tải danh sách thú cưng vào modal:", error);
-        showToast("Không thể tải danh sách thú cưng", "error");
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString('vi-VN');
+    } catch {
+        return dateStr;
     }
 }
 
-/**
- * Đóng modal tạo phiếu gửi
- */
-function closeBoardingModal() {
-    const modal = document.getElementById("boarding-modal");
-    if (modal) {
-        modal.style.display = "none";
+function getPetIcon(type) {
+    if (!type) return "🐾";
+    switch(type.toLowerCase()) {
+        case 'dog': return '🐶';
+        case 'cat': return '🐱';
+        case 'bird': return '🐦';
+        case 'rabbit': return '🐰';
+        default: return '🐾';
     }
 }
 
-/**
- * Tự động tìm và hiển thị tên chủ nuôi khi chọn thú cưng
- */
-async function onModalPetChange() {
+function onModalPetChange() {
     const petSelect = document.getElementById("modal-pet-select");
     const ownerInput = document.getElementById("modal-owner-name");
     
     if (!petSelect || !ownerInput) return;
 
     const selectedOption = petSelect.options[petSelect.selectedIndex];
-    const ownerId = selectedOption.getAttribute("data-owner-id");
-
-    if (!ownerId) {
+    
+    if (selectedOption && selectedOption.value !== "") {
+        // Lấy tên chủ nuôi được lưu trữ trong thuộc tính data-owner-name của option
+        const ownerName = selectedOption.getAttribute("data-owner-name");
+        ownerInput.value = ownerName || "Chưa rõ";
+    } else {
         ownerInput.value = "";
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API.owners}/${ownerId}`);
-        const owner = await response.json();
-        ownerInput.value = owner ? owner.name : "Không xác định";
-    } catch (error) {
-        ownerInput.value = "Lỗi tải thông tin chủ nuôi";
-        console.error("Lỗi truy xuất thông tin chủ nuôi:", error);
-    }
-}
-
-/**
- * Xử lý sự kiện submit form - Gửi dữ liệu phiếu mới lên server
- */
-async function saveBoarding(event) {
-    event.preventDefault();
-
-    const petSelect = document.getElementById("modal-pet-select");
-    const petId = Number(petSelect.value);
-    
-    if (!petId) {
-        showToast("Vui lòng chọn một thú cưng hợp lệ!", "error");
-        return;
-    }
-
-    // Phân tích thông tin thú cưng được chọn
-    const selectedOption = petSelect.options[petSelect.selectedIndex];
-    const petText = selectedOption.text; 
-    const petName = petText.split(" (")[0];
-    
-    // Xác định icon/loài dựa trên text hiển thị
-    let petType = "Other";
-    if (petText.toLowerCase().includes("dog")) petType = "Dog";
-    else if (petText.toLowerCase().includes("cat")) petType = "Cat";
-    else if (petText.toLowerCase().includes("bird")) petType = "Bird";
-    else if (petText.toLowerCase().includes("rabbit")) petType = "Rabbit";
-
-    // Xây dựng Object dữ liệu gửi lên API
-    const newBoarding = {
-        petId: petId,
-        petName: petName,
-        petType: petType,
-        ownerName: document.getElementById("modal-owner-name").value,
-        checkInDate: document.getElementById("modal-check-in").value,
-        expectedReturn: document.getElementById("modal-expected-return").value,
-        totalFee: Number(document.getElementById("modal-total-fee").value) || 0,
-        status: "BOARDING",
-        createdAt: new Date().toISOString()
-    };
-
-    try {
-        const response = await fetch(API.boarding, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(newBoarding)
-        });
-
-        if (response.ok) {
-            showToast("Tạo phiếu gửi thú cưng thành công!", "success");
-            closeBoardingModal();
-            
-            // Tải lại toàn bộ dữ liệu trên Dashboard để cập nhật bảng và biểu đồ tức thì
-            await loadDashboardData(); 
-        } else {
-            showToast("Không thể tạo phiếu gửi. Vui lòng thử lại!", "error");
-        }
-    } catch (error) {
-        console.error("Lỗi kết nối khi lưu phiếu gửi:", error);
-        showToast("Lỗi kết nối đến máy chủ", "error");
     }
 }

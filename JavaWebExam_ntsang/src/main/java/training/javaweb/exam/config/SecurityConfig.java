@@ -24,7 +24,7 @@ public class SecurityConfig {
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable()).userDetailsService(customUserDetailsService)
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/login", "/login.html", "/auth/**", "/api/owners/**", "/api/users/**",
+						.requestMatchers("/login", "/login.html", "/auth/**", "/api/owners/**", "/api/users/**","/api/users/owner/**",
 								"/api/care-notes/**", "/api/boarding-records/**", "/api/pets/**", "/static/**",
 								"/api/boarding-records/checkout/**", "/api/pets/owner/**", "/admin.html",
 								"/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/style/**", "/js/**")

@@ -79,6 +79,59 @@ async function loadOwnersData() {
     }
 }
 
+async function getDetaiOwner(owenerId){
+
+}
+
+
+async function openOwnerModalDetail(ownerId = null) {
+    const modalOverlay = document.getElementById("owner-modal-overlay");
+    const form = document.getElementById("owner-form-detail");
+    const title = document.getElementById("owner-modal-title");
+    const listContainer = document.getElementById("pet-detail-list-detail-owner");
+
+    // Hiển thị modal
+    modalOverlay.style.display = "flex";
+
+    if (ownerId) {
+        // Mode CHỈNH SỬA: Tìm chủ nuôi trong mảng toàn cục 'owners'
+        const owner = owners.find(o => o.id == ownerId);
+        title.innerText = "Chỉnh sửa chủ nuôi";
+        
+        document.getElementById("owner-id-detail").value = owner.id;
+        document.getElementById("owner-name-detail").value = owner.name;
+        document.getElementById("owner-email-detail").value = owner.email;
+        document.getElementById("owner-phone-detail").value = owner.phone;
+        document.getElementById("owner-address-detail").value = owner.address || "";
+
+        // Load thú cưng
+        listContainer.innerHTML = "Đang tải...";
+        const pets = await getPetByOwnerId(ownerId);
+        console.log(`Thú cưng của Owner ID ${ownerId}:`, pets);
+      listContainer.innerHTML = pets.map(p => `
+           <div class="pet-card" onclick=editPet(${p.id})>
+                <div class="pet-avatar">
+                    ${getPetIcon(p.type)}
+                </div>
+                <div class="pet-info">
+                    <h4 class="pet-name">${p.name}</h4>
+                    <span class="pet-meta">${p.type} • ${p.breed || 'Không rõ giống'}</span>
+                </div>
+                <div class="pet-id">#${p.id}</div>
+            </div>
+        `).join("");
+    } else {
+        // Mode THÊM MỚI
+        title.innerText = "Thêm Chủ Nuôi Mới";
+        form.reset();
+        document.getElementById("owner-id-detail").value = "";
+        listContainer.innerHTML = "Chưa có dữ liệu.";
+    }
+}
+
+function closeOwnerModalDetail() {
+    document.getElementById("owner-modal-overlay").style.display = "none";
+}
 async function showPetModal(ownerId) {
     const modal = document.getElementById("pet-detail-modal");
     const listContainer = document.getElementById("pet-detail-list");
@@ -99,7 +152,7 @@ async function showPetModal(ownerId) {
                 <div style="font-size: 30px; margin-right: 15px; background: #f8f8f8; padding: 10px; border-radius: 8px;">
                     ${getPetIcon(p.type)}
                 </div>
-                <div style="flex-grow: 1;">
+                <div style="flex-grow: 1;" onclick="openPetModalDetail(${p.id})">
                     <div style="font-weight: bold; font-size: 16px;">${p.name}</div>
                     <div style="color: #666; font-size: 13px;">
                         Loài: ${p.type} | Giống: ${p.breed || 'N/A'}
@@ -164,7 +217,7 @@ async function renderOwnerTable(ownerList) {
            
 
             return `
-                <tr onclick="showPetModal(${owner.id})">
+                <tr onclick="openOwnerModalDetail(${owner.id})" style="cursor: pointer;">
                     <td>${owner.id}</td>
                     <td><strong style="color: #111;">${owner.name ?? "-"}</strong></td>
                     <td>${owner.phone ?? "-"}</td>

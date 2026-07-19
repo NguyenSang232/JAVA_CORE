@@ -91,7 +91,7 @@ async function showDashboard() {
                     </table>
                 </div>
                 <div class="right-dashboard">
-                    <div class="panel">
+                    <div class="panel" style="height: 300px;">
                         <div class="chart-header">
                             <h3 id="chart-year-title">Doanh thu 2026</h3>
                             <span class="total-amount" id="chart-total-amount">0đ</span>

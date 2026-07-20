@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="style/admin-style.css">
 	<link rel="stylesheet" href="style/pets.css">
 	<link rel="stylesheet" href="style/dashboard.css">
+	<link rel="stylesheet" href="style/price.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
@@ -40,6 +41,10 @@
 		                    <a id="menu-logout" href="#">
 		                        <i class="fa-solid fa-right-from-bracket"></i>
 		                        <span>Logout</span>
+		                    </a>
+							 <a id="menu-prices" href="#" onclick="showPrices(); return false;">
+		                        <i class="fa-solid fa-tag"></i>
+		                        <span>Prices</span>
 		                    </a>		                
 		            </div>
 		        </aside>
@@ -48,11 +53,11 @@
 			<div id="content"></div>
         </main>
     </div>
-	
+	S
 	<div id="pet-detail-modal" class="modal-overlay" style="display: none;">
     <div class="modal-content" style="max-width: 500px;">
         <span class="close-btn" onclick="closeDetailOwnerModal()">&times;</span>
-        <h3 id="modal-owner-name">Chi tiết thú cưng</h3>
+        <h3 >Chi tiết thú cưng</h3>
         <hr>
         <div id="pet-detail-list-detail" style="max-height: 400px; overflow-y: auto;">
             <!-- Danh sách thú cưng sẽ được đổ vào đây -->
@@ -162,7 +167,7 @@
 	        <form id="boarding-form" onsubmit="saveBoarding(event)">
 	            <div class="form-group">
 	                <label>Chọn thú cưng *</label>
-	                <select id="modal-pet-select" required onchange="onModalPetChange()">
+	                <select id="modal-pet-select" required>
 	                    <option value="">-- Chọn thú cưng --</option>
 	                </select>
 	            </div>
@@ -398,6 +403,7 @@
 	<script src="js/dashboard.js"></script>
 	<script src="js/owners.js"></script>
 	<script src="js/pets.js"></script>
+	<script src="js/price.js"></script>
 	<script src="js/boardingRecord.js"></script>
 	<script src="js/report.js"></script>
 </body>

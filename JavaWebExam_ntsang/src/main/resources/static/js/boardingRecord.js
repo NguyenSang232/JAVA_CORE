@@ -316,32 +316,41 @@ function closeBoardingModal() {
     }
 }
 
-async function onModalPetChange() {
-    const petSelect = document.getElementById("modal-pet-select");
+async function onModalPetChange(event) {
+    // Lấy phần tử từ chính sự kiện (event.target là thẻ select)
+    const petSelect = event.target; 
     const ownerInput = document.getElementById("modal-owner-name");
 
     if (!petSelect || !ownerInput) return;
 
+    // Lấy option đang được chọn
     const selectedOption = petSelect.options[petSelect.selectedIndex];
-    if (!selectedOption) return;
+    
+    // Kiểm tra nếu là option rỗng (placeholder)
+    if (!selectedOption || !selectedOption.value) {
+        ownerInput.value = "";
+        return;
+    }
     
     const ownerId = selectedOption.getAttribute("data-owner-id");
+    console.log("Đang tải dữ liệu cho chủ nuôi ID:", ownerId);
 
-    if (!ownerId) {
-        ownerInput.value = "";
+    if (!ownerId || ownerId === "null") {
+        ownerInput.value = "Chưa có chủ";
         return;
     }
 
     try {
         const response = await fetch(`${API.owners}/${ownerId}`);
+        if (!response.ok) throw new Error("Không tìm thấy chủ");
+        
         const owner = await response.json();
-        ownerInput.value = owner ? owner.name : "Không xác định";
+        ownerInput.value = owner.name;
     } catch (error) {
-        ownerInput.value = "Lỗi tải thông tin chủ nuôi";
-        console.error("Lỗi truy xuất thông tin chủ nuôi:", error);
+        ownerInput.value = "Lỗi tải thông tin";
+        console.error("Lỗi:", error);
     }
 }
-
 async function saveBoarding(event) {
     if (event) event.preventDefault();
 

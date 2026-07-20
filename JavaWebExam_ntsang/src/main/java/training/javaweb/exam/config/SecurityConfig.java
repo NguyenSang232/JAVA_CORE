@@ -21,23 +21,41 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable()).userDetailsService(customUserDetailsService)
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/login", "/login.html", "/auth/**", "/api/owners/**", "/api/users/**","/api/users/owner/**",
-								"/api/care-notes/**", "/api/boarding-records/**", "/api/pets/**", "/static/**",
-								"/api/boarding-records/checkout/**", "/api/pets/owner/**", "/admin.html",
-								"/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/style/**", "/js/**")
-						.permitAll().requestMatchers("/admin/**").hasRole("ADMIN").requestMatchers("/users/**")
-						.hasAnyRole("USER", "ADMIN").anyRequest().authenticated())
-				.formLogin(form -> form.loginPage("/login.html").loginProcessingUrl("/login")
-						.successHandler(successHandler).permitAll())
+SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http.csrf(csrf -> csrf.disable())
+        .userDetailsService(customUserDetailsService)
+        .authorizeHttpRequests(auth -> auth
+            // Các trang public và tài nguyên tĩnh
+            .requestMatchers("/login","/.well-known/**", "/login.html", "/auth/**", "/static/**", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/style/**", "/js/**").permitAll()
+            
+            // Giao diện HTML phân quyền theo Role
+            .requestMatchers("/admin.html").hasRole("ADMIN")
+            .requestMatchers("/user.html").hasAnyRole("CUSTOMER", "ADMIN")
 
-				.logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/login.html?logout")
-						.invalidateHttpSession(true).clearAuthentication(true).deleteCookies("JSESSIONID").permitAll());
-		return http.build();
-	}
-
+            // API cho ADMIN (Quản lý Chủ nuôi, Thú cưng toàn hệ thống, Tạo phiếu, v.v.)
+            .requestMatchers("/api/owners/**").hasRole("ADMIN")
+            .requestMatchers("/api/boarding-records/checkout/**", "/api/boarding-records/admin/**").hasRole("ADMIN")
+            
+            // API dành riêng cho CUSTOMER (Thú cưng của tôi, Phiếu của tôi)
+            .requestMatchers("/api/pets/my-pets", "/api/boarding-records/my-boarding", "/api/boarding-records/my-history").hasRole("CUSTOMER")
+            
+            // Các request còn lại bắt buộc phải đăng nhập
+            .anyRequest().authenticated()
+        )
+        .formLogin(form -> form
+            .loginPage("/login.html")
+            .loginProcessingUrl("/login")
+            .successHandler(successHandler)
+            .permitAll()
+        )
+        .logout(logout -> logout
+            .logoutUrl("/logout")
+            .logoutSuccessUrl("/login.html?logout")
+            .permitAll()
+        );
+        
+    return http.build();
+}
 	@Bean
 	AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
 		return configuration.getAuthenticationManager();

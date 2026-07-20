@@ -83,13 +83,9 @@ public class BoardingRecordService {
 		if (record == null) {
 			throw new RuntimeException("Boarding record not found");
 		}
-
 		long actualDays = ChronoUnit.DAYS.between(record.getCheckInDate(), actualCheckOut);
-
 		long expectedDays = ChronoUnit.DAYS.between(record.getCheckInDate(), record.getExpectedReturn());
-
 		double dayFee = (baseFee / expectedDays);
-
 		long lateFee = 0;
 		if (actualDays > expectedDays) {
 			lateFee = (long) ((actualDays - expectedDays) * dayFee * 120 / 100);

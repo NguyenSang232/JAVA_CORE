@@ -31,7 +31,7 @@ public class CustomAuthenticationSuccessHandler extends SavedRequestAwareAuthent
 		if (isAdmin) {
 			response.sendRedirect("/admin.html");
 		} else {
-			response.sendRedirect("/home.html");
+			response.sendRedirect("/user.html");
 		}
 	}
 }

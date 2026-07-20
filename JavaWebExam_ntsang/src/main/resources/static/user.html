@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Thú cưng - User Panel</title>
+    <!-- Gắn file CSS riêng -->
+    <link rel="stylesheet" href="style/user-style.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-paw"></i>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <!-- Nút 1: Thú cưng của tôi -->
+                    <li>
+                        <a class="nav-item active" data-target="pets" title="Thú cưng của tôi">
+                            <i class="fa-solid fa-paw"></i>
+                        </a>
+                    </li>
+                    <!-- Nút 2: Đang gửi -->
+                    <li>
+                        <a class="nav-item" data-target="sending" title="Đang gửi">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                        </a>
+                    </li>
+                    <!-- Nút 3: Lịch sử gửi -->
+                    <li>
+                        <a class="nav-item" data-target="history" title="Lịch sử gửi">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-bottom">
+                <div class="user-avatar">NA</div>
+                <div class="logout-btn" title="Đăng xuất">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content" id="mainContent">
+            <!-- Nội dung sẽ được innerHTML tự động bằng JavaScript -->
+        </main>
+    </div>
+
+    <!-- Gắn file JS chứa mẫu dữ liệu và xử lý innerHTML -->
+     <script src="js/config.js"></script>
+    <script src="js/user-page.js"></script>
+</body>
+</html>

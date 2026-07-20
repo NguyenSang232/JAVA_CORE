@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="training.javaweb.exam.repository.PriceMapper">
+<mapper namespace="training.javaweb.exam.mapper.PriceMapper">
 
-    <!-- 1. Định nghĩa ResultMap bao gồm cả các trường cân nặng -->
+    <!-- 1. Định nghĩa ResultMap khớp với tên cột trong database -->
     <resultMap id="PriceResultMap" type="training.javaweb.exam.entity.Price">
         <id property="id" column="id" />
         <result property="petType" column="pet_type" />
@@ -13,7 +13,7 @@
         <result property="basePrice" column="base_price" />
     </resultMap>
 
-    <!-- 2. Định nghĩa đầy đủ các cột để tái sử dụng -->
+    <!-- 2. Danh sách cột chuẩn khớp với CSDL -->
     <sql id="priceColumns">
         id, pet_type, weight_from, weight_to, base_price
     </sql>
@@ -22,7 +22,7 @@
     <select id="findById" parameterType="java.lang.Long" resultMap="PriceResultMap">
         SELECT 
             <include refid="priceColumns"/>
-        FROM tbl_price
+        FROM prices
         WHERE id = #{id}
     </select>
 
@@ -30,7 +30,7 @@
     <select id="findByPetTypeAndWeight" resultMap="PriceResultMap">
         SELECT 
             <include refid="priceColumns"/>
-        FROM tbl_price
+        FROM prices
         WHERE LOWER(pet_type) = LOWER(#{petType})
           AND #{weight} &gt;= weight_from
           AND #{weight} &lt;= weight_to
@@ -40,18 +40,18 @@
     <select id="findAll" resultMap="PriceResultMap">
         SELECT 
             <include refid="priceColumns"/>
-        FROM tbl_price
+        FROM prices
     </select>
 
-    <!-- 6. Thêm mới cấu hình giá (Bao gồm cả khoảng cân nặng) -->
+    <!-- 6. Thêm mới cấu hình giá -->
     <insert id="save" parameterType="training.javaweb.exam.entity.Price" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO tbl_price (pet_type, weight_from, weight_to, base_price)
+        INSERT INTO prices (pet_type, weight_from, weight_to, base_price)
         VALUES (#{petType}, #{weightFrom}, #{weightTo}, #{basePrice})
     </insert>
 
-    <!-- 7. Cập nhật cấu hình giá sống (Dynamic Update) -->
+    <!-- 7. Cập nhật cấu hình giá (Dynamic Update) -->
     <update id="update" parameterType="training.javaweb.exam.entity.Price">
-        UPDATE tbl_price
+        UPDATE prices
         <set>
             <if test="petType != null">pet_type = #{petType},</if>
             <if test="weightFrom != null">weight_from = #{weightFrom},</if>
@@ -63,7 +63,7 @@
 
     <!-- 8. Xóa cấu hình giá -->
     <delete id="deleteById" parameterType="java.lang.Long">
-        DELETE FROM tbl_price WHERE id = #{id}
+        DELETE FROM prices WHERE id = #{id}
     </delete>
 
 </mapper>

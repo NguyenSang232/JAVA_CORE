@@ -5,7 +5,8 @@ const API = {
     pets: `${BASE_URL}/api/pets`,
     users: `${BASE_URL}/api/users`,
     boarding: `${BASE_URL}/api/boarding-records`,
-    careNotes: `${BASE_URL}/api/care-notes`
+    careNotes: `${BASE_URL}/api/care-notes`,
+    prices: `${BASE_URL}/api/prices`
 };
 /* =====================================================
    GLOBAL DATA
@@ -15,6 +16,7 @@ let pets = [];
 let users = [];
 let boardings = [];
 let careNotes = [];
+let prices = [];
 /* =====================================================
    PET PAGE
 ===================================================== */

@@ -89,6 +89,8 @@ public class PriceService {
 
     // --- CÁC HÀM MAPPING SANG DTO ---
 
+  // --- CÁC HÀM MAPPING SANG DTO ---
+
     public PriceResponseDTO toDTO(Price price) {
         if (price == null) {
             return null;
@@ -96,6 +98,11 @@ public class PriceService {
         PriceResponseDTO dto = new PriceResponseDTO();
         dto.setId(price.getId());
         dto.setPetType(price.getPetType());
+        
+        // Bổ sung map 2 trường cân nặng vào DTO
+        dto.setWeightFrom(price.getWeightFrom());
+        dto.setWeightTo(price.getWeightTo());
+        
         dto.setBasePrice(price.getBasePrice());
         dto.setDiscountPercentage(0);
         dto.setActualPrice(price.getBasePrice());
@@ -111,6 +118,11 @@ public class PriceService {
         PriceResponseDTO dto = new PriceResponseDTO();
         dto.setId(price.getId());
         dto.setPetType(price.getPetType());
+        
+        // Bổ sung map 2 trường cân nặng vào DTO
+        dto.setWeightFrom(price.getWeightFrom());
+        dto.setWeightTo(price.getWeightTo());
+        
         dto.setBasePrice(price.getBasePrice());
         dto.setDiscountPercentage(discountPercentage);
         dto.setActualPrice(actualPrice);

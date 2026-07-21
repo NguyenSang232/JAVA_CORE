@@ -6,38 +6,29 @@ const API = {
     users: `${BASE_URL}/api/users`,
     boarding: `${BASE_URL}/api/boarding-records`,
     careNotes: `${BASE_URL}/api/care-notes`,
-    prices: `${BASE_URL}/api/prices`
+	prices: `${BASE_URL}/api/prices`
 };
-/* =====================================================
-   GLOBAL DATA
-===================================================== */
+
 let owners = [];
 let pets = [];
 let users = [];
 let boardings = [];
 let careNotes = [];
 let prices = [];
-/* =====================================================
-   PET PAGE
-===================================================== */
+
 let currentPetPage = 1;
 const PETS_PER_PAGE = 5;
 let currentPetFilter = "ALL";
 let currentPetSort = "ASC";
 let currentPetKeyword = "";
-/* =====================================================
-   OWNER PAGE
-===================================================== */
+let currentBoardingKeyword = ""
+
 let currentOwnerPage = 1;
 const OWNERS_PER_PAGE = 5;
 let currentOwnerKeyword = "";
-/* =====================================================
-   BOARDING PAGE
-===================================================== */
+
 let currentBoardingPage = 1;
 const BOARDING_PER_PAGE = 5;
 let currentBoardingStatus = "ALL";
-/* =====================================================
-   REPORT
-===================================================== */
+
 let revenueChart = null;

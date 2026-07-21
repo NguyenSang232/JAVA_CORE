@@ -1,10 +1,9 @@
 /* =====================================================
-   CÁC HÀM GỌI API LẤY DỮ LIỆU TỪ BACKEND (SPRING SECURITY)
+   PET SERVICE API (GỌI DỮ LIỆU)
 ===================================================== */
 const petServiceAPI = {
     fetchDashboardData: async () => {
         try {
-            // Gọi đồng thời API lấy thú cưng của tôi và phiếu đang gửi của tôi
             const [petsRes, boardingRes] = await Promise.all([
                 fetch(`${API.pets}/my-pets`, {
                     method: "GET",
@@ -15,24 +14,17 @@ const petServiceAPI = {
                     credentials: "include"
                 })
             ]);
-
             const petsData = petsRes.ok ? await petsRes.json() : [];
             const boardingData = boardingRes.ok ? await boardingRes.json() : [];
-
             const petsList = Array.isArray(petsData) ? petsData : (petsData.content || []);
-            const currentBoardings = Array.isArray(boardingData) ? boardingData : (boardingData.content || [boardingData]);
-
-            // Lấy thêm tổng lịch sử gửi để hiển thị đúng số liệu thống kê
+            const currentBoardings = Array.isArray(boardingData) ? boardingData : (boardingData.content || [boardingData]);       
             const historyRes = await fetch(`${API.boarding}/my-history`, {
                 method: "GET",
                 credentials: "include"
             });
             const historyData = historyRes.ok ? await historyRes.json() : [];
             const historyList = Array.isArray(historyData) ? historyData : (historyData.content || []);
-
-            // Đếm số lượng đang gửi thực tế
             const activeSending = currentBoardings.filter(b => b && (b.status === 'BOARDING' || b.status === 'Đang gửi')).length;
-
             return {
                 totalPets: petsList.length,
                 activeSending: activeSending > 0 ? activeSending : (currentBoardings.length > 0 && currentBoardings[0].id ? 1 : 0),
@@ -44,19 +36,17 @@ const petServiceAPI = {
             return { totalPets: 0, activeSending: 0, totalHistoryCount: 0, petsList: [] };
         }
     },
-
     fetchSendingData: async () => {
         try {
             const response = await fetch(`${API.boarding}/my-current`, {
                 method: "GET",
                 credentials: "include"
             });
+			console.log(response);
             const data = response.ok ? await response.json() : [];
-            
-            // Xử lý dữ liệu trả về (có thể là một mảng hoặc một đối tượng đơn)
+			console.log(data);
             const activeList = Array.isArray(data) ? data : (data ? [data] : []);
             const currentItem = activeList[0] || null;
-
             return {
                 currentSendingCount: activeList.length,
                 sendingPet: currentItem
@@ -66,7 +56,6 @@ const petServiceAPI = {
             return { currentSendingCount: 0, sendingPet: null };
         }
     },
-
     fetchHistoryData: async () => {
         try {
             const response = await fetch(`${API.boarding}/my-history`, {
@@ -75,7 +64,6 @@ const petServiceAPI = {
             });
             const data = response.ok ? await response.json() : [];
             const historyList = Array.isArray(data) ? data : (data.content || []);
-
             return {
                 historyList: historyList
             };
@@ -85,10 +73,6 @@ const petServiceAPI = {
         }
     }
 };
-
-/* =====================================================
-   CÁC HÀM RENDER GIAO DIỆN (TEMPLATE)
-===================================================== */
 const renderTemplates = {
     pets: async () => {
         const data = await petServiceAPI.fetchDashboardData();
@@ -178,6 +162,39 @@ const renderTemplates = {
             `;
         }
 
+        const checkInStr = pet.checkInDate || pet.checkIn;
+        const expectedStr = pet.expectedReturn || pet.expectedDate || pet.returnDate;
+        
+        let daysElapsed = 0;
+        let daysRemaining = 0;
+        let estimatedFee = 0;
+
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+
+        if (checkInStr) {
+            const checkInDate = new Date(checkInStr);
+            checkInDate.setHours(0, 0, 0, 0);
+            
+            const diffTimeNow = now - checkInDate;
+            daysElapsed = Math.max(0, Math.floor(diffTimeNow / (1000 * 60 * 60 * 24))) + 1;
+        }
+
+        if (expectedStr) {
+            const expectedDate = new Date(expectedStr);
+            expectedDate.setHours(0, 0, 0, 0);
+            
+            const diffTimeExpected = expectedDate - now;
+            daysRemaining = Math.floor(diffTimeExpected / (1000 * 60 * 60 * 24));
+        }
+
+        const pricePerDay = pet.pricePerDay || pet.dailyPrice || 0;
+        if (pricePerDay > 0) {
+            estimatedFee = daysElapsed * pricePerDay;
+        } else {
+            estimatedFee = pet.totalFee || pet.estimatedFee || 0;
+        }
+
         return `
             <div class="page-header">
                 <h1 class="page-title">Đang gửi</h1>
@@ -190,11 +207,30 @@ const renderTemplates = {
                     <span class="badge-tag badge-gray">${pet.petType || pet.type || 'Pet'}</span>
                     <span class="badge-tag badge-slate">${pet.status || 'Đang gửi'}</span>
                 </div>
+                
                 <p class="sending-date">
-                    <i class="fa-regular fa-calendar"></i> Check-in: ${pet.checkInDate || pet.checkIn || 'N/A'}
+                    <i class="fa-regular fa-calendar"></i> Check-in: ${checkInStr || 'N/A'} &nbsp;|&nbsp; 
+                    <i class="fa-regular fa-calendar-check"></i> Dự kiến trả: ${expectedStr || 'N/A'}
                 </p>
+
+                <!-- Thống kê chi phí và số ngày -->
+                <div class="stats-grid" style="margin: 15px 0;">
+                    <div class="stat-card" style="padding: 15px;">
+                        <div class="stat-value" style="font-size: 20px;">${daysElapsed} ngày</div>
+                        <div class="stat-label">ĐÃ GỬI TỪNG ĐẾN NAY</div>
+                    </div>
+                    <div class="stat-card" style="padding: 15px;">
+                        <div class="stat-value" style="font-size: 20px; color: ${daysRemaining < 0 ? '#dc3545' : '#28a745'};">${daysRemaining >= 0 ? daysRemaining + ' ngày' : 'Quá hạn ' + Math.abs(daysRemaining) + ' ngày'}</div>
+                        <div class="stat-label">CÒN LẠI DỰ KIẾN</div>
+                    </div>
+                    <div class="stat-card" style="padding: 15px;">
+                        <div class="stat-value" style="font-size: 20px; color: #15803d;">${estimatedFee.toLocaleString('vi-VN')}đ</div>
+                        <div class="stat-label">TẠM TÍNH TẠM THỜI</div>
+                    </div>
+                </div>
+
                 <div class="sending-note-box">
-                    <i class="fa-solid fa-thumbtack"></i> ${pet.note || 'Không có ghi chú đặc biệt'}
+                    <i class="fa-solid fa-thumbtack"></i> ${pet.notes || 'Không có ghi chú đặc biệt'}
                 </div>
                 <button class="sending-btn">
                     <i class="fa-solid fa-pen-to-square"></i> Xem ghi chú chăm sóc (${pet.notesCount || 0})
@@ -258,9 +294,6 @@ const renderTemplates = {
     }
 };
 
-/* =====================================================
-   ĐIỀU HƯỚNG VÀ KHỞI TẠO SỰ KIỆN GIAO DIỆN
-===================================================== */
 document.addEventListener("DOMContentLoaded", () => {
     const navItems = document.querySelectorAll(".nav-item");
     const mainContent = document.getElementById("mainContent");

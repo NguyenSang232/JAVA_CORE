@@ -1,6 +1,4 @@
-/* =====================================================
-   1. TỔNG THỂ & BIẾN MÀU
-   ===================================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -9,7 +7,7 @@
 }
 
 body {
-    background-color: #f1f5f9; /* Nền sáng, sạch và dịu mắt hơn */
+    background-color: #f1f5f9;
     color: #1e293b;
     -webkit-font-smoothing: antialiased;
 }
@@ -20,9 +18,6 @@ body {
     overflow: hidden;
 }
 
-/* =====================================================
-   2. SIDEBAR HIỆN ĐẠI
-   ===================================================== */
 .sidebar {
     width: 88px;
     background-color: #ffffff;
@@ -114,9 +109,6 @@ body {
     color: #ef4444;
 }
 
-/* =====================================================
-   3. MAIN CONTENT & SHARED COMPONENTS
-   ===================================================== */
 .main-content {
     flex: 1;
     overflow-y: auto;
@@ -168,7 +160,6 @@ body {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Cards Grid */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -207,7 +198,6 @@ body {
     letter-spacing: 0.6px;
 }
 
-/* Badges */
 .badge-tag {
     font-size: 11px;
     padding: 4px 10px;
@@ -224,8 +214,6 @@ body {
     background: #e2e8f0;
     color: #1e293b;
 }
-
-/* Tables */
 .table-container {
     background: #ffffff;
     border-radius: 16px;
@@ -284,9 +272,6 @@ body {
     color: #0f172a;
 }
 
-/* =====================================================
-   4. SENDING SPECIFIC CLASSES
-===================================================== */
 .sending-header-info {
     display: flex;
     align-items: center;

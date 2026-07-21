@@ -3,7 +3,6 @@
    OWNER MANAGEMENT
 ===================================================== */
 async function showOwners() {
-    setActiveMenu("menu-owners");
     const mainView = document.getElementById("content");
     if (!mainView) return;
     mainView.innerHTML = `
@@ -132,18 +131,14 @@ async function openOwnerModalDetail(ownerId = null) {
 function closeOwnerModalDetail() {
     document.getElementById("owner-modal-overlay").style.display = "none";
 }
+
 async function showPetModal(ownerId) {
     const modal = document.getElementById("pet-detail-modal");
     const listContainer = document.getElementById("pet-detail-list");
     const title = document.getElementById("modal-owner-name");
-
-    // Lấy thông tin chủ nuôi để hiển thị tên
     const owner = owners.find(o => o.id === ownerId);
     title.innerText = `Thú cưng của: ${owner ? owner.name : 'Chủ nuôi'}`;
-
-    // Lấy danh sách thú cưng
-    const pets = await getPetByOwnerId(ownerId);
-    
+    const pets = await getPetByOwnerId(ownerId); 
     if (pets.length === 0) {
         listContainer.innerHTML = `<p style="text-align:center; color:#999; padding:20px;">Chủ nuôi này chưa có thú cưng nào.</p>`;
     } else {
@@ -164,19 +159,6 @@ async function showPetModal(ownerId) {
     }
 
     modal.style.display = "flex";
-}
-
-function closeDetailOwnerModal() {
-    const modal = document.getElementById("pet-detail-modal");
-    modal.style.display = "none";
-}
-
-// Đóng modal khi click ra ngoài vùng nội dung
-window.onclick = function(event) {
-    const modal = document.getElementById("pet-detail-modal");
-    if (event.target == modal) {
-       closeDetailOwnerModal();
-    }
 }
 /* =====================================================
    UPDATE OWNER VIEW (KẾT HỢP TÌM KIẾM VÀ PHÂN TRANG)
@@ -226,8 +208,8 @@ async function renderOwnerTable(ownerList) {
                     <td>${accountBadge(hasAccount)}</td>
                     <td>
                         <div class="action-group">
-                            <button class="action-btn edit" title="Chỉnh sửa" onclick="editOwner(${owner.id})">✏️</button>
-                            <button class="action-btn delete" title="Xóa" onclick="deleteOwner(${owner.id})">🗑️</button>
+                            <button class="action-btn edit" title="Chỉnh sửa" onclick=" event.stopPropagation(); editOwner(${owner.id})">✏️</button>
+                            <button class="action-btn delete" title="Xóa" onclick="event.stopPropagation(); deleteOwner(${owner.id})">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -252,26 +234,14 @@ async function getPetByOwnerId(ownerId) {
         return [];
     }
 }
-
-// GET ONWER
+// GETPETBYONWER
 async function getUserByOwnerId(ownerId) {
     try {
-        const response = await fetch(`${API.users}/owner/${ownerId}`);
-        
-        // In log chi tiết nếu Backend chặn request từ Frontend
-        if (!response.ok) {
-            console.warn(`API User cho Owner ${ownerId} thất bại với Status: ${response.status}`);
-            return null;
-        }
-        
-        if (response.status === 204) return null;
-
-        const text = await response.text();
-        if (!text) return null; 
-
-        return JSON.parse(text);
+        const response = await fetch(`${API.users}/${ownerId}`);
+        if (!response.ok) return null;
+        return await response.json();
     } catch (error) {
-        console.error("Lỗi kết nối API User:", error);
+     console.error("User owner error:", error);
         return null;
     }
 }
@@ -368,88 +338,38 @@ function closeOwnerModal() {
     const modal = document.getElementById("owner-modal");
     if (modal) modal.style.display = "none";
 }
-// 1. Đồng bộ Số điện thoại lên ô Tên đăng nhập (Username) theo thời gian thực
-document.getElementById("owner-phone").addEventListener("input", function() {
-    document.getElementById("owner-username-display").value = this.value;
-});
 
-// 2. Hàm xử lý khi submit Form Thêm Chủ Nuôi Mới
 async function saveOwner(event) {
-    event.preventDefault(); // Chặn hành vi tải lại trang mặc định của form
-
-    // --- BƯỚC 1: Thu thập dữ liệu từ các ô input của Owner ---
-    const name = document.getElementById("owner-name").value.trim();
-    const email = document.getElementById("owner-email").value.trim();
-    const phone = document.getElementById("owner-phone").value.trim();
-    const address = document.getElementById("owner-address").value.trim();
-    
-    // Thu thập thông tin tài khoản
-    const password = document.getElementById("owner-password").value;
-
-    // Tạo object dữ liệu cho Owner gửi lên Server
-    const newOwner = { 
-        name: name, 
-        email: email, 
-        phone: phone, 
-        address: address
-    };
-
+    event.preventDefault();
+    const name = document.getElementById("owner-name").value;
+    const phone = document.getElementById("owner-phone").value;
+    const address = document.getElementById("owner-address").value;
+	const email = document.getElementById("owner-email").value;
+    const newOwner = { name, email, phone, address, createdAt: new Date().toISOString() };
     try {
-        // --- BƯỚC 2: Gọi API lưu thông tin Chủ nuôi (Owner) trước ---
-        const ownerResponse = await fetch(API.owners, {
+        const response = await fetch(API.owners, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newOwner)
         });
 
-        if (!ownerResponse.ok) {
-            showToast("Không thể lưu thông tin chủ nuôi mới!", "error");
-            return; 
-        }
-
-        // Đọc dữ liệu trả về từ Database (Lúc này savedOwner đã chứa trường id tự sinh)
-        const savedOwner = await ownerResponse.json();
-        console.log("Dữ liệu Owner nhận được:", savedOwner);
-        // --- BƯỚC 3: Tạo và gọi API thêm tài khoản User tương ứng ---
-        // Chuẩn hóa tên thuộc tính `ownerId` để khớp với cách định nghĩa `#{ownerId}` trong MyBatis của bạn
-        const newUser = {
-            username: phone,         // Lấy Số điện thoại làm tên đăng nhập
-            password: password,      // Mật khẩu người dùng nhập vào
-            role: "ROLE_CUSTOMER",   // Quyền hạn mặc định cho nhóm khách hàng
-            ownerId: savedOwner.id   // Lấy ID tự động sinh từ Owner vừa lưu ở bước trên gán vào đây
-        };
-
-        const userResponse = await fetch(API.users, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newUser)
-        });
-
-        // --- BƯỚC 4: Kiểm tra trạng thái và cập nhật lại giao diện ---
-        if (!userResponse.ok) {
-            // Trường hợp hy hữu: Đã có thông tin chủ nuôi nhưng tài khoản tạo bị trùng Username hoặc lỗi bảo mật dữ liệu
-            showToast("Đã thêm thông tin chủ nuôi, nhưng khởi tạo tài khoản hệ thống thất bại!", "warning");
+        if (response.ok) {
+            showToast("Thêm chủ nuôi thành công!", "success");
+			loadOwnersData();
+            closeOwnerModal();
+            
+            // Cập nhật lại UI Dashboard (nếu đang ở trang dashboard)
+            if (typeof loadDashboardData === "function") {
+                await loadDashboardData();
+            }
         } else {
-            showToast("Thêm mới chủ nuôi và khởi tạo tài khoản thành công!", "success");
+            showToast("Không thể lưu chủ nuôi mới", "error");
         }
-
-        // Làm mới lại bảng dữ liệu hiển thị (DataTable / List) ngoài Dashboard
-        if (typeof loadOwnersData === "function") {
-             await loadOwnersData();
-        }
-        
-        // Cập nhật lại các khối Summary Card nếu có thay đổi số liệu thống kê chung
-        if (typeof loadDashboardData === "function") {
-            await loadDashboardData();
-        }
-
-        // Đóng modal nhập liệu
-        closeOwnerModal();
-
     } catch (error) {
-        console.error("Lỗi trong quá trình xử lý luồng tạo dữ liệu:", error);
-        showToast("Đã xảy ra lỗi kết nối với máy chủ hệ thống!", "error");
+        console.error(error);
+        showToast("Lỗi kết nối máy chủ", "error");
     }
+	
 }
 /* =====================================================
    EDIT OWNER

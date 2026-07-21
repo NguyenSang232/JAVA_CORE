@@ -1,5 +1,4 @@
 async function showBoardingRecords() {
-    setActiveMenu("menu-boarding");
     const mainView = document.getElementById("content");
     if (!mainView) return;
     mainView.innerHTML = `
@@ -80,7 +79,49 @@ async function loadBoardingRecords() {
         showToast("Không tải được phiếu gửi", "error");
     }
 }
+function renderRecentBoarding(data, limit) {
+    const tableBody = document.getElementById("recent-boarding");
+    const countBadge = document.getElementById("recent-count");
+    if (!tableBody) return;
+    if (!data || data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px; color: #999;">Chưa có phiếu gửi nào</td></tr>`;
+        if (countBadge) countBadge.textContent = "0";
+        return;
+    }
+    // Sắp xếp lấy 5 phiếu gửi mới tạo gần đây nhất
+    const recent = [...data]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, limit);
+    if (countBadge) countBadge.textContent = recent.length;
+    tableBody.innerHTML = recent.map(item => {
+        const statusText = item.status === "BOARDING" ? "Đang gửi" : "Đã trả";
+        const feeText = item.status === "RETURNED" ? formatMoney(item.totalFee) : "—";
+        const petIcon = typeof getPetIcon === "function" ? getPetIcon(item.petType) : "🐾";
 
+        return `
+            <tr>
+                <td>
+                    <div class="pet-cell">
+                        <div class="pet-avatar-mini">${petIcon}</div>
+                        <div class="pet-meta">
+                            <strong>${item.petName ?? "Thú cưng"}</strong>
+                            <small>${item.petBreed ?? "Giống loại"}</small>
+                        </div>
+                    </div>
+                </td>
+                <td class="owner-cell">${item.ownerName ?? "Người dùng"}</td>
+                <td>${formatDate(item.checkInDate)}</td>
+                <td>
+                    <span class="status-oval">${statusText}</span>
+                </td>
+                <td class="fee-cell">${feeText}</td>
+                <td>
+                    <button class="action-view-btn" title="Xem chi tiết" onclick="editBoarding(${item.id})">👁</button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
 function updateBoardingView() {
     let processedData = filterBoardingData();
     // Thực hiện sắp xếp dữ liệu
@@ -113,7 +154,7 @@ async function renderBoardingTable(data) {
             const statusText = record.status === "BOARDING" ? "Đang gửi" : "Đã trả";
             const feeText = record.status === "RETURNED" || record.totalFee > 0 ? formatMoney(record.totalFee) : "—";
             return `
-                <tr style="cursor: pointer;" onclick="showBoardingDetail(${record.id})">
+                <tr style="cursor: pointer;" onclick="event.stopPropagation(); showBoardingDetail(${record.id})">
                     <td>${record.id}</td>
                     <td>
                         <div class="pet-cell">
@@ -134,7 +175,7 @@ async function renderBoardingTable(data) {
                     <td>
                         <div class="action-group" onclick="event.stopPropagation();">
                             ${checkoutBtn}
-                            <button class="action-btn edit" title="Chỉnh sửa" onclick="event.stopPropagation(); editBoarding(${record.id})">✏️</button>
+                            <button class="action-btn edit" title="Chỉnh sửa" onclick="editBoarding(${record.id})">✏️</button>
                             <button class="action-btn delete" title="Xóa" onclick="deleteBoarding(${record.id})">🗑️</button>
                         </div>
                     </td>
@@ -227,7 +268,6 @@ function renderBoardingPagination(total) {
         pagination.innerHTML = "";
         return;
     }
-
     let html = "";
     for (let i = 1; i <= totalPage; i++) {
         const activeClass = currentBoardingPage === i ? "active" : "";
@@ -240,7 +280,6 @@ function changeBoardingPage(page) {
     currentBoardingPage = page;
     updateBoardingView();
 }
-
 async function openBoardingModal(record = null) {
     const modal = document.getElementById("boarding-modal");
     const form = document.getElementById("boarding-form");
@@ -254,7 +293,6 @@ async function openBoardingModal(record = null) {
         console.warn("Không tìm thấy phần tử #boarding-modal trên trang này.");
         return;
     }
-
     let idInput = document.getElementById("modal-boarding-id");
     if (!idInput) {
         idInput = document.createElement("input");
@@ -262,11 +300,9 @@ async function openBoardingModal(record = null) {
         idInput.id = "modal-boarding-id";
         if (form) form.appendChild(idInput);
     }
-
     if (form) form.reset();
     if (ownerInput) ownerInput.value = "";
     idInput.value = "";
-
     modal.style.display = "flex";
 
     if (!petSelect) return;
@@ -274,17 +310,20 @@ async function openBoardingModal(record = null) {
     try {
         const response = await fetch(API.pets);
         const allPets = await response.json();
-
-        const activePetIds = boardings
+        const activePetIds = (typeof boardings !== 'undefined' ? boardings : [])
             .filter(b => b.status === "BOARDING" && (!record || b.id !== record.id))
             .map(b => b.petId);
-
         const availablePets = allPets.filter(p => !activePetIds.includes(p.id));
-
         petSelect.innerHTML = `
             <option value="">-- Chọn thú cưng --</option>
             ${availablePets.map(p => `
-                <option value="${p.id}" data-owner-id="${p.ownerId}">${p.name} (${p.type})</option>
+                <option value="${p.id}" 
+                    data-owner-id="${p.ownerId || ''}" 
+                    data-owner-name="${p.ownerName || p.owner?.name || ''}" 
+                    data-type="${p.type || 'Other'}" 
+                    data-weight="${p.weight || 0}">
+                    ${p.name} (${p.type || 'Other'})
+                </option>
             `).join("")}
         `;
 
@@ -309,6 +348,96 @@ async function openBoardingModal(record = null) {
     }
 }
 
+async function onModalPetChange() {
+    console.log("Tetdb");
+    const petSelect = document.getElementById("modal-pet-select");
+    const ownerNameResult = document.getElementById("modal-owner-name");
+    const pricePerDayInput = document.getElementById("modal-price-per-day");
+    if (!petSelect) return;
+    const petId = petSelect.value;
+    if (!petId) {
+        if (ownerInput) ownerInput.value = "";
+        if (pricePerDayInput) pricePerDayInput.value = "";
+        currentPricePerDay = 0;
+        calculateEstimatedFee();
+        return;
+    }
+    const selectedOption = petSelect.options[petSelect.selectedIndex];
+    let ownerName = selectedOption.getAttribute("data-owner-name") || "";
+    let petType = selectedOption.getAttribute("data-type") || "Other";
+    let petWeight = Number(selectedOption.getAttribute("data-weight")) || 0;
+    const ownerId = selectedOption.getAttribute("data-owner-id");
+    if (!ownerName && (ownerId || petId)) {
+        try {
+            if (ownerId) {
+                const ownerRes = await fetch(`${API.owners}/${ownerId}`);
+                if (ownerRes.ok) {
+                    const ownerData = await ownerRes.json();
+                    ownerName = ownerData.fullName || ownerData.name || "";
+                }
+            } else {
+                const petRes = await fetch(`${API.pets}/${petId}`);
+                if (petRes.ok) {
+                    const petData = await petRes.json();
+                    if (petData.type) petType = petData.type;
+                    if (petData.weight) petWeight = Number(petData.weight);
+                    if (petData.ownerId) {
+                        const ownerRes = await fetch(`${API.owners}/${petData.ownerId}`);
+                        if (ownerRes.ok) {
+                            const ownerData = await ownerRes.json();
+                            ownerName = ownerData.fullName || ownerData.name || "";
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("Không thể fetch bổ sung thông tin pet/owner:", e);
+        }
+    }
+    if (ownerNameResult) {
+        ownerNameResult.value = ownerName;
+		console.log(ownerName);
+    }
+    try {
+        const response = await fetch(`${API.prices}/search?typeOfAnimal=${encodeURIComponent(petType)}&weight=${petWeight}`);
+        if (response.ok) {
+            const priceData = await response.json();
+            currentPricePerDay = priceData.basePrice || priceData.price || 0;
+            if (pricePerDayInput) pricePerDayInput.value = currentPricePerDay;        
+            calculateEstimatedFee();
+        } else {
+            currentPricePerDay = 0;
+            if (pricePerDayInput) pricePerDayInput.value = 0;
+            calculateEstimatedFee();
+        }
+    } catch (error) {
+        console.error("Lỗi khi lấy đơn giá:", error);
+        currentPricePerDay = 0;
+        if (pricePerDayInput) pricePerDayInput.value = 0;
+        calculateEstimatedFee();
+    }
+}
+
+function calculateEstimatedFee() {
+    const checkInInput = document.getElementById("modal-check-in")?.value;
+    const expectedReturnInput = document.getElementById("modal-expected-return")?.value;
+    const totalFeeInput = document.getElementById("modal-total-fee");
+    
+    if (!checkInInput || !expectedReturnInput || currentPricePerDay <= 0) {
+        if (totalFeeInput) totalFeeInput.value = 0;
+        return;
+    }
+    const checkInDate = new Date(checkInInput);
+    const expectedDate = new Date(expectedReturnInput);
+    const diffTime = expectedDate.getTime() - checkInDate.getTime();
+    let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays <= 0) {
+        diffDays = 1;
+    }
+    const estimatedTotal = diffDays * currentPricePerDay;
+    if (totalFeeInput) totalFeeInput.value = estimatedTotal;
+}
+
 function closeBoardingModal() {
     const modal = document.getElementById("boarding-modal");
     if (modal) {
@@ -316,58 +445,28 @@ function closeBoardingModal() {
     }
 }
 
-async function onModalPetChange(event) {
-    // Lấy phần tử từ chính sự kiện (event.target là thẻ select)
-    const petSelect = event.target; 
-    const ownerInput = document.getElementById("modal-owner-name");
 
-    if (!petSelect || !ownerInput) return;
+let currentPricePerDay = 0;
 
-    // Lấy option đang được chọn
-    const selectedOption = petSelect.options[petSelect.selectedIndex];
-    
-    // Kiểm tra nếu là option rỗng (placeholder)
-    if (!selectedOption || !selectedOption.value) {
-        ownerInput.value = "";
-        return;
-    }
-    
-    const ownerId = selectedOption.getAttribute("data-owner-id");
-    console.log("Đang tải dữ liệu cho chủ nuôi ID:", ownerId);
-
-    if (!ownerId || ownerId === "null") {
-        ownerInput.value = "Chưa có chủ";
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API.owners}/${ownerId}`);
-        if (!response.ok) throw new Error("Không tìm thấy chủ");
-        
-        const owner = await response.json();
-        ownerInput.value = owner.name;
-    } catch (error) {
-        ownerInput.value = "Lỗi tải thông tin";
-        console.error("Lỗi:", error);
-    }
-}
 async function saveBoarding(event) {
     if (event) event.preventDefault();
-
     const idInput = document.getElementById("modal-boarding-id");
     const petSelect = document.getElementById("modal-pet-select");
     const checkInInput = document.getElementById("modal-check-in");
     const expectedReturnInput = document.getElementById("modal-expected-return");
-    const totalFeeInput = document.getElementById("modal-total-fee");
 	const noteInput = document.getElementById("modal-notes");
     const id = idInput ? idInput.value : "";
     const petId = Number(petSelect?.value);
-
     if (!petId) {
         showToast("Vui lòng chọn một thú cưng hợp lệ!", "error");
         return;
     }
-
+    const checkInDateStr = checkInInput ? checkInInput.value : "";
+    const expectedReturnStr = expectedReturnInput ? expectedReturnInput.value : "";
+    if (!checkInDateStr || !expectedReturnStr) {
+        showToast("Vui lòng chọn đầy đủ ngày gửi và ngày dự kiến trả!", "error");
+        return;
+    }
     const selectedOption = petSelect.options[petSelect.selectedIndex];
     const petText = selectedOption.text;
     const petName = petText.split(" (")[0];
@@ -377,19 +476,45 @@ async function saveBoarding(event) {
     else if (petText.toLowerCase().includes("cat")) petType = "Cat";
     else if (petText.toLowerCase().includes("bird")) petType = "Bird";
     else if (petText.toLowerCase().includes("rabbit")) petType = "Rabbit";
+    const petWeight = Number(selectedOption.getAttribute("data-weight")) || 0;
+    let baseFee = 0;
+    let pricePerDay = 0;
+    try {
+        const priceResponse = await fetch(`${API.prices}/search?typeOfAnimal=${encodeURIComponent(petType)}&weight=${petWeight}`);
+        if (priceResponse.ok) {
+            const priceData = await priceResponse.json();
+            pricePerDay = priceData.basePrice || priceData.price || 0; // Tùy thuộc cấu trúc trả về của DTO
+        } else {
+            showToast("Không tìm thấy đơn giá phù hợp cho thú cưng này!", "error");
+            return;
+        }      
+        const checkInDate = new Date(checkInDateStr);
+        const expectedDate = new Date(expectedReturnStr);
+        const diffTime = expectedDate.getTime() - checkInDate.getTime();
+        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays <= 0) {
+            diffDays = 1;
+        }
+        baseFee = diffDays * pricePerDay;
 
+    } catch (error) {
+        console.error("Lỗi khi tính toán chi phí:", error);
+        showToast("Lỗi khi lấy thông tin giá cước!", "error");
+        return;
+    }
     const data = {
         petId: petId,
         petName: petName,
         petType: petType,
         ownerName: document.getElementById("modal-owner-name")?.value || "",
-        checkInDate: checkInInput ? checkInInput.value : "",
-        expectedReturn: expectedReturnInput ? expectedReturnInput.value : "",
-        baseFee: totalFeeInput ? Number(totalFeeInput.value) : 0,
-		notes: noteInput.value,
+        checkInDate: checkInDateStr,
+        expectedReturn: expectedReturnStr,
+        pricePerDay: pricePerDay,
+        baseFee: baseFee,
+		notes: noteInput ? noteInput.value : "",
         status: "BOARDING"
     };
-
     if (id) {
         const existingRecord = boardingRecords.find(item => item.id === Number(id));
         if (existingRecord) {
@@ -524,7 +649,7 @@ async function showBoardingDetail(id) {
         if (actualReturnEl && feeEl) {
             if (record.status === "BOARDING") {
                 actualReturnEl.textContent = "—";
-                feeEl.textContent = "Chưa tính";
+                feeEl.textContent = record.pricePerDay;
                 feeEl.style.color = "#888";
             } else {
                 actualReturnEl.textContent = formatDate(record.actualCheckOut);
@@ -534,7 +659,7 @@ async function showBoardingDetail(id) {
         }
         const statusEl = document.getElementById("det-status-detail");
         if (statusEl) {
-            statusEl.textContent = record.status === "BOARDING" ? "• Đang gửi" : "• Đã trả";
+            statusEl.textContent = record.status === "BOARDING" ? " Đang gửi" : " Đã trả";
             statusEl.className = `status-oval ${record.status.toLowerCase()}`;
         }
         const detNotesEl = document.getElementById("det-notes-detail");
@@ -604,12 +729,12 @@ async function showBoardingDetail(id) {
             }
         }
         modal.style.display = "flex";
-
     } catch (error) {
         console.error("Lỗi khi tải chi tiết phiếu gửi:", error);
         showToast("Không thể xem chi tiết", "error");
     }
 }
+
 function renderCareNotesList(careNotes) {
     const listContainer = document.getElementById("care-notes-list");
     if (!listContainer) return;

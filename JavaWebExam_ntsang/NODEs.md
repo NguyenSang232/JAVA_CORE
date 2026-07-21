@@ -91,11 +91,29 @@ thực hiện các thao tác.
 Chỗ dữ liệu mẫu em thấy cho một comment là no discount ==> có thể sẽ thêm trường tích điểm cho owners. Ví dụ nếu số tiền tích lũy trên 3tr thì sẽ giảm 3%,
 5tr là 5% và trên 10tr là sẽ 10%.
 **Commit:** `[Day5]`
+
+### Day 6 — 21/07/2026
+
+- **Đã làm:**
+- Thực hiện cơ bản giao diện thống kê:
+* Update giao diện quản lý Owner, Pets, Boarding.
+* Thực hiện thêm entity price cho từng loại động vật
+* Thực hiện được một phần giao diện của User
+* Cập nhật file SecurityConfig để phân quyền cho người dùng có ROLE_CUSTOMER và ADMIN
+* Thực hiện các API để admin có thể quản lý giá dễ dàng
+
+- **Khó khăn:** Thay đổi cách tính giá mới. Hiện tại do gọi API mỗi lần thao tác nên giao diện hiển thị còn phải chờ hệ thống load thông tin từ backend
+- **Cách giải quyết:** Đã tạo bảng giá cho từng loại động vật để có thể linh động trong việc cập nhật giá
+  **Commit:** `[Day6]`
+
 ## 2. Quyết định thiết kế (các phần đề không đặc tả đầy đủ)
+
 > Schema và quyết định cách làm.
 > Miễn là **nhất quán** và **giải thích được lý do** ở đây.
 Thiết kế cơ sơ dữ liệu gồm 5 bảng: owners, pets, boarding_records, users, care_notes
-### 2.1 [Vấn đề]
+
+### 2.1 Thiết kế database chung 
+
 - **Vấn đề:** Ở một số bảng còn thiếu một số thông tin, chưa thể hiện được rõ ràng thời gian của từng bảng ghi. Ví dụ ở bảng Pets không có thời gian cập nhật mới nhất nên không thể nắm được thời mới nhất khi thay đổi. Thêm trường deleted_at để có thể dễ dàng nắm thống kê
 - **Quyết định của tôi:** Thêm vào bảng Pets trường updated_at + deleted_at, Bảng owner thêm trường updated_at và deleted_at, bảng boarding_records thêm trường updated_at.
 - **Lý do chọn:**
@@ -110,5 +128,18 @@ Thêm chức năng xóa nếu xóa cứng thì sẽ mất thông tin ở các b�
 + boarding_records: thêm updated_at, price_per_day, expected_return;
 + users: có thể sẽ thêm updated_at, delete_at.
 + price: quan hệ 1 - 1 với bảng pets
++ Cập nhật thêm bảng Price: Sẽ chia ra tùy theo cân nặng của pet, Ví dụ 0 -> 10kg là 100.000, 10.1 - 30kg sẽ là 180000. Trên giao diện sẽ tự động tính giá theo Type và Weight của Pet
+
+### 2.2 Bảng Pets chi tiết
+
+- **Vấn đề:** Chưa có thời gian cập nhật cho thú cưng, xóa cứng hay xóa mềm cho thú cưng. Lí do vì thể trạng của thú cưng có thể thay đổi theo thời gian, xóa cứng hay xóa mềm trong trường hợp k còn quản lý thú cưng đó nữa
+- **Quyết định của tôi:** Thêm vào bảng Pets trường updated_at + deleted_at, thực hiện xóa mềm.
+- **Lý do chọn:** Để người quản lý có thể dễ dàng biết được thông tin thú cưng như thế nào, Có thể áp dụng mức giá phù hợp theo thiết kế bảng Price. Xóa mềm vì phục vụ cho chức năng thống kê và xem lịch sử gửi đối với vai trò người dùng.
+
+### 2.3 Bảng Boarding_records
+ 
+ - **Vấn đề:** Theo đề cần các trường như giá theo ngày, ngày thực tế trả pet nhưng thực tế database chưa có các bản này
+- **Quyết định của tôi:** thêm vào trường expected_return, price_per_day.
+- **Lý do chọn:** để được chính xác ngày trả, giá trên để tính theo ngày nhưng database hiện tại chưa có trường này 
 ## 3. Ghi chú kỹ thuật khác
 - Điểm chưa hoàn thành hoặc biết còn lỗi (nếu deadline không đủ thời gian).

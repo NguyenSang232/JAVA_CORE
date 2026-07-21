@@ -19,6 +19,16 @@ public class BoardingRecordRequestDTO {
 
 	private String notes;
 
+	private Long pricePerDay;
+
+	public Long getPricePerDay() {
+		return pricePerDay;
+	}
+
+	public void setPricePerDay(Long pricePerDay) {
+		this.pricePerDay = pricePerDay;
+	}
+
 	public BoardingRecordRequestDTO() {
 		super();
 	}
@@ -32,6 +42,7 @@ public class BoardingRecordRequestDTO {
 		this.baseFee = baseFee;
 		this.status = status;
 		this.notes = notes;
+		this.pricePerDay = pricePerDay;
 	}
 
 	public Long getPetId() {

@@ -16,6 +16,8 @@ public class BoardingRecord {
 
 	private LocalDate actualCheckOut;
 
+	private Long pricePerDay;
+
 	private Long baseFee;
 
 	private Long lateFee;
@@ -41,14 +43,15 @@ public class BoardingRecord {
 	}
 
 	public BoardingRecord(Long id, Long petId, LocalDate checkInDate, LocalDate expectedReturn,
-			LocalDate actualCheckOut, Long baseFee, Long lateFee, Long totalFee, String status, String notes,
-			LocalDateTime createdAt, LocalDateTime updatedAt, Pet pet, List<CareNote> careNotes) {
+			LocalDate actualCheckOut, Long pricePerDay, Long baseFee, Long lateFee, Long totalFee, String status,
+			String notes, LocalDateTime createdAt, LocalDateTime updatedAt, Pet pet, List<CareNote> careNotes) {
 		super();
 		this.id = id;
 		this.petId = petId;
 		this.checkInDate = checkInDate;
 		this.expectedReturn = expectedReturn;
 		this.actualCheckOut = actualCheckOut;
+		this.pricePerDay = pricePerDay;
 		this.baseFee = baseFee;
 		this.lateFee = lateFee;
 		this.totalFee = totalFee;
@@ -58,6 +61,14 @@ public class BoardingRecord {
 		this.updatedAt = updatedAt;
 		this.pet = pet;
 		this.careNotes = careNotes;
+	}
+
+	public Long getPricePerDay() {
+		return pricePerDay;
+	}
+
+	public void setPricePerDay(Long pricePerDay) {
+		this.pricePerDay = pricePerDay;
 	}
 
 	public Long getId() {

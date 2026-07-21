@@ -1,8 +1,4 @@
-/* =====================================================
-   PRICE MANAGEMENT MODULE
-   ===================================================== */
 
-// Biến lưu trữ dữ liệu cache cho phần giá
 let priceListCache = [];
 
 // Hàm chính được gọi khi click vào menu "Prices"
@@ -13,7 +9,6 @@ async function showPrices() {
 
 // 1. Dựng khung giao diện HTML
 function renderPriceManagementLayout(containerId) {
-     if (typeof setActiveMenu === "function") setActiveMenu("menu-prices");
     const container = document.getElementById(containerId);
     if (!container) return;
 

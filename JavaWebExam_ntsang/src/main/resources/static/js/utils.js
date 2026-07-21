@@ -1,19 +1,16 @@
 /* =====================================================
    DATE
 ===================================================== */
-function setActiveMenu(id) {
-    const menus = document.querySelectorAll(".menu a");
-    menus.forEach(item => {
-        item.classList.remove("active");
+const menuLinks = document.querySelectorAll('.sidebar .menu a');
+menuLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+        menuLinks.forEach(item => item.classList.remove('active'));
+        if(this.id !== 'menu-logout') {
+            this.classList.add('active');
+        }
     });
-    const current = document.getElementById(id);
-    if (current) {
-        current.classList.add("active");
-    }
-}
-/**
- * yyyy-MM-dd -> dd/MM/yyyy
- */
+});
+
 function formatDate(dateString) {
     if (!dateString) return "-";
     const date = new Date(dateString);
@@ -151,10 +148,6 @@ function showLoading() {
     `;
 }
 
-function hideLoading() {
-    // Để trống vì renderTable() sẽ tự ghi đè dữ liệu
-}
-
 function emptyTable(message = "Không có dữ liệu") {
     return `
         <tr>
@@ -174,3 +167,4 @@ function searchByKeyword(list, keyword, field) {
         return value.toLowerCase().includes(keyword);
     });
 }
+

@@ -67,16 +67,5 @@ public class UserController {
 		return ResponseEntity.ok("User disabled successfully.");
 
 	}
-	@GetMapping("/owner/{ownerId}")
-	@Operation(summary = "Get user by owner id", description = "Lấy tài khoản user theo ID chủ nuôi")
-	public ResponseEntity<?> getUserByOwnerId(@PathVariable("ownerId") Long ownerId) { // ĐỔI THÀNH @PathVariable
-		if (ownerId != null) {
-			UserResponseDTO userResponse = userService.findByOwnerId(ownerId); 
-			if (userResponse == null) {
-				return ResponseEntity.noContent().build(); // Trả về 204 nếu không tìm thấy tài khoản
-			}
-			return ResponseEntity.ok(userResponse); // Trả về 200 kèm JSON chuẩn
-		}
-		return ResponseEntity.badRequest().body("Owner ID không được để trống");
-	}
+
 }

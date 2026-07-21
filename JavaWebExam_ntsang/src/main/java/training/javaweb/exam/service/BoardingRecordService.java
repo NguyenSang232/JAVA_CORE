@@ -22,13 +22,11 @@ public class BoardingRecordService {
 	@Autowired
 	private CareNoteRepository careNoteRepository;
 
-	// Check-in
 	public BoardingRecordResponseDTO create(BoardingRecordRequestDTO dto) {
 		boardingRecordRepository.insert(toEntity(dto));
 		return toResponseFromRequest(dto);
 	}
 
-	// Danh sách
 	public List<BoardingRecordResponseDTO> getAll() {
 		return boardingRecordRepository.findAll();
 	}
@@ -78,19 +76,23 @@ public class BoardingRecordService {
 	}
 
 	// Checkout
-	public void checkOut(Long boardingId, LocalDate actualCheckOut, Long baseFee) {
+	public void checkOut(Long boardingId, LocalDate actualCheckOut) {
 		BoardingRecordResponseDTO record = boardingRecordRepository.findDetail(boardingId);
 		if (record == null) {
 			throw new RuntimeException("Boarding record not found");
 		}
 		long actualDays = ChronoUnit.DAYS.between(record.getCheckInDate(), actualCheckOut);
 		long expectedDays = ChronoUnit.DAYS.between(record.getCheckInDate(), record.getExpectedReturn());
-		double dayFee = (baseFee / expectedDays);
 		long lateFee = 0;
 		if (actualDays > expectedDays) {
-			lateFee = (long) ((actualDays - expectedDays) * dayFee * 120 / 100);
+			lateFee = (long) ((actualDays - expectedDays) * record.getPricePerDay() * 20 / 100);
 		}
-		long totalFee = baseFee + lateFee;
+		long totalFee = record.getBaseFee() + lateFee;
+		if (expectedDays > 7 && expectedDays < 10) {
+			totalFee = totalFee - totalFee * 5 / 100;
+		} else if (expectedDays >= 10) {
+			totalFee = totalFee - totalFee * 10 / 100;
+		}
 		BoardingRecord entity = new BoardingRecord();
 		entity.setId(boardingId);
 		entity.setActualCheckOut(actualCheckOut);
@@ -109,6 +111,7 @@ public class BoardingRecordService {
 		record.setBaseFee(dto.getBaseFee());
 		record.setNotes(dto.getNotes());
 		record.setStatus("BOARDING");
+		record.setPricePerDay(dto.getPricePerDay());
 		return record;
 	}
 
@@ -119,6 +122,7 @@ public class BoardingRecordService {
 		newResponse.setExpectedReturn(record.getExpectedReturn());
 		newResponse.setActualCheckOut(record.getActualCheckOut());
 		newResponse.setBaseFee(record.getBaseFee());
+		newResponse.setPricePerDay(record.getPricePerDay());
 		newResponse.setTotalFee(record.getTotalFee());
 		newResponse.setLateFee(record.getLateFee());
 		newResponse.setNotes(record.getNotes());
@@ -131,6 +135,7 @@ public class BoardingRecordService {
 		newResponse.setCheckInDate(record.getCheckInDate());
 		newResponse.setExpectedReturn(record.getExpectedReturn());
 		newResponse.setBaseFee(record.getBaseFee());
+		newResponse.setPricePerDay(record.getPricePerDay());
 		newResponse.setNotes(record.getNotes());
 		newResponse.setStatus(record.getStatus());
 		return newResponse;

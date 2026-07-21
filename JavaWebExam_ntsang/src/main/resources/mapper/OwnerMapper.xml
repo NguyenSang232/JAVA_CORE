@@ -61,7 +61,6 @@
     <select id="findDetail"
             parameterType="long"
             resultMap="OwnerDTOMap">
-
         SELECT
             id,
             name,
@@ -71,9 +70,9 @@
         FROM owners
         WHERE id = #{id}
           AND deleted_at = false
-
     </select>
-
+	
+	
     <!-- ===================== Find By Id ===================== -->
     <select id="findDTOById"
             parameterType="long"
@@ -88,9 +87,7 @@
         FROM owners
         WHERE id = #{id}
           AND deleted_at = false
-
     </select>
-
     <!-- ===================== Update ===================== -->
     <update id="update"
             parameterType="training.javaweb.exam.entity.Owner">

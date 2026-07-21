@@ -1,16 +1,16 @@
+/* =====================================================
+   INIT
+===================================================== */
 window.onload = function () {
     showDashboard();
 };
+
 /* =====================================================
    SHOW DASHBOARD
 ===================================================== */
-
 async function showDashboard() {
-    if (typeof setActiveMenu === "function") setActiveMenu("menu-dashboard");
-    
     const mainView = document.getElementById("content");
     if (!mainView) return;
-    
     mainView.innerHTML = `
         <div class="dashboard-container">
             <header class="dashboard-header">
@@ -111,10 +111,7 @@ async function showDashboard() {
 }
 
 /* =====================================================
-   LOAD DASHBOARD DATA & TÍNH TOÁN XU HƯỚNG
-===================================================== */
-/* =====================================================
-   LOAD DASHBOARD DATA & TÍNH TOÁN XU HƯỚNG
+   LOAD DASHBOARD DATA
 ===================================================== */
 async function loadDashboardData() {
     try {
@@ -124,12 +121,10 @@ async function loadDashboardData() {
             fetch(API.boarding).then(res => res.json()),
             fetch(API.careNotes || '/api/care-notes').then(res => res.json()).catch(() => [])
         ]);
-
+		
         owners = ownerData || [];
         pets = petData || [];
         boardings = boardingData || [];
-
-        // 1. Cập nhật số liệu tổng
         document.getElementById("total-owner").textContent = owners.length;
         document.getElementById("total-pet").textContent = pets.length;
         document.getElementById("total-notes").textContent = noteData.length || 0;
@@ -138,34 +133,25 @@ async function loadDashboardData() {
         const totalRevenue = boardings.reduce((sum, item) => sum + (item.totalFee ?? item.baseFee ?? 0), 0);
         document.getElementById("total-revenue").textContent = formatMoney(totalRevenue);
         document.getElementById("chart-total-amount").textContent = formatMoney(totalRevenue);
-
-        // 2. Logic tính xu hướng (Hôm nay: 2026-07-19)
-        const today = "2026-07-19";
-
-        // Hàm hỗ trợ kiểm tra và lọc ngày an toàn
+        const today = "2026-07-21";
         const isDateToday = (dateStr) => {
             if (!dateStr) return false;
             const d = new Date(dateStr);
             if (isNaN(d.getTime())) return false; // Tránh lỗi Invalid time
             return d.toISOString().split('T')[0] === today;
         };
-
-        // Tính toán các chỉ số xu hướng
         const newOwners = owners.filter(i => isDateToday(i.createdAt)).length;
         const newPets = pets.filter(i => isDateToday(i.createdAt)).length;
+		console.log(newPets);
         const newNotes = noteData.filter(i => isDateToday(i.createdAt)).length;
-        
         const revToday = boardings
             .filter(i => isDateToday(i.checkInDate))
             .reduce((s, i) => s + (i.totalFee || i.baseFee || 0), 0);
-
-        // Render kết quả
         renderSimpleTrend("trend-owner", newOwners);
         renderSimpleTrend("trend-pet", newPets);
         renderSimpleTrend("trend-notes", newNotes);
         renderSimpleTrend("trend-revenue", revToday, true);
 
-        // Render các thành phần còn lại
         renderRecent(boardings);
         drawBoardingChart(boardings);
         drawPetTypeChart(pets);
@@ -204,8 +190,6 @@ function renderRecent(data) {
         if (countBadge) countBadge.textContent = "0";
         return;
     }
-
-    // Sắp xếp lấy 5 phiếu gửi mới tạo gần đây nhất (Phòng ngừa trường hợp createdAt bị thiếu)
     const recent = [...data]
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
         .slice(0, 5);
@@ -243,39 +227,35 @@ function renderRecent(data) {
 }
 
 /* =====================================================
-   FILTER RECENT (BỘ LỌC CHAY TẠI CHỖ)
+   RENDER RECENT BOARDING
 ===================================================== */
 function filterRecent(status, btnElement) {
+    // Đổi trạng thái nút bấm active
     const buttons = btnElement.parentElement.querySelectorAll(".filter-btn");
     buttons.forEach(btn => btn.classList.remove("active"));
     btnElement.classList.add("active");
 
     if (status === "ALL") {
-        renderRecent(boardings);
+        renderRecentBoarding(boardings);
     } else {
         const filtered = boardings.filter(item => item.status === status);
-        renderRecent(filtered);
+        renderRecentBoarding(filtered);
     }
 }
 
-/* =====================================================
-   BOARDING CHART (BIỂU ĐỒ DOANH THU THEO THÁNG)
-===================================================== */
 function drawBoardingChart(data) {
     const canvas = document.getElementById("boardingChart");
-    if (!canvas || typeof Chart === "undefined") return; // Tránh sập ứng dụng nếu thiếu thư viện Chart.js
+    if (!canvas) return;
 
     if (window.revenueChart) {
         window.revenueChart.destroy();
     }
-
     const months = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"];
     const values = Array(12).fill(0);
-
     data.forEach(item => {
         if (item.checkInDate) {
             const month = new Date(item.checkInDate).getMonth();
-            values[month] += (item.totalFee ?? item.baseFee ?? 0);
+            values[month] += (item.totalFee ?? 0);
         }
     });
 
@@ -294,97 +274,53 @@ function drawBoardingChart(data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
             scales: {
-                x: { grid: { display: false } },
-                y: { beginAtZero: true, grid: { color: "#f5f5f5" }, ticks: { maxTicksLimit: 5 } }
+                x: {
+                    grid: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: "#f5f5f5" },
+                    ticks: { maxTicksLimit: 5 }
+                }
             }
         }
     });
 }
 
-/* =====================================================
-   DRAW PET TYPE PROGRESS BARS
-===================================================== */
 function drawPetTypeChart(data) {
     const container = document.getElementById("pet-type-container");
     if (!container) return;
-    
     if (!data || data.length === 0) {
         container.innerHTML = `<p style="color: #999; font-size: 13px;">Chưa có dữ liệu phân bố</p>`;
         return;
     }
-    
     const types = {};
     data.forEach(p => {
         const type = p.type || "Other";
         types[type] = (types[type] || 0) + 1;
     });
-
     const totalPets = data.length;
     const sortedTypes = Object.entries(types).sort((a, b) => b[1] - a[1]);
-
     container.innerHTML = sortedTypes.map(([type, count]) => {
         const percentage = Math.round((count / totalPets) * 100);
         const petIcon = typeof getPetIcon === "function" ? getPetIcon(type) : "🐾";
 
         return `
-            <div class="distribution-row" style="margin-bottom: 12px;">
-                <div class="distribution-meta" style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+            <div class="distribution-row">
+                <div class="distribution-meta">
                     <span class="type-label">${petIcon} ${type}</span>
-                    <span class="stats-data"><strong>${count}</strong> <span style="color:#888; font-size:11px;">(${percentage}%)</span></span>
+                    <span class="stats-data">${count} <span>${percentage}%</span></span>
                 </div>
-                <div class="progress-bar-bg" style="background:#eee; border-radius:4px; height:8px; width:100%; overflow:hidden;">
-                    <div class="progress-bar-fill" style="width: ${percentage}%; background:#555; height:100%; border-radius:4px;"></div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: ${percentage}%;"></div>
                 </div>
             </div>
         `;
     }).join("");
-}
-
-/* =====================================================
-   HELPER UTILS (CÁC HÀM BỔ TRỢ ĐỊNH DẠNG TRÁNH LỖI)
-===================================================== */
-function formatMoney(amount) {
-    if (!amount) return "0đ";
-    return new Intl.NumberFormat('vi-VN').format(amount) + "đ";
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return "—";
-    try {
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return dateStr;
-        return d.toLocaleDateString('vi-VN');
-    } catch {
-        return dateStr;
-    }
-}
-
-function getPetIcon(type) {
-    if (!type) return "🐾";
-    switch(type.toLowerCase()) {
-        case 'dog': return '🐶';
-        case 'cat': return '🐱';
-        case 'bird': return '🐦';
-        case 'rabbit': return '🐰';
-        default: return '🐾';
-    }
-}
-
-function onModalPetChange() {
-    const petSelect = document.getElementById("modal-pet-select");
-    const ownerInput = document.getElementById("modal-owner-name");
-    
-    if (!petSelect || !ownerInput) return;
-
-    const selectedOption = petSelect.options[petSelect.selectedIndex];
-    
-    if (selectedOption && selectedOption.value !== "") {
-        // Lấy tên chủ nuôi được lưu trữ trong thuộc tính data-owner-name của option
-        const ownerName = selectedOption.getAttribute("data-owner-name");
-        ownerInput.value = ownerName || "Chưa rõ";
-    } else {
-        ownerInput.value = "";
-    }
 }

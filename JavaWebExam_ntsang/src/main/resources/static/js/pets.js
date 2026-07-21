@@ -2,8 +2,6 @@
    SHOW PET PAGE
 ===================================================== */
 async function showPets() {
-    setActiveMenu("menu-pets");
-
     const mainView = document.getElementById("content");
     if (!mainView) return;
 
@@ -190,9 +188,6 @@ async function renderPetTable(petList) {
     tableBody.innerHTML = rows.join("");
 }
 
-/* =====================================================
-   GET OWNER BY ID
-===================================================== */
 async function getOwnerById(id) {
     if (!id) return null;
     try {
@@ -200,14 +195,11 @@ async function getOwnerById(id) {
         if (!response.ok) return null;
         return await response.json();
     } catch (error) {
-        console.error("Owner error:", error);
+ //       console.log("Owner error:", error.getMessage());
         return null;
     }
 }
 
-/* =====================================================
-   PET FILTER
-===================================================== */
 function filterPet(type, btnElement) {
     const buttons = btnElement.parentElement.querySelectorAll(".filter-btn");
     buttons.forEach(btn => btn.classList.remove("active"));
@@ -361,7 +353,8 @@ async function openPetModal(pet = null) {
     const modal = document.getElementById("pet-modal");
     const form = document.getElementById("pet-form");
     const ownerSelect = document.getElementById("pet-owner-select");
-
+	const title = document.getElementById("title-detail");
+		title.textContent = "Them moi thu nuoi"
     if (!modal) {
         console.warn("Không tìm thấy phần tử #pet-modal trên trang này.");
         return;
@@ -509,6 +502,8 @@ async function savePet(event) {
 ===================================================== */
 function editPet(id) {
     const pet = pets.find(item => item.id === id);
+	const title = document.getElementById("title-detail");
+	title.textContent = " Chinh Sua Thong Tin"
     if (!pet) return;
     openPetModal(pet);
 }

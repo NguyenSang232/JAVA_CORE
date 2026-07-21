@@ -46,7 +46,8 @@
             role,
             owner_id,
             enabled,
-            created_at
+            created_at,
+            updated_at
         )
         VALUES
         (
@@ -55,6 +56,7 @@
             #{role},
             #{ownerId},
             true,
+            NOW(),
             NOW()
         )
     </insert>
@@ -87,8 +89,4 @@
         FROM users
         WHERE id=#{id}
     </select>
-
-    <select id="findByOwnerId" resultType="training.javaweb.exam.entity.User">
-    SELECT * FROM users WHERE owner_id = #{ownerId} AND enabled = true
-</select>
 </mapper>

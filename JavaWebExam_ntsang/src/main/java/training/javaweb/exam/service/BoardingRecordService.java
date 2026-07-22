@@ -2,7 +2,9 @@ package training.javaweb.exam.service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,37 +47,30 @@ public class BoardingRecordService {
 		return response;
 	}
 
-	// Đang gửi
 	public List<BoardingRecordResponseDTO> getCurrentBoarding() {
 		return boardingRecordRepository.findCurrentBoarding();
 	}
 
-	// Lịch sử theo thú cưng
 	public List<BoardingRecordResponseDTO> getHistoryByPet(Long petId) {
 		return boardingRecordRepository.findHistoryByPet(petId);
 	}
 
-	// Lịch sử theo chủ nuôi
 	public List<BoardingRecordResponseDTO> getHistoryByOwner(Long ownerId) {
 		return boardingRecordRepository.findHistoryByOwner(ownerId);
 	}
 
-	// Tìm theo ngày
 	public List<BoardingRecordResponseDTO> findByDate(LocalDate from, LocalDate to) {
 		return boardingRecordRepository.findByDate(from, to);
 	}
 
-	// Chủ nuôi xem thú cưng đang gửi
 	public List<BoardingRecordResponseDTO> getMyCurrentBoarding(Long userId) {
 		return boardingRecordRepository.findMyCurrentBoarding(userId);
 	}
 
-	// Chủ nuôi xem lịch sử
 	public List<BoardingRecordResponseDTO> getMyHistory(Long userId) {
 		return boardingRecordRepository.findMyHistory(userId);
 	}
 
-	// Checkout
 	public void checkOut(Long boardingId, LocalDate actualCheckOut) {
 		BoardingRecordResponseDTO record = boardingRecordRepository.findDetail(boardingId);
 		if (record == null) {
@@ -99,6 +94,21 @@ public class BoardingRecordService {
 		entity.setLateFee(lateFee);
 		entity.setTotalFee(totalFee);
 		boardingRecordRepository.checkOut(entity);
+	}
+
+	public Map<String, Object> getBoardingRecords(int page, int size, String status, String keyword) {
+		int offset = page * size;
+		List<BoardingRecord> content = boardingRecordRepository.findWithPaginationAndFilter(status, keyword, offset,
+				size);
+		long totalElements = boardingRecordRepository.countWithFilter(status, keyword);
+		long totalPages = (long) Math.ceil((double) totalElements / size);
+		Map<String, Object> response = new HashMap<>();
+		response.put("content", content);
+		response.put("totalElements", totalElements);
+		response.put("totalPages", totalPages);
+		response.put("currentPage", page);
+
+		return response;
 	}
 
 	public BoardingRecord toEntity(BoardingRecordRequestDTO dto) {

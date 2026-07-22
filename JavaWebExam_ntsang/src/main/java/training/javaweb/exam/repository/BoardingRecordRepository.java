@@ -55,4 +55,12 @@ public class BoardingRecordRepository {
 	public void checkOut(BoardingRecord boardingRecord) {
 		mapper.checkOut(boardingRecord);
 	}
+
+	public List<BoardingRecord> findWithPaginationAndFilter(String status, String keyword, int offset, int size) {
+		return mapper.selectBoardingRecords(status, keyword, offset, size);
+	}
+
+	public long countWithFilter(String status, String keyword) {
+		return mapper.countBoardingRecords(status, keyword);
+	}
 }

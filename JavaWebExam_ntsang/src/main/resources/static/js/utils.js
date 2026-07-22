@@ -47,13 +47,13 @@ function petStatusBadge(status) {
         case "BOARDING":
             return `
                 <span class="badge boarding">
-                    🟢 Đang gửi
+                     Đang gửi
                 </span>
             `;
         case "RETURNED":
             return `
                 <span class="badge returned">
-                    🔵 Đã trả
+                     Đã trả
                 </span>
             `;
         default:
@@ -89,16 +89,16 @@ function petBadge(type) {
 }
 
 function accountBadge(hasAccount) {
-    if (hasAccount) {
+    if (!hasAccount) {
         return `
             <span class="badge success">
-                ✅ Đã có
+                 Đã có tài khoản
             </span>
         `;
     }
     return `
         <span class="badge danger">
-            ❌ Chưa có
+             Chưa có tài khoản
         </span>
     `;
 }

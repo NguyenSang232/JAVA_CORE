@@ -16,6 +16,7 @@ const petServiceAPI = {
             ]);
             const petsData = petsRes.ok ? await petsRes.json() : [];
             const boardingData = boardingRes.ok ? await boardingRes.json() : [];
+			console.log(boardingData);
             const petsList = Array.isArray(petsData) ? petsData : (petsData.content || []);
             const currentBoardings = Array.isArray(boardingData) ? boardingData : (boardingData.content || [boardingData]);       
             const historyRes = await fetch(`${API.boarding}/my-history`, {

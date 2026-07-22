@@ -50,8 +50,6 @@
             NOW()
         )
     </insert>
-
-    <!-- ================= Find All ================= -->
     <select id="findAll" resultMap="PetDTOMap">
         SELECT p.*,
                o.name AS owner_name
@@ -60,20 +58,19 @@
         WHERE p.deleted_at = false
         ORDER BY p.id DESC
     </select>
-
-    <!-- ================= Detail ================= -->
     <select id="findDetail" parameterType="long" resultMap="PetDTOMap">
         SELECT p.*,
                o.name AS owner_name
         FROM pets p
-        JOIN owners o ON p.owner_id = o.id
+        LEFT JOIN owners o ON p.owner_id = o.id
         WHERE p.id = #{id}
           AND p.deleted_at = false
     </select>
+    
 	<select id="countPet" parameterType="long">
 	Select owner_id Count(*) total from pets group by owner_id where id = ${id}
 	</select>
-    <!-- ================= Update ================= -->
+  
     <update id="update" parameterType="training.javaweb.exam.entity.Pet">
         UPDATE pets
         <set>
@@ -102,14 +99,14 @@
         </set>
         WHERE id = #{id}
     </update>
-    <!-- ================= Soft Delete ================= -->
+  
     <update id="softDelete">
         UPDATE pets
         SET deleted_at = true,
             updated_at = NOW()
         WHERE id = #{id}
     </update>
-    <!-- ================= Find By Type ================= -->
+   
     <select id="findByType" parameterType="string" resultMap="PetDTOMap">
         SELECT p.*,
                o.name AS owner_name
@@ -118,7 +115,7 @@
         WHERE p.type = #{type}
           AND p.deleted_at = false
     </select>
-    <!--================= Find By Owner ================= -->
+   
     <select id="findByOwnerId" parameterType="long" resultMap="PetDTOMap">
         SELECT p.*,
                o.name AS owner_name
@@ -129,7 +126,6 @@
           AND p.deleted_at = false
     </select>
 
-    <!-- ================= My Pets ================= -->
     <select id="findMyPets" parameterType="long" resultMap="PetDTOMap">
         SELECT p.*,
                o.name AS owner_name
@@ -140,7 +136,6 @@
           AND p.deleted_at = false
     </select>
 
-    <!-- ================= Update Status ================= -->
     <update id="updateStatus">
         UPDATE pets
         SET status = #{status},

@@ -1,6 +1,8 @@
 /* =====================================================
    SHOW PET PAGE
 ===================================================== */
+let currentPetSortDirection = "NONE"; // Biến lưu trạng thái sắp xếp theo tên thú cưng ("NONE", "ASC", "DESC")
+
 async function showPets() {
     const mainView = document.getElementById("content");
     if (!mainView) return;
@@ -35,19 +37,15 @@ async function showPets() {
                             <button class="filter-btn" onclick="filterPet('Rabbit', this)">🐰 Rabbit</button>
                             <button class="filter-btn" onclick="filterPet('Other', this)">🐾 Other</button>
                         </div>
-                        <div class="filter-group">
-                            <select id="pet-sort" class="filter-btn" style="padding: 5px 10px;" onchange="sortPet(this.value)">
-                                <option value="ASC">Tên A → Z</option>
-                                <option value="DESC">Tên Z → A</option>
-                            </select>
-                        </div>
                     </div>
 
                     <table>
                         <thead>
                             <tr>
                                 <th>STT</th>
-                                <th>THÚ CƯNG</th>
+                                <th style="cursor: pointer; user-select: none;" onclick="togglePetSort()">
+                                    THÚ CƯNG <span id="owner-sort-icon" style="font-size: 12px; margin-left: 4px;">⇅</span>
+                                </th>
                                 <th>LOẠI</th>
                                 <th>GIỐNG</th>
                                 <th>TUỔI</th>
@@ -73,13 +71,10 @@ async function showPets() {
     currentPetPage = 1;
     currentPetFilter = "ALL";
     currentPetKeyword = "";
-    currentPetSort = "ASC";
+    currentPetSortDirection = "NONE";
     await loadPetData();
 }
 
-/* =====================================================
-   LOAD PET DATA
-==================================================== */
 async function loadPetData() {
     try {
         const [petResponse, boardingResponse] = await Promise.all([
@@ -100,7 +95,11 @@ async function loadPetData() {
             };
         });
 
-        updatePetView();
+        if (currentPetSortDirection === "ASC" || currentPetSortDirection === "DESC") {
+            sortPetData(currentPetSortDirection, false);
+        } else {
+            updatePetView();
+        }
     } catch (error) {
         console.error("Load pet error:", error);
         showToast("Không tải được dữ liệu thú cưng", "error");
@@ -114,17 +113,16 @@ function getPetStatus(petId, boardingRecords) {
     return returned ? "RETURNED" : "HOME";
 }
 
-/* =====================================================
-   UPDATE PET VIEW
-===================================================== */
 function updatePetView() {
     let processedData = filterPetData();
 
-    processedData.sort((a, b) => {
-        const nameA = a.name?.toLowerCase() ?? "";
-        const nameB = b.name?.toLowerCase() ?? "";
-        return currentPetSort === "ASC" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
-    });
+    if (currentPetSortDirection === "ASC" || currentPetSortDirection === "DESC") {
+        processedData.sort((a, b) => {
+            const nameA = a.name?.toLowerCase() ?? "";
+            const nameB = b.name?.toLowerCase() ?? "";
+            return currentPetSortDirection === "ASC" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+        });
+    }
 
     const pageData = paginatePet(processedData, currentPetPage);
     renderPetTable(pageData);
@@ -153,13 +151,16 @@ async function renderPetTable(petList) {
         return;
     }
 
+    const perPage = typeof PETS_PER_PAGE !== "undefined" ? PETS_PER_PAGE : 5;
+
     const rows = await Promise.all(
-        petList.map(async (pet) => {
+        petList.map(async (pet, index) => {
+            const stt = (currentPetPage - 1) * perPage + (index + 1);
             const owner = await getOwnerById(pet.ownerId);
 
             return `
-                <tr class="pet-row">
-                    <td>${pet.id}</td>
+                <tr class="pet-row" onclick="editPet(${pet.id})">
+                    <td>${stt}</td>
                     <td>
                         <div class="pet-cell" style="display: flex; align-items: center; gap: 8px;">
                             <div class="pet-avatar-mini" style="font-size: 20px;">${getPetIcon(pet.type)}</div>
@@ -195,7 +196,6 @@ async function getOwnerById(id) {
         if (!response.ok) return null;
         return await response.json();
     } catch (error) {
- //       console.log("Owner error:", error.getMessage());
         return null;
     }
 }
@@ -237,11 +237,30 @@ function searchPet(keyword) {
 }
 
 /* =====================================================
-   SORT PET
+   SORT PET (THEO ICON MŨI TÊN ĐỒNG THỜI Ở TIÊU ĐỀ)
 ===================================================== */
-function sortPet(type) {
-    currentPetSort = type;
-    currentPetPage = 1;
+function togglePetSort() {
+    const iconSpan = document.getElementById("pet-sort-icon");
+
+    if (currentPetSortDirection === "NONE" || currentPetSortDirection === "DESC") {
+        currentPetSortDirection = "ASC";
+        sortPetData("ASC", true);
+    } else {
+        currentPetSortDirection = "DESC";
+        sortPetData("DESC", true);
+    }
+}
+
+function sortPetData(type, resetPage = true) {
+    pets.sort((a, b) => {
+        const nameA = a.name?.toLowerCase() ?? "";
+        const nameB = b.name?.toLowerCase() ?? "";
+        return type === "ASC" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    });
+
+    if (resetPage) {
+        currentPetPage = 1;
+    }
     updatePetView();
 }
 
@@ -279,88 +298,22 @@ function changePetPage(page) {
     currentPetPage = page;
     updatePetView();
 }
-/* =====================================================
-   MODAL LOGIC: THÚ CƯNG (PET)
-===================================================== */
-async function openPetModal() {
-    const modal = document.getElementById("pet-modal");
-    const form = document.getElementById("pet-form");
-    const ownerSelect = document.getElementById("pet-owner-select");
 
-    if (form) form.reset();
-    if (modal) modal.style.display = "flex";
-
-    if (!ownerSelect) return;
-
-    try {
-        const response = await fetch(API.owners);
-        const allOwners = await response.json();
-
-        ownerSelect.innerHTML = `
-            <option value="">-- Chọn chủ nuôi --</option>
-            ${allOwners.map(o => `<option value="${o.id}">${o.name} (${o.phone})</option>`).join("")}
-        `;
-    } catch (error) {
-        console.error("Lỗi khi tải danh sách chủ nuôi:", error);
-    }
-}
-
-function closePetModal() {
-    const modal = document.getElementById("pet-modal");
-    if (modal) modal.style.display = "none";
-}
-
-async function savePet(event) {
-    event.preventDefault();
-    const name = document.getElementById("pet-name").value;
-    const type = document.getElementById("pet-type").value;
-    const breed = document.getElementById("pet-breed").value;
-	const weight = document.getElementById("pet-weight").value;
-	const age = document.getElementById("pet-age").value;
-    const ownerId = Number(document.getElementById("pet-owner-select").value);
-	const image = Number(document.getElementById("pet-image").value);
-    const newPet = { ownerId, name, type, breed, weight, age, image};
-    try {
-        const response = await fetch(API.pets, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newPet)
-        });
-
-        if (response.ok) {
-            showToast("Thêm thú cưng thành công!", "success");
-            closePetModal();
-
-            if (typeof loadDashboardData === "function") {
-                await loadDashboardData();
-            }
-        } else {
-            showToast("Không thể lưu thú cưng mới", "error");
-        }
-    } catch (error) {
-        console.error(error);
-        showToast("Lỗi kết nối máy chủ", "error");
-    }
-}
 /* =====================================================
    MODAL LOGIC: THÚ CƯNG (PET) - CHUẨN HÓA & KHÔNG TRÙNG LẶP
 ===================================================== */
-
-/**
- * Mở modal thú cưng (Hỗ trợ cả chế độ thêm mới và chỉnh sửa)
- */
 async function openPetModal(pet = null) {
     const modal = document.getElementById("pet-modal");
     const form = document.getElementById("pet-form");
     const ownerSelect = document.getElementById("pet-owner-select");
-	const title = document.getElementById("title-detail");
-		title.textContent = "Them moi thu nuoi"
+    const title = document.getElementById("title-detail");
+    if (title) title.textContent = pet ? "Chỉnh sửa thông tin thú cưng" : "Thêm mới thú nuôi";
+
     if (!modal) {
         console.warn("Không tìm thấy phần tử #pet-modal trên trang này.");
         return;
     }
 
-    // Đảm bảo có input ẩn để lưu ID khi thực hiện sửa (edit)
     let idInput = document.getElementById("pet-id");
     if (!idInput) {
         idInput = document.createElement("input");
@@ -369,17 +322,13 @@ async function openPetModal(pet = null) {
         if (form) form.appendChild(idInput);
     }
 
-    // Reset lại form trước khi điền dữ liệu mới
     if (form) form.reset();
     idInput.value = "";
-
-    // Hiển thị modal theo class CSS overlay đồng bộ
     modal.style.display = "flex";
 
     if (!ownerSelect) return;
 
     try {
-        // Tải danh sách chủ nuôi từ API để đổ vào thẻ select
         const response = await fetch(API.owners);
         const allOwners = await response.json();
 
@@ -388,10 +337,8 @@ async function openPetModal(pet = null) {
             ${allOwners.map(o => `<option value="${o.id}">${o.name} (${o.phone})</option>`).join("")}
         `;
 
-        // Nếu là chế độ chỉnh sửa (Edit) -> Điền dữ liệu cũ vào form
         if (pet) {
             idInput.value = pet.id ?? "";
-           
             const nameInput = document.getElementById("pet-name");
             const typeSelect = document.getElementById("pet-type");
             const breedInput = document.getElementById("pet-breed");
@@ -410,21 +357,17 @@ async function openPetModal(pet = null) {
         showToast("Không thể nạp danh sách chủ nuôi", "error");
     }
 }
-/**
- * Đóng modal thú cưng
- */
+
 function closePetModal() {
     const modal = document.getElementById("pet-modal");
     if (modal) {
         modal.style.display = "none";
     }
 }
-/**
- * Hợp nhất hàm lưu dữ liệu (Xử lý cả POST khi thêm mới và PUT khi cập nhật)
- */
-async function savePet(event) {
-    if (event) event.preventDefault(); // Ngăn chặn cơ chế submit mặc định của trình duyệt gây tải lại trang
 
+async function savePet(event) {
+    if (event) event.preventDefault();
+	
     const idInput = document.getElementById("pet-id");
     const nameInput = document.getElementById("pet-name");
     const typeSelect = document.getElementById("pet-type");
@@ -432,7 +375,6 @@ async function savePet(event) {
     const ageInput = document.getElementById("pet-age");
     const weightInput = document.getElementById("pet-weight");
     const ownerSelect = document.getElementById("pet-owner-select");
-
     const id = idInput ? idInput.value : "";
     const ownerId = ownerSelect ? Number(ownerSelect.value) : 0;
 
@@ -441,7 +383,6 @@ async function savePet(event) {
         return;
     }
 
-    // Xây dựng object dữ liệu thú cưng gửi lên API
     const petData = {
         name: nameInput ? nameInput.value : "",
         type: typeSelect ? typeSelect.value : "Dog",
@@ -451,7 +392,6 @@ async function savePet(event) {
         ownerId: ownerId,
     };
 
-    // Nếu sửa dữ liệu, ta giữ nguyên thời gian tạo, nếu tạo mới thì lưu mốc thời gian hiện tại
     if (id) {
         const existingPet = pets.find(p => p.id === Number(id));
         if (existingPet) {
@@ -464,14 +404,12 @@ async function savePet(event) {
     try {
         let response;
         if (id) {
-            // Thực hiện PUT để cập nhật
             response = await fetch(`${API.pets}/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(petData)
             });
         } else {
-            // Thực hiện POST để tạo mới
             response = await fetch(API.pets, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -482,9 +420,8 @@ async function savePet(event) {
         if (response.ok) {
             showToast("Lưu thông tin thú cưng thành công!", "success");
             closePetModal();
-            await loadPetData(); // Tải lại danh sách thú cưng trên bảng hiển thị
+            await loadPetData();
 
-            // Đồng bộ dữ liệu Dashboard nếu có hàm này toàn cục
             if (typeof loadDashboardData === "function") {
                 await loadDashboardData();
             }
@@ -502,8 +439,6 @@ async function savePet(event) {
 ===================================================== */
 function editPet(id) {
     const pet = pets.find(item => item.id === id);
-	const title = document.getElementById("title-detail");
-	title.textContent = " Chinh Sua Thong Tin"
     if (!pet) return;
     openPetModal(pet);
 }

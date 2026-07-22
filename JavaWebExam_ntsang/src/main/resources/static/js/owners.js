@@ -2,6 +2,8 @@
    OWNER.JS
    OWNER MANAGEMENT
 ===================================================== */
+let currentSortDirection = "NONE"; // Biến lưu trạng thái sắp xếp ("NONE", "ASC", "DESC")
+
 async function showOwners() {
     const mainView = document.getElementById("content");
     if (!mainView) return;
@@ -28,17 +30,15 @@ async function showOwners() {
                 <div class="panel">
                     <div class="panel-title-area">
                         <h3>Tất cả chủ nuôi <span class="count-badge" id="owner-countAll">0</span></h3>
-                        <div class="filter-group">
-                            <button class="filter-btn active" onclick="sortOwner('ASC')">Tên A-Z</button>
-                            <button class="filter-btn" onclick="sortOwner('DESC')">Tên Z-A</button>
-                        </div>
                     </div>
 
                     <table>
                         <thead>
                             <tr>
                                 <th>STT</th>
-                                <th>HỌ TÊN</th>
+                                <th style="cursor: pointer; user-select: none;" onclick="toggleOwnerSort()">
+                                    HỌ TÊN <span id="owner-sort-icon" style="font-size: 12px; margin-left: 4px;">⇅</span>
+                                </th>
                                 <th>ĐIỆN THOẠI</th>
                                 <th>EMAIL</th>
                                 <th>THÚ CƯNG</th>
@@ -61,8 +61,10 @@ async function showOwners() {
 
     currentOwnerPage = 1;
     currentOwnerKeyword = "";
+    currentSortDirection = "NONE";
     await loadOwnersData();
 }
+
 /* =====================================================
    LOAD OWNER DATA
 ===================================================== */
@@ -71,7 +73,12 @@ async function loadOwnersData() {
         const response = await fetch(API.owners);
         owners = await response.json();
 
-        updateOwnerView();
+        // Giữ nguyên trạng thái sắp xếp nếu đang bật
+        if (currentSortDirection === "ASC" || currentSortDirection === "DESC") {
+            sortOwnerData(currentSortDirection, false);
+        } else {
+            updateOwnerView();
+        }
     } catch (error) {
         console.error(error);
         showToast("Không tải được danh sách Owner", "error");
@@ -82,32 +89,26 @@ async function getDetaiOwner(owenerId){
 
 }
 
-
 async function openOwnerModalDetail(ownerId = null) {
     const modalOverlay = document.getElementById("owner-modal-overlay");
     const form = document.getElementById("owner-form-detail");
     const title = document.getElementById("owner-modal-title");
     const listContainer = document.getElementById("pet-detail-list-detail-owner");
-
     // Hiển thị modal
     modalOverlay.style.display = "flex";
-
     if (ownerId) {
-        // Mode CHỈNH SỬA: Tìm chủ nuôi trong mảng toàn cục 'owners'
         const owner = owners.find(o => o.id == ownerId);
         title.innerText = "Chỉnh sửa chủ nuôi";
-        
         document.getElementById("owner-id-detail").value = owner.id;
         document.getElementById("owner-name-detail").value = owner.name;
         document.getElementById("owner-email-detail").value = owner.email;
         document.getElementById("owner-phone-detail").value = owner.phone;
         document.getElementById("owner-address-detail").value = owner.address || "";
-
-        // Load thú cưng
+		document.getElementById("owner-username-detail").value = owner.phone;
         listContainer.innerHTML = "Đang tải...";
         const pets = await getPetByOwnerId(ownerId);
         console.log(`Thú cưng của Owner ID ${ownerId}:`, pets);
-      listContainer.innerHTML = pets.map(p => `
+        listContainer.innerHTML = pets.map(p => `
            <div class="pet-card" onclick=editPet(${p.id})>
                 <div class="pet-avatar">
                     ${getPetIcon(p.type)}
@@ -120,7 +121,6 @@ async function openOwnerModalDetail(ownerId = null) {
             </div>
         `).join("");
     } else {
-        // Mode THÊM MỚI
         title.innerText = "Thêm Chủ Nuôi Mới";
         form.reset();
         document.getElementById("owner-id-detail").value = "";
@@ -184,23 +184,22 @@ async function renderOwnerTable(ownerList) {
         return;
     }
 
+    const perPage = typeof OWNERS_PER_PAGE !== "undefined" ? OWNERS_PER_PAGE : 5;
+
     const rows = await Promise.all(
-        ownerList.map(async (owner) => {
+        ownerList.map(async (owner, index) => {
+            const stt = (currentOwnerPage - 1) * perPage + (index + 1);
             const [pets, user] = await Promise.all([
                 getPetByOwnerId(owner.id),
                 getUserByOwnerId(owner.id)
             ]);
 
-            console.log(`Kiểm tra Owner ID ${owner.id} nhận được user:`, user);
             const actualUser = Array.isArray(user) ? user[0] : user;
             const hasAccount = !!(actualUser && actualUser.ownerId != null);
-            console.log(actualUser);
-             // Xác định trạng thái tài khoản một cách chắc chắn bằng toán tử !! (ép về boolean true/false)
-           
-
+			console.log(hasAccount);
             return `
                 <tr onclick="openOwnerModalDetail(${owner.id})" style="cursor: pointer;">
-                    <td>${owner.id}</td>
+                    <td>${stt}</td>
                     <td><strong style="color: #111;">${owner.name ?? "-"}</strong></td>
                     <td>${owner.phone ?? "-"}</td>
                     <td>${owner.email ?? "-"}</td>
@@ -208,7 +207,7 @@ async function renderOwnerTable(ownerList) {
                     <td>${accountBadge(hasAccount)}</td>
                     <td>
                         <div class="action-group">
-                            <button class="action-btn edit" title="Chỉnh sửa" onclick=" event.stopPropagation(); editOwner(${owner.id})">✏️</button>
+                            <button class="action-btn edit" title="Chỉnh sửa" onclick="event.stopPropagation(); openOwnerModalDetail(${owner.id})">✏️</button>
                             <button class="action-btn delete" title="Xóa" onclick="event.stopPropagation(); deleteOwner(${owner.id})">🗑️</button>
                         </div>
                     </td>
@@ -225,7 +224,6 @@ async function renderOwnerTable(ownerList) {
 ===================================================== */
 async function getPetByOwnerId(ownerId) {
     try {
-		
         const response = await fetch(`${API.pets}/owner/${ownerId}`);
         if (!response.ok) return [];
         return await response.json();
@@ -234,18 +232,21 @@ async function getPetByOwnerId(ownerId) {
         return [];
     }
 }
-// GETPETBYONWER
+
 async function getUserByOwnerId(ownerId) {
     try {
         const response = await fetch(`${API.users}/${ownerId}`);
         if (!response.ok) return null;
         return await response.json();
     } catch (error) {
-     console.error("User owner error:", error);
+        console.error("User owner error:", error);
         return null;
     }
 }
-//   OWNER SEARCH
+
+/* =====================================================
+   OWNER SEARCH
+===================================================== */
 function searchOwner(keyword) {
     currentOwnerKeyword = keyword.toLowerCase();
     currentOwnerPage = 1;
@@ -264,21 +265,30 @@ function searchOwnerData() {
 }
 
 /* =====================================================
-   OWNER SORT
+   OWNER SORT (THEO ICON MŨI TÊN Ở TIÊU ĐỀ)
 ===================================================== */
-function sortOwner(type = "ASC") {
-    // Đổi nút active trong bộ lọc sắp xếp
-    const buttons = document.querySelectorAll(".panel-title-area .filter-btn");
-    buttons.forEach(btn => btn.classList.remove("active"));
-    event.target.classList.add("active");
+function toggleOwnerSort() {
+    const iconSpan = document.getElementById("owner-sort-icon");
 
+    if (currentSortDirection === "NONE" || currentSortDirection === "DESC") {
+        currentSortDirection = "ASC";
+        sortOwnerData("ASC", true);
+    } else {
+        currentSortDirection = "DESC";
+        sortOwnerData("DESC", true);
+    }
+}
+
+function sortOwnerData(type, resetPage = true) {
     owners.sort((a, b) => {
         const nameA = a.name?.toLowerCase() ?? "";
         const nameB = b.name?.toLowerCase() ?? "";
         return type === "ASC" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
     });
 
-    currentOwnerPage = 1;
+    if (resetPage) {
+        currentOwnerPage = 1;
+    }
     updateOwnerView();
 }
 
@@ -295,7 +305,6 @@ function paginateOwner(data, page) {
 function renderOwnerPagination(total) {
     const pagination = document.getElementById("owner-pagination");
     if (!pagination) return;
-
     const perPage = typeof OWNERS_PER_PAGE !== "undefined" ? OWNERS_PER_PAGE : 5;
     const totalPage = Math.ceil(total / perPage);
     
@@ -318,12 +327,9 @@ function renderOwnerPagination(total) {
 
 function changeOwnerPage(page) {
     currentOwnerPage = page;
-    const filteredData = searchOwnerData();
-    const pageData = paginateOwner(filteredData, currentOwnerPage);
-
-    renderOwnerTable(pageData);
-    renderOwnerPagination(filteredData.length);
+    updateOwnerView();
 }
+
 /* =====================================================
    MODAL LOGIC: CHỦ NUÔI (OWNER)
 ===================================================== */
@@ -338,15 +344,58 @@ function closeOwnerModal() {
     const modal = document.getElementById("owner-modal");
     if (modal) modal.style.display = "none";
 }
+document.getElementById("owner-phone").addEventListener("input", function() {
+    document.getElementById("owner-username-display").value = this.value;
+});
+function closeOwnerModalDetail() {
+    const modal = document.getElementById("owner-modal-overlay");
+    if (modal) modal.style.display = "none";
+}
+
+async function editOnwerSave(event){
+	const id = document.getElementById("owner-id-detail").value;
+		if(id){
+				const name = document.getElementById("owner-name-detail").value
+				const email = document.getElementById("owner-email-detail").value
+				const phone = document.getElementById("owner-phone-detail").value
+				const address = document.getElementById("owner-address-detail").value
+					const updateOwner ={
+						name: name,
+						phone: phone,
+						email: email,
+						address: address
+					}
+					console.log(updateOwner);
+					const response = await fetch(`${API.owners}/${id}`, {
+					            method: "PUT",
+					            headers: { "Content-Type": "application/json" },
+					            body: JSON.stringify(updateOwner)
+					        });
+
+					        if (response.ok) {
+					            showToast("Thêm cập nhật thành công!", "success");
+					          await loadOwnersData();
+					            closeOwnerModalDetail();
+					            
+					            if (typeof loadDashboardData === "function") {
+					                await loadDashboardData();
+					            }
+					        } else {
+					            showToast("Không thể cập nhật nuôi mới", "error");
+					        }
+				}
+}
+
 
 async function saveOwner(event) {
     event.preventDefault();
     const name = document.getElementById("owner-name").value;
+	console.log(name.value);
     const phone = document.getElementById("owner-phone").value;
     const address = document.getElementById("owner-address").value;
-	const email = document.getElementById("owner-email").value;
+    const email = document.getElementById("owner-email").value;
     const newOwner = { name, email, phone, address, createdAt: new Date().toISOString() };
-    try {
+	try {
         const response = await fetch(API.owners, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -355,10 +404,9 @@ async function saveOwner(event) {
 
         if (response.ok) {
             showToast("Thêm chủ nuôi thành công!", "success");
-			loadOwnersData();
+            loadOwnersData();
             closeOwnerModal();
             
-            // Cập nhật lại UI Dashboard (nếu đang ở trang dashboard)
             if (typeof loadDashboardData === "function") {
                 await loadDashboardData();
             }
@@ -369,8 +417,8 @@ async function saveOwner(event) {
         console.error(error);
         showToast("Lỗi kết nối máy chủ", "error");
     }
-	
 }
+
 /* =====================================================
    EDIT OWNER
 ===================================================== */
@@ -379,6 +427,8 @@ function editOwner(id) {
     if (!owner) return;
     openOwnerModal(owner);
 }
+
+
 
 /* =====================================================
    DELETE OWNER

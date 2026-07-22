@@ -45,9 +45,10 @@ public class PetController {
 
 		return ResponseEntity.ok(petService.findDetail(id));
 	}
-
+	
 	@PostMapping
 	@Operation(summary = "B1 Create pet", description = "Tạo mới thông tin thú cưng")
+
 	public ResponseEntity<PetResponseDTO> create(@Valid @RequestBody PetRequestDTO request) {
 
 		return ResponseEntity.ok(petService.create(request));

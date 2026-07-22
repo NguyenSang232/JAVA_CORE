@@ -120,8 +120,7 @@ async function loadDashboardData() {
             fetch(API.pets).then(res => res.json()),
             fetch(API.boarding).then(res => res.json()),
             fetch(API.careNotes || '/api/care-notes').then(res => res.json()).catch(() => [])
-        ]);
-		
+        ]);		
         owners = ownerData || [];
         pets = petData || [];
         boardings = boardingData || [];
@@ -129,15 +128,14 @@ async function loadDashboardData() {
         document.getElementById("total-pet").textContent = pets.length;
         document.getElementById("total-notes").textContent = noteData.length || 0;
         document.getElementById("total-boarding").textContent = boardings.filter(i => i.status === "BOARDING").length;
-
         const totalRevenue = boardings.reduce((sum, item) => sum + (item.totalFee ?? item.baseFee ?? 0), 0);
         document.getElementById("total-revenue").textContent = formatMoney(totalRevenue);
         document.getElementById("chart-total-amount").textContent = formatMoney(totalRevenue);
-        const today = "2026-07-21";
+        const today = '2026-07-22';
         const isDateToday = (dateStr) => {
             if (!dateStr) return false;
             const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return false; // Tránh lỗi Invalid time
+            if (isNaN(d.getTime())) return false;
             return d.toISOString().split('T')[0] === today;
         };
         const newOwners = owners.filter(i => isDateToday(i.createdAt)).length;
@@ -151,11 +149,9 @@ async function loadDashboardData() {
         renderSimpleTrend("trend-pet", newPets);
         renderSimpleTrend("trend-notes", newNotes);
         renderSimpleTrend("trend-revenue", revToday, true);
-
         renderRecent(boardings);
         drawBoardingChart(boardings);
         drawPetTypeChart(pets);
-
     } catch (e) {
         console.error("Dashboard error:", e);
     }
@@ -164,22 +160,15 @@ async function loadDashboardData() {
 function renderSimpleTrend(id, val, isMoney = false) {
     const el = document.getElementById(id);
     if (!el) return;
-
-    // Luôn hiển thị để bạn biết hệ thống đã chạy
     el.style.display = "inline-block";
-    
-    // Nếu > 0 thì hiện màu xanh, nếu = 0 thì hiện màu xám trung tính
     if (val > 0) {
         el.textContent = isMoney ? `+${formatMoney(val)}` : `+${val}`;
-        el.style.color = "#15803d"; // Màu xanh
+        el.style.color = "#15803d"; 
     } else {
         el.textContent = "+0";
-        el.style.color = "#999999"; // Màu xám
+        el.style.color = "#999999";
     }
 }
-/* =====================================================
-   RENDER RECENT BOARDING
-===================================================== */
 function renderRecent(data) {
     const tableBody = document.getElementById("recent-boarding");
     const countBadge = document.getElementById("recent-count");
@@ -202,7 +191,7 @@ function renderRecent(data) {
         const petIcon = typeof getPetIcon === "function" ? getPetIcon(item.petType) : "🐾";
 
         return `
-            <tr>
+            <tr style="cursor: pointer;" onclick="showBoardingDetail(${item.id})">
                 <td>
                     <div class="pet-cell">
                         <div class="pet-avatar-mini">${petIcon}</div>
@@ -230,16 +219,15 @@ function renderRecent(data) {
    RENDER RECENT BOARDING
 ===================================================== */
 function filterRecent(status, btnElement) {
-    // Đổi trạng thái nút bấm active
     const buttons = btnElement.parentElement.querySelectorAll(".filter-btn");
     buttons.forEach(btn => btn.classList.remove("active"));
     btnElement.classList.add("active");
 
     if (status === "ALL") {
-        renderRecentBoarding(boardings);
+        renderRecentBoarding(boardings,5);
     } else {
         const filtered = boardings.filter(item => item.status === status);
-        renderRecentBoarding(filtered);
+        renderRecentBoarding(filtered,5);
     }
 }
 

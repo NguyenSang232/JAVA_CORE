@@ -64,8 +64,9 @@
     <select id="countByOwnerId"
             resultType="int">
         SELECT COUNT(*)
-        FROM users
-        WHERE owner_id=#{ownerId}
+        FROM users u
+        inner join owners o
+        WHERE o.id=u.owner_id and o.id = #{ownerId} and o.deleted_at = false
     </select>
     <!-- UPDATE PASSWORD -->
     <update id="updatePassword">
@@ -87,6 +88,6 @@
             resultMap="UserMap">
         SELECT *
         FROM users
-        WHERE id=#{id}
+        WHERE id=#{id} 
     </select>
 </mapper>

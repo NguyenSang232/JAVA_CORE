@@ -159,5 +159,43 @@
         WHERE u.id = #{userId}
         ORDER BY b.check_in_date DESC
     </select>
+	
+	<!-- Lấy danh sách có phân trang, tìm kiếm và lọc -->
+  <select id="selectBoardingRecords" resultMap="BoardingDTOMap">
+        SELECT b.*,
+               p.name AS pet_name,
+               o.name AS owner_name
+        FROM boarding_records b
+        JOIN pets p ON b.pet_id = p.id
+        JOIN owners o ON p.owner_id = o.id
+        <where>
+            <if test="status != null and status != 'ALL'">
+                b.status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (LOWER(p.name) LIKE LOWER(CONCAT('%', #{keyword}, '%')) 
+                     OR LOWER(o.name) LIKE LOWER(CONCAT('%', #{keyword}, '%')))
+            </if>
+        </where>
+        ORDER BY b.check_in_date DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
 
+    <!-- Đếm tổng số lượng bản ghi thỏa mãn điều kiện để làm phân trang -->
+    <select id="countBoardingRecords" resultType="long">
+        SELECT COUNT(b.id)
+        FROM boarding_records b
+        JOIN pets p ON b.pet_id = p.id
+        JOIN owners o ON p.owner_id = o.id
+        <where>
+            <if test="status != null and status != 'ALL'">
+                b.status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (LOWER(p.name) LIKE LOWER(CONCAT('%', #{keyword}, '%')) 
+                     OR LOWER(o.name) LIKE LOWER(CONCAT('%', #{keyword}, '%')))
+            </if>
+        </where>
+    </select>
+	
 </mapper>

@@ -286,6 +286,7 @@
 }
 
 /* Trạng thái dạng Badge hình OVAL dẹt tinh tế */
+/* Trạng thái chung của status-oval */
 .status-oval {
     display: inline-block;
     padding: 5px 12px;
@@ -297,18 +298,39 @@
 }
 
 .status-oval::before {
-    content: "• ";
     font-size: 16px;
     vertical-align: middle;
-    color: #3b82f6;
     margin-right: 2px;
+}
+
+/* ==========================================
+   1. TRẠNG THÁI: ĐANG GỬI (Xanh lá cây đậm)
+   ========================================== */
+.status-oval.boarding {
+    background-color: #dcfce7; /* Nền xanh lá nhạt */
+    color: #15803d;         /* Chữ xanh lá đậm */
+}
+
+.status-oval.boarding::before {
+    color: #15803d;         /* Chấm tròn xanh lá đậm */
+}
+
+/* ==========================================
+   2. TRẠNG THÁI: ĐÃ TRẢ (Màu vàng)
+   ========================================== */
+.status-oval.returned {
+    background-color: #fef9c3; /* Nền vàng nhạt */
+    color: #a16207;         /* Chữ vàng nâu/đậm */
+}
+
+.status-oval.returned::before {
+    color: #eab308;         /* Chấm tròn màu vàng */
 }
 
 .fee-cell {
     font-weight: 800;
     color: #0f172a;
 }
-
 .action-view-btn {
     background: #f1f5f9;
     border: none;
@@ -613,7 +635,52 @@ input[readonly], .readonly-input {
     background: #1d4ed8;
     box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
 }
+/* Style chung cho số lượng trên nút lọc */
+.filter-btn .filter-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 7px;
+    margin-left: 6px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
 
+/* 1. Mặc định / Nút "Tất cả": Xám nhạt */
+.filter-btn .filter-count.count-all {
+    background-color: #e2e8f0;
+    color: #475569;
+}
+
+/* 2. Nút "Đang gửi": Xanh lá đậm / nhạt đồng bộ */
+.filter-btn .filter-count.count-boarding {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+/* 3. Nút "Đã trả": Màu vàng nâu / vàng sáng đồng bộ */
+.filter-btn .filter-count.count-returned {
+    background-color: #fef9c3;
+    color: #a16207;
+}
+
+/* Khi nút được active (được chọn), đổi sang chữ và nền trắng nổi bật */
+.filter-btn.active .filter-count {
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+}
+
+.fee-cell {
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.fee-cell {
+    font-weight: 800;
+    color: #0f172a;
+}
 /* =====================================================
    RESPONSIVE LAYOUT
 ===================================================== */

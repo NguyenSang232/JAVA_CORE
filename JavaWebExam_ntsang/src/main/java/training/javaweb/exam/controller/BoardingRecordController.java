@@ -1,6 +1,7 @@
 package training.javaweb.exam.controller;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -96,5 +97,13 @@ public class BoardingRecordController {
 	public ResponseEntity<?> myHistory(@AuthenticationPrincipal CustomUserDetails userDetails) {
 		Long userId = userDetails.getUserId();
 		return ResponseEntity.ok(boardingRecordService.getMyHistory(userId));
+	}
+
+	@GetMapping("/paginations")
+	public ResponseEntity<Map<String, Object>> getBoardings(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "5") int size, @RequestParam(defaultValue = "ALL") String status,
+			@RequestParam(required = false) String keyword) {
+		Map<String, Object> result = boardingRecordService.getBoardingRecords(page, size, status, keyword);
+		return ResponseEntity.ok(result);
 	}
 }

@@ -32,3 +32,6 @@ const BOARDING_PER_PAGE = 5;
 let currentBoardingStatus = "ALL";
 
 let revenueChart = null;
+
+let currentStartDate = "";
+let currentEndDate = "";

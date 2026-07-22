@@ -15,6 +15,8 @@ public interface PetMapper {
 
 	PetResponseDTO findDetail(Long id);
 
+	PetResponseDTO findDetailDeleteOrNot(Long id);
+
 	void update(Pet pet);
 
 	void softDelete(Long id);

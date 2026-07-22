@@ -30,6 +30,7 @@ public class PetRepository {
 		return petMapper.findDetail(id);
 	}
 
+
 	public void update(Pet pet) {
 
 		petMapper.update(pet);

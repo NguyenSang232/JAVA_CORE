@@ -31,4 +31,8 @@ public interface BoardingRecordMapper {
 
 	void checkOut(BoardingRecord boardingRecord);
 
+	List<BoardingRecord> selectBoardingRecords(String status, String keyword, int offset, int size);
+
+	long countBoardingRecords(String status, String keyword);
+
 }

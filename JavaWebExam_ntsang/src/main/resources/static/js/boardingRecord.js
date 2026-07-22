@@ -11,6 +11,8 @@ async function showBoardingRecords() {
                 <div style="display: flex; gap: 12px; align-items: center;">
                     <div class="pet-toolbar" style="margin-bottom: 0;">
                         <input type="text" id="boarding-search" placeholder="Tìm tên pet hoặc chủ nuôi..." oninput="searchBoarding(this.value)">
+						<input type="date" id="boarding-start-date" title="Từ ngày" style="padding: 6px; border: 1px solid #ddd; border-radius: 6px;" onchange="filterBoardingByDate()">
+						<input type="date" id="boarding-end-date" title="Đến ngày" style="padding: 6px; border: 1px solid #ddd; border-radius: 6px;" onchange="filterBoardingByDate()">
                     </div>
                     <button class="btn-create" onclick="openBoardingModal()">+ Thêm Phiếu Gửi</button>
                 </div>
@@ -23,11 +25,17 @@ async function showBoardingRecords() {
             <section class="dashboard-grid-owner">
                 <div class="panel">
                     <div class="panel-title-area">
-                        <div class="filter-group">
-                            <button class="filter-btn active" onclick="filterBoardingRecord('ALL', this)">🐾 Tất cả</button>
-                            <button class="filter-btn" onclick="filterBoardingRecord('BOARDING', this)">🟢 Đang gửi</button>
-                            <button class="filter-btn" onclick="filterBoardingRecord('RETURNED', this)">🔵 Đã trả</button>
-                        </div>
+					<div class="filter-group">
+					    <button class="filter-btn active" onclick="filterBoardingRecord('ALL', this)">
+					        Tất cả <span class="filter-count" id="count-all">0</span>
+					    </button>
+					    <button class="filter-btn" onclick="filterBoardingRecord('BOARDING', this)">
+					        Đang gửi <span class="filter-count" id="count-boarding">0</span>
+					    </button>
+					    <button class="filter-btn" onclick="filterBoardingRecord('RETURNED', this)">
+					        Đã trả <span class="filter-count" id="count-returned">0</span>
+					    </button>
+					</div>
                         <div class="filter-group">
                             <select id="boarding-sort" class="filter-btn" style="padding: 5px 10px;" onchange="sortBoarding(this.value)">
                                 <option value="NEW">Mới nhất</option>
@@ -35,7 +43,6 @@ async function showBoardingRecords() {
                             </select>
                         </div>
                     </div>
-
                     <table>
                         <thead>
                             <tr>
@@ -71,9 +78,83 @@ async function showBoardingRecords() {
 
 async function loadBoardingRecords() {
     try {
-        const response = await fetch(API.boarding);
-        boardingRecords = await response.json();
-        updateBoardingView();
+        let url = "";
+        let countUrl = "";
+        if (currentStartDate && currentEndDate) {
+            const dateParams = new URLSearchParams({
+                from: currentStartDate,
+                to: currentEndDate
+            });
+            url = `${API.boarding}/date?${dateParams.toString()}`;
+        } else {
+            const params = new URLSearchParams({
+                page: currentBoardingPage - 1,
+                size: BOARDING_PER_PAGE,
+                keyword: currentBoardingKeyword || "",
+                status: currentBoardingFilter
+            });
+            url = `${API.boarding}/paginations?${params.toString()}`;
+
+            const countParams = new URLSearchParams({
+                page: 0,
+                size: 1000,
+                keyword: currentBoardingKeyword || "",
+                status: "ALL"
+            });
+            countUrl = `${API.boarding}/paginations?${countParams.toString()}`;
+        }
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Lỗi tải dữ liệu");    
+        const result = await response.json(); 
+        let totalItems = 0;
+        let boardingCount = 0;
+        let returnedCount = 0;
+        let allUnfilteredRecords = [];
+        if (currentStartDate && currentEndDate) {
+            let allRecords = Array.isArray(result) ? result : (result.data || []);          
+            if (currentBoardingKeyword) {
+                allRecords = allRecords.filter(item => {
+                    const text = `${item.petName || ""} ${item.ownerName || ""}`.toLowerCase();
+                    return text.includes(currentBoardingKeyword);
+                });
+            }
+            boardingCount = allRecords.filter(item => item.status === "BOARDING").length;
+            returnedCount = allRecords.filter(item => item.status === "RETURNED").length;            
+            let totalAllRecords = allRecords.length;
+            if (currentBoardingFilter && currentBoardingFilter !== "ALL") {
+                allRecords = allRecords.filter(item => item.status === currentBoardingFilter);
+            }
+            totalItems = allRecords.length;
+            const startIndex = (currentBoardingPage - 1) * BOARDING_PER_PAGE;
+            const endIndex = startIndex + BOARDING_PER_PAGE;
+            boardingRecords = allRecords.slice(startIndex, endIndex);            
+            totalItems = totalAllRecords; 
+        } else {
+            boardingRecords = result.content || result.data || result;            
+            if (countUrl) {
+                try {
+                    const countRes = await fetch(countUrl);
+                    if (countRes.ok) {
+                        const countResult = await countRes.json();
+                        allUnfilteredRecords = countResult.content || countResult.data || countResult;
+                        if (Array.isArray(allUnfilteredRecords)) {
+                            boardingCount = allUnfilteredRecords.filter(item => item.status === "BOARDING").length;
+                            returnedCount = allUnfilteredRecords.filter(item => item.status === "RETURNED").length;                           
+                            totalItems = countResult.totalElements ?? countResult.total ?? allUnfilteredRecords.length;
+                        }
+                    }
+                } catch (e) {
+                    boardingCount = boardingRecords.filter(item => item.status === "BOARDING").length;
+                    returnedCount = boardingRecords.filter(item => item.status === "RETURNED").length;
+                    totalItems = result.totalElements ?? result.total ?? boardingRecords.length;
+                }
+            } else {
+                totalItems = result.totalElements ?? result.total ?? boardingRecords.length;
+            }
+        }        
+        await renderBoardingTable(boardingRecords);
+        updateFilterCounts(totalItems, boardingCount, returnedCount);
+        renderApiBoardingPagination(totalItems);
     } catch (error) {
         console.error("Load boarding error:", error);
         showToast("Không tải được phiếu gửi", "error");
@@ -88,7 +169,6 @@ function renderRecentBoarding(data, limit) {
         if (countBadge) countBadge.textContent = "0";
         return;
     }
-    // Sắp xếp lấy 5 phiếu gửi mới tạo gần đây nhất
     const recent = [...data]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, limit);
@@ -122,17 +202,8 @@ function renderRecentBoarding(data, limit) {
         `;
     }).join("");
 }
-function updateBoardingView() {
-    let processedData = filterBoardingData();
-    // Thực hiện sắp xếp dữ liệu
-    processedData.sort((a, b) => {
-        const dateA = new Date(a.checkInDate);
-        const dateB = new Date(b.checkInDate);
-        return currentBoardingSort === "NEW" ? dateB - dateA : dateA - dateB;
-    });
-    const pageData = paginateBoarding(processedData, currentBoardingPage);
-    renderBoardingTable(pageData);
-    renderBoardingPagination(processedData.length);
+async function updateBoardingView() {
+   await loadBoardingRecords();
 }
 
 async function renderBoardingTable(data) {
@@ -185,7 +256,14 @@ async function renderBoardingTable(data) {
     );
     tableBody.innerHTML = rows.join("");
 }
-
+function updateFilterCounts(totalItems, boardingCount, returnedCount) {
+    const countAllEl = document.getElementById("count-all");
+    const countBoardingEl = document.getElementById("count-boarding");
+    const countReturnedEl = document.getElementById("count-returned");
+    if (countAllEl) countAllEl.textContent = totalItems;
+    if (countBoardingEl) countBoardingEl.textContent = boardingCount;
+    if (countReturnedEl) countReturnedEl.textContent = returnedCount;
+}
 async function getPetById(id) {
     if (!id) return null;
     try {
@@ -197,6 +275,7 @@ async function getPetById(id) {
         return null;
     }
 }
+
 
 async function getOwnerById(id) {
     if (!id) return null;
@@ -210,44 +289,34 @@ async function getOwnerById(id) {
     }
 }
 
+function searchBoarding(keyword) {
+    currentBoardingKeyword = keyword.trim();
+    currentBoardingPage = 1;
+    loadBoardingRecords();
+}
+
 function filterBoardingRecord(status, btnElement) {
     const buttons = btnElement.parentElement.querySelectorAll(".filter-btn");
     buttons.forEach(btn => btn.classList.remove("active"));
     btnElement.classList.add("active");
-
     currentBoardingFilter = status;
     currentBoardingPage = 1;
-    updateBoardingView();
+    loadBoardingRecords();
 }
 
-function filterBoardingData() {
-    let result = [...boardingRecords];
-
-    if (currentBoardingFilter !== "ALL") {
-        result = result.filter(item => item.status === currentBoardingFilter);
-    }
-
-    if (currentBoardingKeyword) {
-        result = result.filter(item => {
-            const petName = item.petName?.toLowerCase() ?? "";
-            const ownerName = item.ownerName?.toLowerCase() ?? "";
-            return petName.includes(currentBoardingKeyword) || ownerName.includes(currentBoardingKeyword);
-        });
-    }
-
-    return result;
-}
-
-function searchBoarding(keyword) {
-    currentBoardingKeyword = keyword.toLowerCase();
+function filterBoardingByDate() {
+    const startDateInput = document.getElementById("boarding-start-date");
+    const endDateInput = document.getElementById("boarding-end-date");   
+    currentStartDate = startDateInput ? startDateInput.value : "";
+    currentEndDate = endDateInput ? endDateInput.value : "";
     currentBoardingPage = 1;
-    updateBoardingView();
+    loadBoardingRecords();
 }
 
 function sortBoarding(type) {
     currentBoardingSort = type;
     currentBoardingPage = 1;
-    updateBoardingView();
+    loadBoardingRecords();
 }
 
 function paginateBoarding(data, page) {
@@ -257,28 +326,28 @@ function paginateBoarding(data, page) {
     return data.slice(start, end);
 }
 
-function renderBoardingPagination(total) {
+function renderApiBoardingPagination(totalItems) {
     const pagination = document.getElementById("boarding-pagination");
     if (!pagination) return;
 
-    const perPage = typeof BOARDING_PER_PAGE !== "undefined" ? BOARDING_PER_PAGE : 5;
-    const totalPage = Math.ceil(total / perPage);
-
-    if (totalPage <= 1) {
+    const totalPages = Math.ceil(totalItems / BOARDING_PER_PAGE);
+    if (totalPages <= 1) {
         pagination.innerHTML = "";
         return;
     }
+
     let html = "";
-    for (let i = 1; i <= totalPage; i++) {
+    for (let i = 1; i <= totalPages; i++) {
         const activeClass = currentBoardingPage === i ? "active" : "";
         html += `<button class="page-btn ${activeClass}" onclick="changeBoardingPage(${i})">${i}</button>`;
     }
     pagination.innerHTML = html;
 }
 
-function changeBoardingPage(page) {
+async function changeBoardingPage(page) {
     currentBoardingPage = page;
-    updateBoardingView();
+    await loadBoardingRecords();
+    document.querySelector(".dashboard-grid-owner")?.scrollIntoView({ behavior: 'smooth' });
 }
 async function openBoardingModal(record = null) {
     const modal = document.getElementById("boarding-modal");
@@ -288,7 +357,6 @@ async function openBoardingModal(record = null) {
     const checkInInput = document.getElementById("modal-check-in");
     const expectedReturnInput = document.getElementById("modal-expected-return");
     const totalFeeInput = document.getElementById("modal-total-fee");
-
     if (!modal) {
         console.warn("Không tìm thấy phần tử #boarding-modal trên trang này.");
         return;
@@ -738,12 +806,10 @@ async function showBoardingDetail(id) {
 function renderCareNotesList(careNotes) {
     const listContainer = document.getElementById("care-notes-list");
     if (!listContainer) return;
-
     if (!careNotes || careNotes.length === 0) {
         listContainer.innerHTML = `<div style="text-align: center; color: #bbb; font-size: 13px; padding: 10px 0;">Chưa có hoạt động chăm sóc nào.</div>`;
         return;
     }
-
     listContainer.innerHTML = careNotes.map(item => {
         const displayDate = item.createdAt ? formatDate(item.createdAt) : "Hôm nay";
         return `
@@ -754,9 +820,6 @@ function renderCareNotesList(careNotes) {
         `;
     }).join("");
 }
-
-
-
 async function saveNote(event) {
     event.preventDefault();
     const content = document.getElementById("note-content").value;
@@ -788,7 +851,6 @@ async function saveNote(event) {
         showToast("Lỗi kết nối lưu ghi chú", "error");
     }
 }
-
 async function deleteBoarding(id) {
     const confirm = typeof confirmDelete === "function" 
         ? confirmDelete("Bạn có chắc muốn xóa phiếu gửi?") 

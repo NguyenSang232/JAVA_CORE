@@ -337,47 +337,55 @@
 /* =====================================
    BADGE
 ===================================== */
-
+/* =====================================
+   BADGE / STATUS OVAL
+===================================== */
 
 .badge {
-
-
-    padding:6px 12px;
-
-    border-radius:15px;
-
-    font-size:12px;
-
-    background:#f3f3f3;
-
-    color:#666;
-
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    background-color: #f1f5f9;
+    color: #475569;
 }
 
-
+.badge::before {
+    font-size: 16px;
+    vertical-align: middle;
+    margin-right: 2px;
+}
 
 .badge.boarding {
-
-
-    background:#e8f7ec;
-
-    color:#1d8b45;
-
+    background-color: #dcfce7;
+    color: #15803d;
 }
 
-
+.badge.boarding::before {
+    color: #15803d;
+}
 
 .badge.returned {
-
-
-    background:#e7f0ff;
-
-    color:#2563eb;
-
+    background-color: #fef9c3;
+    color: #a16207;
 }
 
+.badge.returned::before {
+    color: #eab308;
+}
 
+.badge.success {
+    background-color: #dcfce7; /* Nền xanh lá nhạt */
+    color: #15803d;         /* Chữ xanh lá đậm */
+}
 
+.badge.success::before {
+    font-size: 16px;
+    vertical-align: middle;
+    margin-right: 2px;
+    color: #15803d;         /* Chấm tròn xanh lá đậm */
+}
 /* =====================================
    ACTION
 ===================================== */

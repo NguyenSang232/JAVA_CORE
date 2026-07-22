@@ -36,9 +36,8 @@ public class UserController {
 
 	@GetMapping("/{id}")
 	@Operation(summary = "Get user by id", description = "Lấy thông tin chi tiết user theo ID")
-	public ResponseEntity<UserResponseDTO> getById(
-			@Parameter(description = "User ID", example = "1") @PathVariable Long id) {
-		return ResponseEntity.ok(userService.getById(id));
+	public ResponseEntity<Boolean> getById(@Parameter(description = "User ID", example = "1") @PathVariable Long id) {
+		return ResponseEntity.ok(userService.hasAccount(id));
 	}
 
 	@PutMapping("/{id}/password")

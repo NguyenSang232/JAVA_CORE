@@ -11,7 +11,7 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- SIDEBAR -->
+        <!-- SIDEBAR (Đã được nới rộng) -->
         <aside class="sidebar">
             <div class="sidebar-top">
                 <div class="logo-icon">
@@ -24,18 +24,21 @@
                     <li>
                         <a class="nav-item active" data-target="pets" title="Thú cưng của tôi">
                             <i class="fa-solid fa-paw"></i>
+                            <span>Thú cưng</span>
                         </a>
                     </li>
                     <!-- Nút 2: Đang gửi -->
                     <li>
                         <a class="nav-item" data-target="sending" title="Đang gửi">
                             <i class="fa-solid fa-clipboard-list"></i>
+                            <span>Đang gửi</span>
                         </a>
                     </li>
                     <!-- Nút 3: Lịch sử gửi -->
                     <li>
                         <a class="nav-item" data-target="history" title="Lịch sử gửi">
                             <i class="fa-solid fa-file-lines"></i>
+                            <span>Lịch sử</span>
                         </a>
                     </li>
                 </ul>
@@ -54,8 +57,18 @@
         </main>
     </div>
 
-    <!-- Gắn file JS chứa mẫu dữ liệu và xử lý innerHTML -->
-     <script src="js/config.js"></script>
+    <!-- Modal hiển thị chi tiết (Đã khớp với class trong CSS) -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div id="closeModalBtn" class="close-modal"><i class="fa-solid fa-xmark"></i></div>
+            <div id="modalBody">
+                <!-- Nội dung động -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Gắn file JS cấu hình và xử lý -->
+    <script src="js/config.js"></script>
     <script src="js/user-page.js"></script>
 </body>
 </html>

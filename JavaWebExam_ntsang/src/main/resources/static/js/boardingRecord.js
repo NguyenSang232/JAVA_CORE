@@ -846,51 +846,60 @@ async function openCheckoutModal(id) {
         showToast("Lỗi kết nối máy chủ", "error");
     }
 }
-
 // Tinh tien 
 function calculateCheckoutFee() {
     if (!currentCheckoutRecord) return;
-	let lateFee = 0
+    
+    let lateFee = 0;
     const checkInStr = currentCheckoutRecord.checkInDate;
     const actualStr = document.getElementById("checkout-date").value;
     const pricePerDay = Number(document.getElementById("checkout-price-per-date").value) || currentCheckoutRecord.pricePerDay || 0;
+    
     if (!checkInStr || !actualStr) return;
+    
     const checkInDate = new Date(checkInStr);
     const actualDate = new Date(actualStr);
     const diffTimeTotal = actualDate - checkInDate;
     let totalDays = Math.ceil(diffTimeTotal / (1000 * 60 * 60 * 24));
     if (totalDays < 1) totalDays = 1;
-    const expectedStr = currentCheckoutRecord.expectedReturn;
+    
+    const expectedStr = currentCheckoutRecord.expectedReturn || currentCheckoutRecord.expectedDay;
     const lateDaysEl = document.getElementById("checkout-late-days");
+    
     if (expectedStr && lateDaysEl) {
         const expectedDate = new Date(expectedStr);
         const diffTimeExpected = actualDate - expectedDate;
         const diffDays = Math.ceil(diffTimeExpected / (1000 * 60 * 60 * 24));
+        
         if (diffDays > 0) {
             lateDaysEl.textContent = `Trễ ${diffDays} ngày`;
             lateDaysEl.style.color = "#d9534f"; // Màu đỏ
-			lateFee = diffDays * pricePerDay * 20 / 100;
-					const lateFeeInput = document.getElementById("checkout-late-fee");
-					if (lateFeeInput) {
-					        lateFeeInput.value = Number(lateFee) || 0;
-					    }
+            // Phạt trễ hạn (ví dụ: tính phụ thu trễ dựa trên % giá ngày hoặc quy định riêng)
+            lateFee = diffDays * pricePerDay * 20 / 100; 
         } else if (diffDays === 0) {
             lateDaysEl.textContent = "Đúng hạn";
             lateDaysEl.style.color = "#15803d"; // Màu xanh lá
+            lateFee = 0;
         } else {
             lateDaysEl.textContent = `Trả sớm ${Math.abs(diffDays)} ngày`;
             lateDaysEl.style.color = "#0275d8"; // Màu xanh dương
+            lateFee = 0;
         }
-		
     }
-    const totalFee = totalDays * pricePerDay + lateFee;
+    
+    // Tự động cập nhật vào ô input phụ thu trễ
+    const lateFeeInput = document.getElementById("checkout-late-fee");
+    if (lateFeeInput) {
+        lateFeeInput.value = Number(lateFee) || 0;
+    }
+
+    // Tính tổng phí (Tiền cơ bản + Phụ thu trễ)
+    const totalFee = (totalDays * pricePerDay) + Number(lateFee);
     const feeInput = document.getElementById("checkout-fee");
     if (feeInput) {
         feeInput.value = totalFee;
     }
-
 }
-
 function closeCheckoutModal() {
     const modal = document.getElementById("checkout-modal");
     if (modal) {

@@ -783,19 +783,17 @@ async function showBoardingDetail(id) {
             if (inputContainer) inputContainer.style.display = "none"; 
         }
         const checkoutBtn = document.getElementById("btn-detail-checkout");
-        if (checkoutBtn) {
-            if (record.status === "BOARDING") {
-                checkoutBtn.style.display = "block";
-                checkoutBtn.onclick = async () => {
-                    if (typeof checkoutBoarding === "function") {
-                        await checkoutBoarding(record.id, record.baseFee);
-                    }
-					closeDetailModalNote();
-                };
-            } else {
-                checkoutBtn.style.display = "none";
-            }
-        }
+		if (checkoutBtn) {
+		            if (record.status === "BOARDING") {
+		                checkoutBtn.style.display = "block";		       
+		                checkoutBtn.onclick = async () => {
+		                    closeDetailModalNote();
+		                    await openCheckoutModal(record.id); 
+		                };
+		            } else {
+		                checkoutBtn.style.display = "none";
+		            }
+		        }
         modal.style.display = "flex";
     } catch (error) {
         console.error("Lỗi khi tải chi tiết phiếu gửi:", error);
@@ -803,6 +801,142 @@ async function showBoardingDetail(id) {
     }
 }
 
+let currentCheckoutRecord = null;
+
+async function openCheckoutModal(id) {
+    if (!id) {
+        showToast("Không tìm thấy mã phiếu gửi!", "error");
+        return;
+    }
+    try {
+        const response = await fetch(`${API.boarding}/${id}`);
+        if (!response.ok) {
+            showToast("Không thể lấy dữ liệu checkout", "error");
+            return;
+        }
+        const item = await response.json();
+        console.log(item);
+        currentCheckoutRecord = item;
+
+        document.getElementById("checkout-boarding-id").value = item.id;
+        
+        const ownerDisplay = (item.ownerName || 'N/A') + (item.ownerPhone ? ` (${item.ownerPhone})` : '');
+        document.getElementById("checkout-owner-text").textContent = ownerDisplay;
+        
+        document.getElementById("checkout-pet-text").textContent = item.petName ? `${item.petName} (${item.petBreed || item.petType || 'Thú cưng'})` : '-';
+        
+        document.getElementById("checkout-checkin-text").textContent = formatDate(item.checkInDate) || '-';
+        document.getElementById("checkout-expected-text").textContent = formatDate(item.expectedReturn) || '-';
+        
+        const todayStr = new Date().toLocaleDateString('en-CA');
+        document.getElementById("checkout-date").value = item.actualReturnDate ? item.actualReturnDate.substring(0, 10) : todayStr;
+        
+        document.getElementById("checkout-price-per-date").value = item.pricePerDay ;
+		
+        document.getElementById("checkout-note").value = item.notes || "";
+        
+        calculateCheckoutFee();
+
+        const checkoutModal = document.getElementById("checkout-modal");
+        if (checkoutModal) {
+            checkoutModal.style.display = "flex";
+        }
+    } catch (error) {
+        console.error("Lỗi mở modal checkout:", error);
+        showToast("Lỗi kết nối máy chủ", "error");
+    }
+}
+
+// Tinh tien 
+function calculateCheckoutFee() {
+    if (!currentCheckoutRecord) return;
+	let lateFee = 0
+    const checkInStr = currentCheckoutRecord.checkInDate;
+    const actualStr = document.getElementById("checkout-date").value;
+    const pricePerDay = Number(document.getElementById("checkout-price-per-date").value) || currentCheckoutRecord.pricePerDay || 0;
+    if (!checkInStr || !actualStr) return;
+    const checkInDate = new Date(checkInStr);
+    const actualDate = new Date(actualStr);
+    const diffTimeTotal = actualDate - checkInDate;
+    let totalDays = Math.ceil(diffTimeTotal / (1000 * 60 * 60 * 24));
+    if (totalDays < 1) totalDays = 1;
+    const expectedStr = currentCheckoutRecord.expectedReturn;
+    const lateDaysEl = document.getElementById("checkout-late-days");
+    if (expectedStr && lateDaysEl) {
+        const expectedDate = new Date(expectedStr);
+        const diffTimeExpected = actualDate - expectedDate;
+        const diffDays = Math.ceil(diffTimeExpected / (1000 * 60 * 60 * 24));
+        if (diffDays > 0) {
+            lateDaysEl.textContent = `Trễ ${diffDays} ngày`;
+            lateDaysEl.style.color = "#d9534f"; // Màu đỏ
+			lateFee = diffDays * pricePerDay * 20 / 100;
+					const lateFeeInput = document.getElementById("checkout-late-fee");
+					if (lateFeeInput) {
+					        lateFeeInput.value = Number(lateFee) || 0;
+					    }
+        } else if (diffDays === 0) {
+            lateDaysEl.textContent = "Đúng hạn";
+            lateDaysEl.style.color = "#15803d"; // Màu xanh lá
+        } else {
+            lateDaysEl.textContent = `Trả sớm ${Math.abs(diffDays)} ngày`;
+            lateDaysEl.style.color = "#0275d8"; // Màu xanh dương
+        }
+		
+    }
+    const totalFee = totalDays * pricePerDay + lateFee;
+    const feeInput = document.getElementById("checkout-fee");
+    if (feeInput) {
+        feeInput.value = totalFee;
+    }
+
+}
+
+function closeCheckoutModal() {
+    const modal = document.getElementById("checkout-modal");
+    if (modal) {
+        modal.style.display = "none";
+    }
+    currentCheckoutRecord = null;
+}
+
+/* =====================================================
+   3. XÁC NHẬN CHECK-OUT (SUBMIT FORM)
+===================================================== */
+async function submitCheckout(event) {
+    event.preventDefault();
+
+    const id = document.getElementById("checkout-boarding-id").value;
+    const actualReturnDate = document.getElementById("checkout-date").value;
+    const feePerDay = Number(document.getElementById("checkout-price-per-date").value);
+    const notes = document.getElementById("checkout-note").value;
+
+    const payload = {
+        actualCheckOut: actualReturnDate,
+		pricePerDay: feePerDay
+    };
+	console.log(payload);
+    try {
+        const response = await fetch(`${API.boarding}/checkout/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error("Lỗi check-out từ backend");
+        }
+
+        showToast("Check-out thành công!", "success");
+        closeCheckoutModal();
+
+        if (typeof loadDashboardData === "function") await loadDashboardData();
+        if (typeof loadBoardingRecords === "function") await loadBoardingRecords();
+
+    } catch (error) {
+        console.error("Lỗi khi checkout:", error);
+        showToast("Thao tác Check-out thất bại!", "error");
+    }
+}
 function renderCareNotesList(careNotes) {
     const listContainer = document.getElementById("care-notes-list");
     if (!listContainer) return;

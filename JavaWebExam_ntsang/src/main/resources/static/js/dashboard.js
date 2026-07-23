@@ -121,42 +121,68 @@ async function loadDashboardData() {
             fetch(API.boarding).then(res => res.json()),
             fetch(API.careNotes || '/api/care-notes').then(res => res.json()).catch(() => [])
         ]);		
+        
         owners = ownerData || [];
         pets = petData || [];
         boardings = boardingData || [];
-        document.getElementById("total-owner").textContent = owners.length;
-        document.getElementById("total-pet").textContent = pets.length;
-        document.getElementById("total-notes").textContent = noteData.length || 0;
-        document.getElementById("total-boarding").textContent = boardings.filter(i => i.status === "BOARDING").length;
+
+        const totalOwnerEl = document.getElementById("total-owner");
+        if (totalOwnerEl) totalOwnerEl.textContent = owners.length;
+
+        const totalPetEl = document.getElementById("total-pet");
+        if (totalPetEl) totalPetEl.textContent = pets.length;
+
+        const totalNotesEl = document.getElementById("total-notes");
+        if (totalNotesEl) totalNotesEl.textContent = noteData.length || 0;
+
+        const totalBoardingEl = document.getElementById("total-boarding");
+        if (totalBoardingEl) totalBoardingEl.textContent = boardings.filter(i => i.status === "BOARDING").length;
+
         const totalRevenue = boardings.reduce((sum, item) => sum + (item.totalFee ?? item.baseFee ?? 0), 0);
-        document.getElementById("total-revenue").textContent = formatMoney(totalRevenue);
-        document.getElementById("chart-total-amount").textContent = formatMoney(totalRevenue);
-        const today = '2026-07-22';
-        const isDateToday = (dateStr) => {
-            if (!dateStr) return false;
-            const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return false;
-            return d.toISOString().split('T')[0] === today;
-        };
-        const newOwners = owners.filter(i => isDateToday(i.createdAt)).length;
+        
+        const totalRevEl = document.getElementById("total-revenue");
+        if (totalRevEl) totalRevEl.textContent = formatMoney(totalRevenue);
+
+        const chartAmountEl = document.getElementById("chart-total-amount");
+        if (chartAmountEl) chartAmountEl.textContent = formatMoney(totalRevenue);
+
+		const today = new Date().toLocaleDateString('en-CA'); 
+		        
+		const isDateToday = (dateStr) => {
+		   if (!dateStr) return false;
+		       const datePart = String(dateStr).trim().substring(0, 10);
+		       return datePart === today;
+		  };
+        const newOwners = owners.filter(i => isDateToday(i.createAt)).length;
+		console.log(today);
+		console.log("Danh sách owners:", owners);
+		console.log("Danh sách owners:", pets);
+		console.log("Danh sách owners:", noteData);
+		console.log("Ngày của owner đầu tiên:", pets[0]?.createdAt);
+		console.log("Ngày của owner đầu tiên:", boardings[0]?.createdAt);
         const newPets = pets.filter(i => isDateToday(i.createdAt)).length;
-		console.log(newPets);
         const newNotes = noteData.filter(i => isDateToday(i.createdAt)).length;
         const revToday = boardings
-            .filter(i => isDateToday(i.checkInDate))
+            .filter(i => isDateToday(i.actualCheckOut))
             .reduce((s, i) => s + (i.totalFee || i.baseFee || 0), 0);
+		console.log(revToday);
         renderSimpleTrend("trend-owner", newOwners);
         renderSimpleTrend("trend-pet", newPets);
         renderSimpleTrend("trend-notes", newNotes);
         renderSimpleTrend("trend-revenue", revToday, true);
-        renderRecent(boardings);
-        drawBoardingChart(boardings);
-        drawPetTypeChart(pets);
+        if (document.getElementById("recent-table") || typeof renderRecent === "function") {
+            try { renderRecent(boardings); } catch (err) {}
+        }
+        if (typeof drawBoardingChart === "function") {
+            try { drawBoardingChart(boardings); } catch (err) {}
+        }
+        if (typeof drawPetTypeChart === "function") {
+            try { drawPetTypeChart(pets); } catch (err) {}
+        }
     } catch (e) {
         console.error("Dashboard error:", e);
     }
 }
-
 function renderSimpleTrend(id, val, isMoney = false) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -254,8 +280,8 @@ function drawBoardingChart(data) {
             datasets: [{
                 label: "Doanh thu",
                 data: values,
-                backgroundColor: "#555555",
-                hoverBackgroundColor: "#111111",
+                backgroundColor: "#4899ea",
+                hoverBackgroundColor: "#3068ea",
                 borderRadius: 4
             }]
         },

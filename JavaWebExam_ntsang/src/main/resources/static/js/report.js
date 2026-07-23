@@ -32,7 +32,7 @@ async function showReports() {
                 <div class="summary-card">
                     <div class="card-top">
                         <div class="icon-wrapper">🐾</div>
-                        <div class="trend-badge">↑ +5</div>
+                       <div class="trend-badge" id="trend-pet" style="display: none;"></div>
                     </div>
                     <div class="card-bottom">
                         <h2 id="total-pet">...</h2>
@@ -54,7 +54,7 @@ async function showReports() {
                 <div class="summary-card">
                     <div class="card-top">
                         <div class="icon-wrapper">💰</div>
-                        <div class="trend-badge">↑ +12%</div>
+                        <div class="trend-badge" id="trend-revenue" style="display: none;"></div>
                     </div>
                     <div class="card-bottom">
                         <h2 id="total-revenue">0đ</h2>
@@ -64,7 +64,7 @@ async function showReports() {
                 <div class="summary-card">
                     <div class="card-top">
                         <div class="icon-wrapper">📝</div>
-                        <div class="trend-badge">↑ +8</div>
+                        <div class="trend-badge" id="trend-notes" style="display: none;"></div>
                     </div>
                     <div class="card-bottom">
                         <h2 id="total-notes">7</h2>

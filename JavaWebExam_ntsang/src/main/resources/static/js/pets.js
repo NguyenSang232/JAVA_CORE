@@ -177,8 +177,8 @@ async function renderPetTable(petList) {
                     <td>${typeof petStatusBadge === "function" ? petStatusBadge(pet.status) : pet.status}</td>
                     <td>
                         <div class="action-group">
-                            <button class="action-btn edit" title="Chỉnh sửa" onclick="editPet(${pet.id})">✏️</button>
-                            <button class="action-btn delete" title="Xóa" onclick="deletePet(${pet.id})">🗑️</button>
+                            <button class="action-btn edit" title="Chỉnh sửa" onclick="event.stopPropagation(); editPet(${pet.id})">✏️</button>
+                            <button class="action-btn delete" title="Xóa" onclick="event.stopPropagation(); deletePet(${pet.id})">🗑️</button>
                         </div>
                     </td>
                 </tr>

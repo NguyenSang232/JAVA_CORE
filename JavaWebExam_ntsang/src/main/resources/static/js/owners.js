@@ -189,14 +189,12 @@ async function renderOwnerTable(ownerList) {
     const rows = await Promise.all(
         ownerList.map(async (owner, index) => {
             const stt = (currentOwnerPage - 1) * perPage + (index + 1);
-            const [pets, user] = await Promise.all([
+            
+            const [pets, hasAccount] = await Promise.all([
                 getPetByOwnerId(owner.id),
                 getUserByOwnerId(owner.id)
             ]);
-
-            const actualUser = Array.isArray(user) ? user[0] : user;
-            const hasAccount = !!(actualUser && actualUser.ownerId != null);
-			console.log(hasAccount);
+            console.log(`Owner ID ${owner.id} có tài khoản không:`, hasAccount);
             return `
                 <tr onclick="openOwnerModalDetail(${owner.id})" style="cursor: pointer;">
                     <td>${stt}</td>
@@ -218,7 +216,6 @@ async function renderOwnerTable(ownerList) {
 
     tableBody.innerHTML = rows.join("");
 }
-
 /* =====================================================
    GET PET BY OWNER
 ===================================================== */
@@ -351,68 +348,164 @@ function closeOwnerModalDetail() {
     const modal = document.getElementById("owner-modal-overlay");
     if (modal) modal.style.display = "none";
 }
+/* =====================================================
+   EDIT OWNER SAVE (CÓ HỖ TRỢ CẬP NHẬT/TẠO TÀI KHOẢN USER KHI CÓ MẬT KHẨU)
+===================================================== */
+/* =====================================================
+   EDIT OWNER SAVE (CHECK ACCOUNT DẠNG TRUE/FALSE)
+===================================================== */
+async function editOnwerSave(event) {
+    if (event) event.preventDefault();
+    
+    const id = document.getElementById("owner-id-detail").value;
+    if (!id) return;
 
-async function editOnwerSave(event){
-	const id = document.getElementById("owner-id-detail").value;
-		if(id){
-				const name = document.getElementById("owner-name-detail").value
-				const email = document.getElementById("owner-email-detail").value
-				const phone = document.getElementById("owner-phone-detail").value
-				const address = document.getElementById("owner-address-detail").value
-					const updateOwner ={
-						name: name,
-						phone: phone,
-						email: email,
-						address: address
-					}
-					console.log(updateOwner);
-					const response = await fetch(`${API.owners}/${id}`, {
-					            method: "PUT",
-					            headers: { "Content-Type": "application/json" },
-					            body: JSON.stringify(updateOwner)
-					        });
+    const name = document.getElementById("owner-name-detail").value;
+    const email = document.getElementById("owner-email-detail").value;
+    const phone = document.getElementById("owner-phone-detail").value;
+    const address = document.getElementById("owner-address-detail").value;
+    const passwordInput = document.getElementById("owner-password-detail");
+    const password = passwordInput ? passwordInput.value.trim() : "";
+    const updateOwner = {
+        name: name,
+        phone: phone,
+        email: email,
+        address: address
+    };
+    try {
+        const response = await fetch(`${API.owners}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updateOwner)
+        });
+        if (!response.ok) {
+            showToast("Không thể cập nhật thông tin chủ nuôi", "error");
+            return;
+        }
+        if (password) {
+            let hasAccount = false;
+            try {
+                const userRes = await fetch(`${API.users}/${id}`);
+                if (userRes.ok) {
+                    hasAccount = await userRes.json();
+                }
+            } catch (err) {
+                console.error("Lỗi kiểm tra trạng thái tài khoản:", err);
+            }
 
-					        if (response.ok) {
-					            showToast("Thêm cập nhật thành công!", "success");
-					          await loadOwnersData();
-					            closeOwnerModalDetail();
-					            
-					            if (typeof loadDashboardData === "function") {
-					                await loadDashboardData();
-					            }
-					        } else {
-					            showToast("Không thể cập nhật nuôi mới", "error");
-					        }
-				}
+            if (hasAccount === true) {
+                const updateUser = {
+                    username: phone,
+                    password: password,
+                    ownerId: Number(id),
+                    role: "ROLE_CUSTOMER"
+                };
+                await fetch(`${API.users}/${id}`, { 
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updateUser)
+                });
+            } else {
+                const newUser = {
+                    username: phone,
+                    password: password,
+                    ownerId: Number(id),
+                    role: "ROLE_CUSTOMER"
+                };
+
+                await fetch(`${API.users}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(newUser)
+                });
+            }
+        }
+
+        showToast("Cập nhật chủ nuôi thành công!", "success");
+        await loadOwnersData();
+        closeOwnerModalDetail();
+        
+        if (typeof loadDashboardData === "function") {
+            await loadDashboardData();
+        }
+
+    } catch (error) {
+        console.error(error);
+        showToast("Lỗi kết nối máy chủ", "error");
+    }
 }
 
-
+/* =====================================================
+   SAVE OWNER (CÓ HỖ TRỢ TẠO TÀI KHOẢN USER KHI CÓ MẬT KHẨU)
+===================================================== */
 async function saveOwner(event) {
     event.preventDefault();
+    
+    // Lấy thông tin từ form thêm chủ nuôi
     const name = document.getElementById("owner-name").value;
-	console.log(name.value);
     const phone = document.getElementById("owner-phone").value;
     const address = document.getElementById("owner-address").value;
     const email = document.getElementById("owner-email").value;
-    const newOwner = { name, email, phone, address, createdAt: new Date().toISOString() };
-	try {
+    
+    // Lấy thêm mật khẩu (giả định input nhập mật khẩu trong modal thêm có id là "owner-password")
+    const passwordInput = document.getElementById("owner-password");
+    const password = passwordInput ? passwordInput.value.trim() : "";
+
+    const newOwner = { 
+        name, 
+        email, 
+        phone, 
+        address, 
+        createdAt: new Date().toISOString() 
+    };
+
+    try {
+        // Bước 1: Lưu Owner trước để lấy ID trả về
         const response = await fetch(API.owners, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newOwner)
         });
 
-        if (response.ok) {
-            showToast("Thêm chủ nuôi thành công!", "success");
-            loadOwnersData();
-            closeOwnerModal();
-            
-            if (typeof loadDashboardData === "function") {
-                await loadDashboardData();
+        if (!response.ok) {
+            showToast("Không thể lưu chủ nuôi mới", "error");
+            return;
+        }
+
+        const createdOwner = await response.json();
+        const ownerId = createdOwner.id;
+
+        if (password) {
+            const newUser = {
+                username: phone, // Sử dụng số điện thoại làm username (hoặc tùy chỉnh theo hệ thống của bạn)
+                password: password,
+                ownerId: ownerId,
+                role: "OWNER" // Gán quyền tương ứng nếu cần
+            };
+
+            const userResponse = await fetch(API.users, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newUser)
+            });
+
+            if (!userResponse.ok) {
+                showToast("Thêm chủ nuôi thành công nhưng tạo tài khoản thất bại!", "warning");
+            } else {
+                showToast("Thêm chủ nuôi và tài khoản thành công!", "success");
             }
         } else {
-            showToast("Không thể lưu chủ nuôi mới", "error");
+            showToast("Thêm chủ nuôi thành công!", "success");
         }
+
+        // Cập nhật lại giao diện và đóng modal
+        await loadOwnersData();
+        closeOwnerModal();
+        
+        if (typeof loadDashboardData === "function") {
+            await loadDashboardData();
+        }
+
     } catch (error) {
         console.error(error);
         showToast("Lỗi kết nối máy chủ", "error");

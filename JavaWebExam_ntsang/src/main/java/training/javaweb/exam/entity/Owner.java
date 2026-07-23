@@ -1,6 +1,6 @@
 package training.javaweb.exam.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 public class Owner {
@@ -19,9 +19,9 @@ public class Owner {
 
 	private Boolean deleted_at;
 
-	private LocalDateTime createdAt;
+	private LocalDate createdAt;
 
-	private LocalDateTime updatedAt;
+	private LocalDate updatedAt;
 
 	private List<Pet> pets;
 
@@ -30,7 +30,7 @@ public class Owner {
 	}
 
 	public Owner(Long id, String fullName, String phone, String email, String address, Long userId, Boolean deleted,
-			LocalDateTime createdAt, LocalDateTime updatedAt, List<Pet> pets) {
+			LocalDate createdAt, LocalDate updatedAt, List<Pet> pets) {
 		super();
 		this.id = id;
 		this.name = fullName;
@@ -100,19 +100,19 @@ public class Owner {
 		this.deleted_at = deleted;
 	}
 
-	public LocalDateTime getCreatedAt() {
+	public LocalDate getCreatedAt() {
 		return createdAt;
 	}
 
-	public void setCreatedAt(LocalDateTime createdAt) {
+	public void setCreatedAt(LocalDate createdAt) {
 		this.createdAt = createdAt;
 	}
 
-	public LocalDateTime getUpdatedAt() {
+	public LocalDate getUpdatedAt() {
 		return updatedAt;
 	}
 
-	public void setUpdatedAt(LocalDateTime updatedAt) {
+	public void setUpdatedAt(LocalDate updatedAt) {
 		this.updatedAt = updatedAt;
 	}
 

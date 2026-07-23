@@ -24,7 +24,6 @@ public class OwnerService {
 		return ownerRepository.findDTOById(owner.getId());
 	}
 
-	// Update
 	public OwnerDTO update(Long id, OwnerRequestDTO dto) {
 
 		Owner owner = toEntity(dto);
@@ -35,52 +34,26 @@ public class OwnerService {
 		return ownerRepository.findDTOById(id);
 	}
 
-	// Read All
 	public List<OwnerDTO> getAll() {
 		return ownerRepository.findAll();
 	}
 
-	// Read Detail
 	public OwnerDTO getDetail(Long id) {
 		return ownerRepository.findDetail(id);
 	}
 
-	// Read By Id
 	public OwnerDTO getById(Long id) {
 		return ownerRepository.findDTOById(id);
 	}
 
-	// Search
 	public List<OwnerDTO> search(String keyword) {
 		return ownerRepository.search(keyword);
 	}
 
-	// Delete (Soft Delete)
 	public void delete(Long id) {
 		ownerRepository.softDelete(id);
 	}
 
-	// ---------------------- Convert ----------------------
-
-//	// Pet Entity -> PetDTO
-//	private PetDTO convertPetToDTO(Pet pet) {
-//		if (pet == null) {
-//			return null;
-//		}
-//
-//		PetDTO dto = new PetDTO();
-//		dto.setId(pet.getId());
-//		dto.setName(pet.getName());
-//		dto.setType(pet.getType());
-//		dto.setBreed(pet.getBreed());
-//		dto.setAge(pet.getAge());
-//		dto.setWeight(pet.getWeight());
-//		dto.setOwnerId(pet.getOwnerId());
-//
-//		return dto;
-//	}
-
-	// Owner Entity -> OwnerDTO
 	public Owner toEntity(OwnerRequestDTO dto) {
 		if (dto == null) {
 			return null;
@@ -106,7 +79,7 @@ public class OwnerService {
 		dto.setPhone(owner.getPhone());
 		dto.setEmail(owner.getEmail());
 		dto.setAddress(owner.getAddress());
-
+		dto.setCreateAt(owner.getCreatedAt());
 		return dto;
 	}
 

@@ -1,5 +1,7 @@
 package training.javaweb.exam.dto.response;
 
+import java.time.LocalDate;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -17,7 +19,15 @@ public class OwnerDTO {
 
 	private String address;
 
-//	private List<PetDTO> pets;
+	private LocalDate createAt;
+
+	public LocalDate getCreateAt() {
+		return createAt;
+	}
+
+	public void setCreateAt(LocalDate createAt) {
+		this.createAt = createAt;
+	}
 
 	public Long getId() {
 		return id;
@@ -58,14 +68,6 @@ public class OwnerDTO {
 	public void setAddress(String address) {
 		this.address = address;
 	}
-
-//	public List<PetDTO> getPets() {
-//		return pets;
-//	}
-
-//	public void setPets(List<PetDTO> pets) {
-//		this.pets = pets;
-//	}
 
 	public OwnerDTO(Long id,
 			@NotBlank(message = "Full name cannot be blank") @Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters") String fullName,

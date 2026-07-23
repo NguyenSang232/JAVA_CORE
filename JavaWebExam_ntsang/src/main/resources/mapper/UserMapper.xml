@@ -61,13 +61,11 @@
         )
     </insert>
     <!-- CHECK ACCOUNT -->
-    <select id="countByOwnerId"
-            resultType="int">
-        SELECT COUNT(*)
-        FROM users u
-        inner join owners o
-        WHERE o.id=u.owner_id and o.id = #{ownerId} and o.deleted_at = false
-    </select>
+   <select id="countByOwnerId" resultType="int">
+    SELECT COUNT(*)
+    FROM users 
+    WHERE owner_id = #{ownerId}
+</select>
     <!-- UPDATE PASSWORD -->
     <update id="updatePassword">
         UPDATE users

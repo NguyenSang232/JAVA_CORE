@@ -1,123 +1,111 @@
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Segoe UI',sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
 
-}
 body{
-    height:100vh;
-    background:
-    linear-gradient(
-        rgba(46,125,50,0.75),
-        rgba(46,125,50,0.75)
-    ),
-    url("https://images.unsplash.com/photo-1450778869180-41d0601e046e");
-    background-size:cover;
-    background-position:center;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+    height: 100vh;
+    background: #f4f7f6; /* Thay thế ảnh nền bằng màu nền sáng, hiện đại */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
 .container{
-    width:100%;
-    display:flex;
-    justify-content:center;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
 }
 
 .login-card{
-    width:400px;
-    background:white;
-    padding:40px;
-    border-radius:25px;
-    box-shadow:
-    0 15px 40px rgba(0,0,0,0.2);
-    text-align:center;
+    width: 400px;
+    background: white;
+    padding: 40px;
+    border-radius: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Làm mờ hiệu ứng bóng đổ cho nhẹ nhàng */
+    text-align: center;
 }
 
 .logo{
-    font-size:60px;
-    margin-bottom:10px;
+    font-size: 60px;
+    margin-bottom: 10px;
 }
 
 h1{
-    color:#2e7d32;
-    font-size:32px;
+    color: #2e7d32;
+    font-size: 32px;
 }
 
-
-
 .subtitle{
-    color:#777;
-    margin-bottom:30px;
+    color: #777;
+    margin-bottom: 30px;
+    font-size: 14px;
 }
 
 .input-group{
-    text-align:left;
-    margin-bottom:20px;
+    text-align: left;
+    margin-bottom: 20px;
 }
 
 .input-group label{
-    font-weight:600;
-    color:#444;
+    font-weight: 600;
+    color: #444;
+    font-size: 14px;
 }
-
-
 
 .input-group input{
-    width:100%;
-    padding:14px;
-    margin-top:8px;
-    border-radius:12px;
-    border:1px solid #ddd;
-    outline:none;
-    font-size:15px;
+    width: 100%;
+    padding: 14px;
+    margin-top: 8px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    outline: none;
+    font-size: 15px;
+    transition: 0.2s;
 }
 
-
 .input-group input:focus{
-
-    border-color:#4caf50;
-
+    border-color: #4caf50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
 .options{
-    text-align:left;
-    font-size:14px;
-    margin-bottom:25px;
+    text-align: left;
+    font-size: 14px;
+    margin-bottom: 25px;
+    color: #555;
 }
 
 button{
-    width:100%;
-    padding:15px;
-    border:none;
-    border-radius:15px;
-    background:#4caf50;
-    color:white;
-    font-size:18px;
-    cursor:pointer;
-    transition:0.3s;
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 15px;
+    background: #4caf50;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-
-
-
-
 button:hover{
-    background:#388e3c;
+    background: #388e3c;
 }
 
 #message{
-    margin-top:15px;
-    color:red;
+    margin-top: 15px;
+    color: red;
+    font-size: 14px;
 }
 
-
-
-
-
 .footer{
-    margin-top:30px;
-    color:#777;
-    font-size:14px;
+    margin-top: 30px;
+    color: #666;
+    font-size: 13px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
 }

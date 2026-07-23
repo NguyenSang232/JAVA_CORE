@@ -144,8 +144,22 @@ Branch: `java-web/exam`
 
 - **Khó khăn:** Thực hiện xóa cứng hay xóa mềm cho các cho các bảng ghi. Phân trang theo dữ liệu từ API hay load một lần
 - **Cách giải quyết:** Xóa mềm cho nhưng vẫn hiện thi trên giao diện là đã xóa khỏi hệ thống nhưng vẫn lưu thông tin. Load dữ liệu một lần ròi thực hiện phân trang
-  **Commit:** `[Day7]`
+  **Commit:** `[4ab4c42]`
 
+### Day 8 — 23/07/2026
+
+- **Đã làm:**
+- Thực hiện cơ bản giao diện thống kê:
+* Tiếp tục cập nhật giao diện quản lý Boarding.
+* Thực hiện giao diện của User
+* Cập nhật lại chức năng checkout, tạo tài khoản cho người dùng
+* Tiếp tục hoàn thành chức năng quản lý giá.
+* Cập nhật lại giao diện Login.
+* Hiển thị sự thay đổi của dữ liệu theo thời gian.
+* Thay đổi các trường dữ liệu về thời gian từ LocalDateTime sang LocalDate. 
+- **Khó khăn:** Hiện tại vẫn chưa thể hiện các bảng ghi đã xóa lên giao diện.
+- **Cách giải quyết:** Sẽ truy vấn đặt điều kiện để hiển thị đúng trang thái của bảng ghi
+  **Commit:** `[Day8]`
 ## 2. Quyết định thiết kế (các phần đề không đặc tả đầy đủ)
 
 > Schema và quyết định cách làm.

@@ -45,6 +45,7 @@ const petServiceAPI = {
             });
 			console.log(response);
             const data = response.ok ? await response.json() : [];
+			console.log("Data history")
 			console.log(data);
             const activeList = Array.isArray(data) ? data : (data ? [data] : []);
             const currentItem = activeList[0] || null;
@@ -72,7 +73,22 @@ const petServiceAPI = {
             console.error("Lỗi lấy lịch sử:", error);
             return { historyList: [] };
         }
-    }
+    },
+	fetchCareNoteData: async (id) => {
+	        try {
+	            const response = await fetch(`${API.careNotes}/my?boardingId=${id}`, {
+	                credentials: "include"
+	            });
+	            const data = response.ok ? await response.json() : [];
+	            const careNoteList = Array.isArray(data) ? data : (data.content || []);
+	            return {
+	                careNoteList: careNoteList
+	            };
+	        } catch (error) {
+	            console.error("Lỗi lấy lịch sử:", error);
+	            return { historyList: [] };
+	        }
+	    }
 };
 const renderTemplates = {
     pets: async () => {
@@ -149,7 +165,9 @@ const renderTemplates = {
     sending: async () => {
         const data = await petServiceAPI.fetchSendingData();
         const pet = data.sendingPet;
-
+		const noteData = await petServiceAPI.fetchCareNoteData(pet.id);
+		const note = noteData.careNoteList;
+		console.log(note.length);
         if (!pet) {
             return `
                 <div class="page-header">
@@ -195,7 +213,7 @@ const renderTemplates = {
         } else {
             estimatedFee = pet.totalFee || pet.estimatedFee || 0;
         }
-
+		console.log(pet.notesCount);
         return `
             <div class="page-header">
                 <h1 class="page-title">Đang gửi</h1>
@@ -234,7 +252,7 @@ const renderTemplates = {
                     <i class="fa-solid fa-thumbtack"></i> ${pet.notes || 'Không có ghi chú đặc biệt'}
                 </div>
                 <button class="sending-btn">
-                    <i class="fa-solid fa-pen-to-square"></i> Xem ghi chú chăm sóc (${pet.notesCount || 0})
+                    <i class="fa-solid fa-pen-to-square"></i> Xem ghi chú chăm sóc (${note.length || 0})
                 </button>
             </div>
         `;

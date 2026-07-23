@@ -1,6 +1,6 @@
 package training.javaweb.exam.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class PetResponseDTO {
 
@@ -24,9 +24,9 @@ public class PetResponseDTO {
 
 	private Boolean deletedAt;
 
-	private LocalDateTime createdAt;
+	private LocalDate createdAt;
 
-	private LocalDateTime updatedAt;
+	private LocalDate updatedAt;
 
 	public PetResponseDTO() {
 		super();
@@ -112,19 +112,19 @@ public class PetResponseDTO {
 		this.deletedAt = deleted;
 	}
 
-	public LocalDateTime getCreatedAt() {
+	public LocalDate getCreatedAt() {
 		return createdAt;
 	}
 
-	public void setCreatedAt(LocalDateTime createdAt) {
+	public void setCreatedAt(LocalDate createdAt) {
 		this.createdAt = createdAt;
 	}
 
-	public LocalDateTime getUpdatedAt() {
+	public LocalDate getUpdatedAt() {
 		return updatedAt;
 	}
 
-	public void setUpdatedAt(LocalDateTime updatedAt) {
+	public void setUpdatedAt(LocalDate updatedAt) {
 		this.updatedAt = updatedAt;
 	}
 

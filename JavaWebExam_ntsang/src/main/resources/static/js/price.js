@@ -192,11 +192,11 @@ function showPriceModal(title, data) {
                     <div class="price-form-row">
                         <div class="price-form-group">
                             <label>Cân nặng từ (kg)</label>
-                            <input type="number" step="0.1" id="modalWeightFrom" class="price-form-input" value="${data.weightFrom !== undefined && data.weightFrom !== null ? data.weightFrom : ''}" required placeholder="0.0">
+                            <input type="text" id="modalWeightFrom" class="price-form-input" value="${data.weightFrom !== undefined && data.weightFrom !== null ? data.weightFrom : ''}" required placeholder="0.0">
                         </div>
                         <div class="price-form-group">
                             <label>Cân nặng đến (kg)</label>
-                            <input type="number" step="0.1" id="modalWeightTo" class="price-form-input" value="${data.weightTo !== undefined && data.weightTo !== null ? data.weightTo : ''}" required placeholder="10.0">
+                            <input type="text" id="modalWeightTo" class="price-form-input" value="${data.weightTo !== undefined && data.weightTo !== null ? data.weightTo : ''}" required placeholder="10.0">
                         </div>
                     </div>
                     <div class="price-form-group">

@@ -89,7 +89,7 @@ function petBadge(type) {
 }
 
 function accountBadge(hasAccount) {
-    if (!hasAccount) {
+    if (hasAccount) {
         return `
             <span class="badge success">
                  Đã có tài khoản

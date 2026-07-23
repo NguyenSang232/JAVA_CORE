@@ -118,8 +118,7 @@
    
     <select id="findByOwnerId" parameterType="long" resultMap="PetDTOMap">
         SELECT p.*,
-               o.name AS owner_name
-               
+               o.name AS owner_name      
         FROM pets p
         JOIN owners o ON p.owner_id = o.id
         WHERE p.owner_id = #{ownerId}

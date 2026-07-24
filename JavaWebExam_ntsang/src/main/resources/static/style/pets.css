@@ -1,568 +1,359 @@
 /* =====================================
-   PET PAGE LAYOUT
+   PET PAGE LAYOUT & TOPBAR
 ===================================== */
-
 .dashboard-grid-owner {
-    width: 100%;
+  width: 100%;
 }
-
 
 .panel {
-    background: #ffffff;
-    border-radius: 18px;
-    padding: 20px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
 }
-
-
-
-/* =====================================
-   TOPBAR
-===================================== */
 
 .topbar {
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    margin-bottom:25px;
-
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
 }
-
 
 .topbar h1 {
-
-    font-size:32px;
-
-    font-weight:700;
-
-    color:#222;
-
+  font-size: 32px;
+  font-weight: 700;
+  color: #222;
 }
-
 
 .topbar p {
-
-    margin-top:5px;
-
-    color:#888;
-
-    font-size:14px;
-
+  margin-top: 5px;
+  color: #888;
+  font-size: 14px;
 }
-
-
 
 .primary-btn {
-
-    background:#666;
-
-    color:white;
-
-    border:none;
-
-    padding:12px 20px;
-
-    border-radius:12px;
-
-    cursor:pointer;
-
-    font-weight:600;
-
-    transition:.3s;
-
+  background: #666;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
 }
-
 
 .primary-btn:hover {
-
-    transform:translateY(-2px);
-
-    background:#444;
-
+  transform: translateY(-2px);
+  background: #444;
 }
-
-
 
 /* =====================================
-   SEARCH TOOLBAR
+   SEARCH TOOLBAR & FILTER
 ===================================== */
-
-
 .pet-toolbar {
-
-    display:flex;
-
-    justify-content:flex-end;
-
-    margin-bottom:18px;
-
-    gap:10px;
-
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+  gap: 10px;
 }
-
-
 
 .pet-toolbar input {
-
-    width:260px;
-
-    height:38px;
-
-    border-radius:12px;
-
-    border:1px solid #ddd;
-
-    padding:0 15px;
-
-    outline:none;
-
-    font-size:14px;
-
+  width: 260px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  padding: 0 15px;
+  outline: none;
+  font-size: 14px;
 }
-
-
 
 .pet-toolbar input:focus {
-
-    border-color:#888;
-
+  border-color: #888;
 }
-
-
 
 .pet-toolbar select {
-
-    display:none;
-
+  display: none;
 }
-
-
-
-
-/* =====================================
-   FILTER BUTTON
-===================================== */
-
 
 .pet-filter {
-
-    display:flex;
-
-    gap:12px;
-
-    margin-bottom:20px;
-
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
 }
-
-
 
 .pet-filter button {
-
-
-    border:1px solid #ddd;
-
-    background:white;
-
-    padding:8px 18px;
-
-    border-radius:20px;
-
-    font-size:14px;
-
-    cursor:pointer;
-
-    color:#666;
-
-    transition:.25s;
-
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #666;
+  transition: 0.25s;
 }
-
-
 
 .pet-filter button:hover {
-
-
-    background:#f1f1f1;
-
+  background: #f1f1f1;
 }
-
-
 
 .pet-filter .active-filter {
-
-
-    background:#666;
-
-    color:white;
-
-    border-color:#666;
-
+  background: #666;
+  color: #fff;
+  border-color: #666;
 }
-
-
-
 
 /* =====================================
-   TABLE
+   TABLE & PET INFO
 ===================================== */
-
-
 .panel table {
-
-    width:100%;
-
-    border-collapse:separate;
-
-    border-spacing:0;
-
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
-
-
 
 .panel thead tr {
-
-
-    background:#f7f7f7;
-
+  background: #f7f7f7;
 }
-
-
 
 .panel th {
-
-
-    padding:16px 14px;
-
-    font-size:13px;
-
-    color:#888;
-
-    text-transform:uppercase;
-
+  padding: 16px 14px;
+  font-size: 13px;
+  color: #888;
+  text-transform: uppercase;
 }
-
-
 
 .panel td {
-
-
-    padding:16px 14px;
-
-    font-size:14px;
-
-    color:#555;
-
-    border-bottom:1px solid #f0f0f0;
-
+  padding: 16px 14px;
+  font-size: 14px;
+  color: #555;
+  border-bottom: 1px solid #f0f0f0;
 }
-
-
 
 .pet-row:hover {
-
-
-    background:#fafafa;
-
+  background: #fafafa;
 }
-
-
-
-
-
-/* =====================================
-   PET INFO
-===================================== */
-
 
 .pet-info {
-
-
-    display:flex;
-
-    align-items:center;
-
-    gap:12px;
-
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-
-
 
 .pet-avatar {
-
-
-    width:38px;
-
-    height:38px;
-
-    border-radius:12px;
-
-    background:#f1f1f1;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    font-size:20px;
-
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #f1f1f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
 }
-
-
 
 .pet-info strong {
-
-
-    display:block;
-
-    color:#333;
-
+  display: block;
+  color: #333;
 }
-
-
 
 .pet-info small {
-
-
-    color:#999;
-
+  color: #999;
 }
 
-
-
-/* =====================================
-   BADGE
-===================================== */
 /* =====================================
    BADGE / STATUS OVAL
 ===================================== */
-
 .badge {
-    display: inline-block;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    background-color: #f1f5f9;
-    color: #475569;
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background-color: #f1f5f9;
+  color: #475569;
 }
 
 .badge::before {
-    font-size: 16px;
-    vertical-align: middle;
-    margin-right: 2px;
+  font-size: 16px;
+  vertical-align: middle;
+  margin-right: 2px;
 }
 
 .badge.boarding {
-    background-color: #dcfce7;
-    color: #15803d;
+  background-color: #dcfce7;
+  color: #15803d;
 }
 
 .badge.boarding::before {
-    color: #15803d;
+  color: #15803d;
 }
 
 .badge.returned {
-    background-color: #fef9c3;
-    color: #a16207;
+  background-color: #fef9c3;
+  color: #a16207;
 }
 
 .badge.returned::before {
-    color: #eab308;
+  color: #eab308;
 }
 
 .badge.success {
-    background-color: #dcfce7; /* Nền xanh lá nhạt */
-    color: #15803d;         /* Chữ xanh lá đậm */
+  background-color: #dcfce7;
+  color: #15803d;
 }
 
 .badge.success::before {
-    font-size: 16px;
-    vertical-align: middle;
-    margin-right: 2px;
-    color: #15803d;         /* Chấm tròn xanh lá đậm */
+  font-size: 16px;
+  vertical-align: middle;
+  margin-right: 2px;
+  color: #15803d;
 }
+
 /* =====================================
-   ACTION
+   ACTION & PAGINATION
 ===================================== */
-
-
 .action-group {
-
-
-    display:flex;
-
-    gap:8px;
-
+  display: flex;
+  gap: 8px;
 }
-
-
 
 .action-btn {
-
-
-    width:32px;
-
-    height:32px;
-
-    border-radius:10px;
-
-    border:none;
-
-    cursor:pointer;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    transition:.25s;
-
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.25s;
 }
-
-
 
 .action-btn.edit {
-
-
-    background:#edf2ff;
-
+  background: #edf2ff;
 }
-
-
 
 .action-btn.delete {
-
-
-    background:#ffecec;
-
+  background: #ffecec;
 }
-
-
 
 .action-btn:hover {
-
-
-    transform:scale(1.1);
-
+  transform: scale(1.1);
 }
-
-
-
-/* =====================================
-   PAGINATION
-===================================== */
-
 
 .pagination {
-
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    gap:8px;
-
-    margin-top:25px;
-
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 25px;
 }
-
-
 
 .page-btn {
-
-
-    width:32px;
-
-    height:32px;
-
-    border-radius:8px;
-
-    border:none;
-
-    background:white;
-
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-
-    cursor:pointer;
-
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
 }
-
-
 
 .page-btn.active {
-
-
-    background:#666;
-
-    color:white;
-
+  background: #666;
+  color: #fff;
 }
 
+/* =====================================
+   PET CARD DETAIL LIST
+===================================== */
 #pet-detail-list-detail {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
 }
 
 .pet-card {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    background: #ffffff;
-    border: 1px solid #e1e4e8;
-    border-radius: 12px;
-    transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e1e4e8;
+  border-radius: 12px;
+  transition: all 0.2s ease;
 }
 
 .pet-card:hover {
-    border-color: #007bff;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
-    transform: translateY(-2px);
+  border-color: #007bff;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+  transform: translateY(-2px);
 }
 
-.pet-avatar {
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f0f7ff;
-    border-radius: 50%;
-    font-size: 20px;
-    margin-right: 15px;
-    color: #dee1e4;
+.pet-card .pet-avatar {
+  width: 45px;
+  height: 45px;
+  background: #f0f7ff;
+  border-radius: 50%;
+  font-size: 20px;
+  margin-right: 15px;
+  color: #dee1e4;
 }
 
-.pet-info {
-    flex-grow: 1;
+.pet-card .pet-info {
+  flex-grow: 1;
 }
 
 .pet-name {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 600;
-    color: #333;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
 }
 
 .pet-meta {
-    font-size: 12px;
-    color: #666;
+  font-size: 12px;
+  color: #666;
 }
 
 .pet-id {
-    font-family: monospace;
-    font-size: 12px;
-    color: #aaa;
-    background: #f8f9fa;
-    padding: 2px 6px;
-    border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  color: #aaa;
+  background: #f8f9fa;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* =====================================
+   RESPONSIVE MEDIA QUERIES
+===================================== */
+@media (max-width: 768px) {
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .pet-toolbar {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .pet-toolbar input {
+    width: 100%;
+  }
+
+  .pet-filter {
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 5px;
+  }
+
+  .panel {
+    overflow-x: auto;
+  }
+
+  .panel table {
+    min-width: 650px;
+  }
 }

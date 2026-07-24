@@ -159,7 +159,22 @@ Branch: `java-web/exam`
 * Thay đổi các trường dữ liệu về thời gian từ LocalDateTime sang LocalDate. 
 - **Khó khăn:** Hiện tại vẫn chưa thể hiện các bảng ghi đã xóa lên giao diện.
 - **Cách giải quyết:** Sẽ truy vấn đặt điều kiện để hiển thị đúng trang thái của bảng ghi
-  **Commit:** `[Day8]`
+  **Commit:** `[7e6a4e7]`
+  
+### Day 9 — 24/07/2026
+
+- **Đã làm:**
+- Thực hiện cơ bản giao diện thống kê:
+* Tiếp tục cập nhật giao diện quản lý Boarding.
+* Tiếp tục thực hiện giao diện của User
+* Cập nhật lại style + responsive cho giao diện admin
+* Tiếp tục hoàn thành chức năng quản lý giá.
+* Cập nhật logic tính theo yêu cầu của đề , hiển thị thông tin đầy đủ thông tin khi tiến hành checkout.
+* Cập nhật lại giao diện của Báo Cáo
+* Cập nhật lại database
+- **Khó khăn:** Hiện tại đã lấy thông tin tất cả bản ghi nhưng chưa hiển thị được thái.
+- **Cách giải quyết:** Sẽ thêm một cột trạng thái đã xóa để người khi lick vào đã xóa sẽ hiển thị list, Khi xóa mềm owner thì sẽ xóa mềm luôn thú nuôi thuộc owner đó + Pet phải đã RETURN trong bảng boarding_record.
+  **Commit:** `[Day9]`
 ## 2. Quyết định thiết kế (các phần đề không đặc tả đầy đủ)
 
 > Schema và quyết định cách làm.

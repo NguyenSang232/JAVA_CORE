@@ -1,0 +1,261 @@
+/* =====================================================
+   CSS CHO BÁO CÁO THỐNG KÊ DASHBOARD
+===================================================== */
+
+.dashboard-container {
+    padding: 24px;
+    background-color: #f8fafc;
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.dashboard-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.dashboard-header p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 13px;
+}
+
+/* Bộ lọc toàn cục */
+.chart-filter-group {
+    display: flex;
+    background: #e2e8f0;
+    padding: 4px;
+    border-radius: 12px;
+    gap: 4px;
+}
+
+.chart-filter-group button {
+    border: none;
+    background: transparent;
+    padding: 8px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease-in-out;
+}
+
+.chart-filter-group button:hover {
+    color: #0f172a;
+}
+
+.chart-filter-group button.active {
+    background: #fff;
+    color: #0f172a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Summary Cards (Thẻ tổng hợp) */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    background: #fff;
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.icon-wrapper {
+    font-size: 20px;
+}
+
+.badge-status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.badge-active {
+    color: #15803d;
+    background: #dcfce7;
+}
+
+.badge-alert {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.card-bottom h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-bottom h4 {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Lưới nội dung chính */
+.dashboard-content {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.panel {
+    background: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.panel-chart {
+    flex: 2;
+    min-width: 300px;
+}
+
+.right-dashboard {
+    flex: 1;
+    min-width: 280px;
+}
+
+.panel-distribution {
+    height: 100%;
+}
+
+/* Biểu đồ */
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.chart-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #64748b;
+}
+
+.total-amount {
+    font-size: 20px;
+    font-weight: 800;
+    color: #2563eb;
+}
+
+.chart-body {
+    position: relative;
+    height: 260px;
+    width: 100%;
+}
+
+/* Phân bố loài thú cưng */
+.panel-title-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.panel-title-area h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.subtitle-filter-info {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.pet-type-distribution {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.distribution-row {
+    margin-bottom: 4px;
+}
+
+.distribution-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #334155;
+}
+
+.progress-bar-bg {
+    width: 100%;
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 4px;
+    transition: width 0.4s ease-in-out;
+}
+
+.loading-text, .empty-text {
+    color: #94a3b8;
+    font-size: 13px;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-content {
+        flex-direction: column;
+    }
+}

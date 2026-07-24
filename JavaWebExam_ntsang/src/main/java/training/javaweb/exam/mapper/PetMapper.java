@@ -28,4 +28,6 @@ public interface PetMapper {
 	List<PetResponseDTO> findMyPets(Long userId);
 
 	void updateStatus(Long id, String status);
+
+	void softDeleteByOwnerId(Long id);
 }

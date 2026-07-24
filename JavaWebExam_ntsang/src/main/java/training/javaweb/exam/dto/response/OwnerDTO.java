@@ -21,6 +21,16 @@ public class OwnerDTO {
 
 	private LocalDate createAt;
 
+	private Boolean deletedAt;
+
+	public Boolean getDeletedAt() {
+		return deletedAt;
+	}
+
+	public void setDeletedAt(Boolean deleted_at) {
+		this.deletedAt = deleted_at;
+	}
+
 	public LocalDate getCreateAt() {
 		return createAt;
 	}

@@ -380,10 +380,6 @@ body {
   background: #dc2626;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
-
-/* ==========================================================================
-   5. BADGE & UTILITIES
-   ========================================================================== */
 .trend-badge {
   background-color: #dcfce7;
   color: #166534;
@@ -394,10 +390,6 @@ body {
   display: inline-block;
   letter-spacing: 0.3px;
 }
-
-/* ==========================================================================
-   6. RESPONSIVE DESIGN (Media Queries)
-   ========================================================================== */
 
 /* Màn hình Tablet hoặc nhỏ hơn (dưới 1024px) */
 @media (max-width: 1024px) {
@@ -445,7 +437,7 @@ body {
 
   .sidebar .logo,
   .sidebar #menu-logout {
-    display: none; /* Ẩn logo và logout ở thanh bottom bar mobile để tiết kiệm diện tích */
+    display: none;
   }
 
   .sidebar ul {
@@ -467,7 +459,7 @@ body {
     margin-left: 0;
     width: 100%;
     padding: 16px;
-    margin-bottom: 70px; /* Tránh bị sidebar che nội dung dưới */
+    margin-bottom: 70px;
   }
 
   .modal-content {
@@ -495,5 +487,107 @@ body {
   
   .btn-add-care-note {
     width: 100%;
+  }
+}
+/* =====================================================
+   BOARDING ADVANCED FILTER & UI STYLES
+===================================================== */
+.boarding-filter-panel {
+    background: #ffffff;
+    padding: 16px 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.boarding-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 160px;
+}
+
+.boarding-filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.boarding-filter-group select,
+.boarding-filter-group input {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #1e293b;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.boarding-filter-group select:focus,
+.boarding-filter-group input:focus {
+    border-color: #3b82f6;
+    background-color: #ffffff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.boarding-filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-reset-filter {
+    padding: 8px 14px;
+    background-color: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-reset-filter:hover {
+    background-color: #e2e8f0;
+    color: #334155;
+}
+
+.toast, #toast, .toast-container {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: #ffffff;
+  color: #1e293b;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  visibility: visible;
+  animation: toastSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toastSlideDown {
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 }

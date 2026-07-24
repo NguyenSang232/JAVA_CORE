@@ -60,7 +60,6 @@
             NOW()
         )
     </insert>
-    <!-- CHECK ACCOUNT -->
    <select id="countByOwnerId" resultType="int">
     SELECT COUNT(*)
     FROM users 
@@ -86,6 +85,6 @@
             resultMap="UserMap">
         SELECT *
         FROM users
-        WHERE id=#{id} 
+        WHERE owner_id=#{onwer_id} 
     </select>
 </mapper>

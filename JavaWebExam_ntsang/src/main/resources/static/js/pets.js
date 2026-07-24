@@ -11,7 +11,7 @@ async function showPets() {
         <div class="dashboard-container">
             <header class="dashboard-header">
                 <div>
-                    <h1>Pets</h1>
+                    <h1>Quản Lý Thú Cưng</h1>
                     <p style="color: #999; margin: 4px 0 0 0; font-size: 14px;">Quản lý danh sách và trạng thái thú cưng</p>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
@@ -157,13 +157,15 @@ async function renderPetTable(petList) {
         petList.map(async (pet, index) => {
             const stt = (currentPetPage - 1) * perPage + (index + 1);
             const owner = await getOwnerById(pet.ownerId);
-
+			console.log(pet.image);
             return `
                 <tr class="pet-row" onclick="editPet(${pet.id})">
                     <td>${stt}</td>
                     <td>
                         <div class="pet-cell" style="display: flex; align-items: center; gap: 8px;">
-                            <div class="pet-avatar-mini" style="font-size: 20px;">${getPetIcon(pet.type)}</div>
+                            <div class="pet-avatar-mini" style="font-size: 20px;">			
+							<img src="${pet.image}" style="width: 20px; height: 20px">
+							</div>
                             <div class="pet-meta">
                                 <strong style="color: #111; display: block;">${pet.name ?? "-"}</strong>
                             </div>
@@ -204,7 +206,6 @@ function filterPet(type, btnElement) {
     const buttons = btnElement.parentElement.querySelectorAll(".filter-btn");
     buttons.forEach(btn => btn.classList.remove("active"));
     btnElement.classList.add("active");
-
     currentPetFilter = type;
     currentPetPage = 1;
     updatePetView();
@@ -212,33 +213,25 @@ function filterPet(type, btnElement) {
 
 function filterPetData() {
     let result = [...pets];
-
     if (currentPetFilter !== "ALL") {
         result = result.filter(pet => pet.type === currentPetFilter);
     }
-
     if (currentPetKeyword) {
         result = result.filter(pet => {
             const name = pet.name?.toLowerCase() ?? "";
             return name.includes(currentPetKeyword);
         });
     }
-
     return result;
 }
 
-/* =====================================================
-   SEARCH PET
-===================================================== */
 function searchPet(keyword) {
     currentPetKeyword = keyword.toLowerCase();
     currentPetPage = 1;
     updatePetView();
 }
 
-/* =====================================================
-   SORT PET (THEO ICON MŨI TÊN ĐỒNG THỜI Ở TIÊU ĐỀ)
-===================================================== */
+
 function togglePetSort() {
     const iconSpan = document.getElementById("pet-sort-icon");
 
@@ -264,9 +257,6 @@ function sortPetData(type, resetPage = true) {
     updatePetView();
 }
 
-/* =====================================================
-   PAGINATION
-===================================================== */
 function paginatePet(data, page) {
     const perPage = typeof PETS_PER_PAGE !== "undefined" ? PETS_PER_PAGE : 5;
     const start = (page - 1) * perPage;
@@ -299,9 +289,6 @@ function changePetPage(page) {
     updatePetView();
 }
 
-/* =====================================================
-   MODAL LOGIC: THÚ CƯNG (PET) - CHUẨN HÓA & KHÔNG TRÙNG LẶP
-===================================================== */
 async function openPetModal(pet = null) {
     const modal = document.getElementById("pet-modal");
     const form = document.getElementById("pet-form");
@@ -344,12 +331,13 @@ async function openPetModal(pet = null) {
             const breedInput = document.getElementById("pet-breed");
             const ageInput = document.getElementById("pet-age");
             const weightInput = document.getElementById("pet-weight");
+			const imageInput = document.getElementById("pet-image");
             if (nameInput) nameInput.value = pet.name ?? "";
             if (typeSelect) typeSelect.value = pet.type ?? "Dog";
             if (breedInput) breedInput.value = pet.breed ?? "";
             if (ageInput) ageInput.value = pet.age ?? "";
             if (weightInput) weightInput.value = pet.weight ?? "";
-            
+            if(imageInput) imageInput.value = pet.image ?? ""
             ownerSelect.value = pet.ownerId ?? "";
         }
     } catch (error) {
@@ -367,7 +355,6 @@ function closePetModal() {
 
 async function savePet(event) {
     if (event) event.preventDefault();
-	
     const idInput = document.getElementById("pet-id");
     const nameInput = document.getElementById("pet-name");
     const typeSelect = document.getElementById("pet-type");
@@ -375,32 +362,48 @@ async function savePet(event) {
     const ageInput = document.getElementById("pet-age");
     const weightInput = document.getElementById("pet-weight");
     const ownerSelect = document.getElementById("pet-owner-select");
+	const imageInput = document.getElementById("pet-image");
     const id = idInput ? idInput.value : "";
     const ownerId = ownerSelect ? Number(ownerSelect.value) : 0;
-
+    const name = nameInput ? nameInput.value.trim() : "";
+    const type = typeSelect ? typeSelect.value : "Dog";
     if (!ownerId) {
         showToast("Vui lòng chọn chủ nuôi hợp lệ!", "error");
         return;
     }
-
+    if (!name) {
+        showToast("Vui lòng nhập tên thú cưng!", "error");
+        return;
+    }
+    const isDuplicate = pets.some(p => {
+        const isCurrentPet = id && Number(p.id) === Number(id);
+        if (isCurrentPet) return false;
+        return Number(p.ownerId) === Number(ownerId) &&
+               p.name.trim().toLowerCase() === name.toLowerCase() &&
+               p.type === type;
+    });
+    if (isDuplicate) {
+        showToast(`Chủ nuôi này đã có thú cưng loại "${type}" tên là "${name}" rồi!`, "error");
+        return;
+    }
     const petData = {
-        name: nameInput ? nameInput.value : "",
-        type: typeSelect ? typeSelect.value : "Dog",
+        name: name,
+        type: type,
         breed: breedInput ? breedInput.value : "",
         age: ageInput ? Number(ageInput.value) || 0 : 0,
         weight: weightInput ? Number(weightInput.value) || 0 : 0,
         ownerId: ownerId,
+		image: imageInput.value
     };
-
+	
     if (id) {
-        const existingPet = pets.find(p => p.id === Number(id));
+        const existingPet = pets.find(p => Number(p.id) === Number(id));
         if (existingPet) {
             petData.createdAt = existingPet.createdAt;
         }
     } else {
         petData.createdAt = new Date().toISOString();
     }
-
     try {
         let response;
         if (id) {
@@ -416,7 +419,6 @@ async function savePet(event) {
                 body: JSON.stringify(petData)
             });
         }
-
         if (response.ok) {
             showToast("Lưu thông tin thú cưng thành công!", "success");
             closePetModal();
@@ -434,18 +436,11 @@ async function savePet(event) {
     }
 }
 
-/* =====================================================
-   EDIT PET
-===================================================== */
 function editPet(id) {
     const pet = pets.find(item => item.id === id);
     if (!pet) return;
     openPetModal(pet);
 }
-
-/* =====================================================
-   DELETE PET
-===================================================== */
 async function deletePet(id) {
     const confirm = typeof confirmDelete === "function" 
         ? confirmDelete("Bạn có chắc muốn xóa thú cưng này?") 

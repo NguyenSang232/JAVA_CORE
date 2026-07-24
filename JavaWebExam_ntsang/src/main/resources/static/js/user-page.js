@@ -1,6 +1,3 @@
-/* =====================================================
-   PET SERVICE API (GỌI DỮ LIỆU TỪ BACKEND)
-===================================================== */
 const petServiceAPI = {
     fetchDashboardData: async () => {
         try {
@@ -25,7 +22,7 @@ const petServiceAPI = {
                     if (pId) activePetIds.add(String(pId));
                 }
             });
-
+			
             petsList.forEach(pet => {
                 const petIdStr = String(pet.id);
                 if (activePetIds.has(petIdStr) || currentBoardings.some(b => (b.petId === pet.id || b.pet?.id === pet.id))) {
@@ -36,9 +33,8 @@ const petServiceAPI = {
                     pet.badgeClass = "badge-gray";
                 }
             });
-
+			
             const activeSendingCount = activePetIds.size > 0 ? activePetIds.size : (currentBoardings.length > 0 && currentBoardings[0].id ? 1 : 0);
-
             return {
                 totalPets: petsList.length,
                 activeSending: activeSendingCount,
@@ -111,9 +107,6 @@ const petServiceAPI = {
     }
 };
 
-/* =====================================================
-   RENDER TEMPLATES (TẠO GIAO DIỆN TỪNG TAB)
-===================================================== */
 const renderTemplates = {
     pets: async () => {
         const data = await petServiceAPI.fetchDashboardData();
@@ -359,9 +352,6 @@ const renderTemplates = {
     }
 };
 
-/* =====================================================
-   APPLICATION CONTROLLER & EVENT LISTENERS
-===================================================== */
 document.addEventListener("DOMContentLoaded", () => {
     const navItems = document.querySelectorAll(".nav-item");
     const mainContent = document.getElementById("mainContent");
@@ -375,7 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("click", (e) => {
         if (e.target === detailModal) detailModal.style.display = "none";
     });
-
+	
     async function loadPage(targetKey) {
         if (renderTemplates[targetKey]) {
             mainContent.innerHTML = `<div style="padding: 20px; color: #888;">Đang kết nối đến hệ thống máy chủ...</div>`;
@@ -386,7 +376,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function attachDynamicEvents() {
-        // 1. Xem chi tiết Thú cưng (Giao diện đồng bộ, chuyên nghiệp)
         document.querySelectorAll(".btn-view-pet").forEach(btn => {
             btn.addEventListener("click", async function() {
                 const petId = this.getAttribute("data-id");

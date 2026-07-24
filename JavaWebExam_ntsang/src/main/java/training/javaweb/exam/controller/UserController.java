@@ -34,10 +34,22 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@GetMapping("/{id}")
-	@Operation(summary = "Get user by id", description = "Lấy thông tin chi tiết user theo ID")
-	public ResponseEntity<Boolean> getById(@Parameter(description = "User ID", example = "1") @PathVariable Long id) {
-		return ResponseEntity.ok(userService.hasAccount(id));
+	@GetMapping("/{ownerId}")
+	@Operation(summary = "Get user by id", description = "Check account by ownerId")
+	public ResponseEntity<Boolean> getById(
+			@Parameter(description = "User ID", example = "1") @PathVariable Long ownerId) {
+		return ResponseEntity.ok(userService.hasAccount(ownerId));
+	}
+
+	@GetMapping("/detail/{id}")
+	@Operation(summary = "Get user details by id", description = "Lấy thông tin chi tiết user theo ID")
+	public ResponseEntity<UserResponseDTO> getDetailById(
+			@Parameter(description = "User ID", example = "1") @PathVariable Long id) {
+		UserResponseDTO user = userService.getById(id);
+		if (user != null) {
+			return ResponseEntity.ok(user);
+		}
+		return ResponseEntity.notFound().build();
 	}
 
 	@PutMapping("/{id}/password")

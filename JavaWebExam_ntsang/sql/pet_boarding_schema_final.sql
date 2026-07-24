@@ -8,18 +8,12 @@ CREATE DATABASE IF NOT EXISTS pet_boarding_ntsang
     COLLATE utf8mb4_unicode_ci;
 
 USE pet_boarding_ntsang;
-
--- Xóa bảng cũ nếu tồn tại (theo thứ tự để tránh khóa ngoại)
 DROP TABLE IF EXISTS care_notes;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS boarding_records;
 DROP TABLE IF EXISTS pets;
 DROP TABLE IF EXISTS prices;
 DROP TABLE IF EXISTS owners;
-
--- ================================================================
--- TABLE: owners
--- ================================================================
 CREATE TABLE owners (
     id                  BIGINT       NOT NULL AUTO_INCREMENT,
     name                VARCHAR(100) NOT NULL,
@@ -31,10 +25,6 @@ CREATE TABLE owners (
     deleted_at          BOOLEAN      NOT NULL DEFAULT FALSE,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ================================================================
--- TABLE: prices (Bảng cấu hình giá theo Chủng loại + Cân nặng)
--- ================================================================
 CREATE TABLE prices (
     id          BIGINT        NOT NULL AUTO_INCREMENT,
     pet_type    VARCHAR(20)   NOT NULL, -- Nhất quán với trường 'type' bên bảng pets
@@ -43,10 +33,6 @@ CREATE TABLE prices (
     base_price  BIGINT        NOT NULL, -- Giá tiền tính trên 1 ngày (VND)
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ================================================================
--- TABLE: pets
--- ================================================================
 CREATE TABLE pets (
     id         BIGINT       NOT NULL AUTO_INCREMENT,
     name       VARCHAR(100) NOT NULL,
@@ -62,10 +48,6 @@ CREATE TABLE pets (
     PRIMARY KEY (id),
     CONSTRAINT fk_pet_owner FOREIGN KEY (owner_id) REFERENCES owners(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ================================================================
--- TABLE: boarding_records
--- ================================================================
 CREATE TABLE boarding_records (
     id                 BIGINT      NOT NULL AUTO_INCREMENT,
     pet_id             BIGINT      NOT NULL,
@@ -83,10 +65,6 @@ CREATE TABLE boarding_records (
     PRIMARY KEY (id),
     CONSTRAINT fk_boarding_pet FOREIGN KEY (pet_id) REFERENCES pets(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ================================================================
--- TABLE: care_notes
--- ================================================================
 CREATE TABLE care_notes (
     id                   BIGINT   NOT NULL AUTO_INCREMENT,
     boarding_record_id   BIGINT   NOT NULL,
@@ -95,10 +73,6 @@ CREATE TABLE care_notes (
     PRIMARY KEY (id),
     CONSTRAINT fk_note_boarding FOREIGN KEY (boarding_record_id) REFERENCES boarding_records(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ================================================================
--- TABLE: users
--- ================================================================
 CREATE TABLE users (
     id         BIGINT       NOT NULL AUTO_INCREMENT,
     username   VARCHAR(50)  NOT NULL UNIQUE,  -- dùng phone number
@@ -110,13 +84,6 @@ CREATE TABLE users (
     PRIMARY KEY (id),
     CONSTRAINT fk_user_owner FOREIGN KEY (owner_id) REFERENCES owners(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- ================================================================
--- SEED DATA (DỮ LIỆU MẪU CHUẨN)
--- ================================================================
-
--- ── 1. Khách hàng (Owners) ──────────────────────────────────────
 INSERT INTO owners (id, name, phone, email, address) VALUES
 (1, 'Nguyễn Văn An',   '0901234567', 'an@email.com',      '123 Lê Lợi, Q1, TP.HCM'),
 (2, 'Trần Thị Bình',   '0912345678', 'binh@email.com',    '45 Nguyễn Huệ, Q1, TP.HCM'),
@@ -125,7 +92,6 @@ INSERT INTO owners (id, name, phone, email, address) VALUES
 (5, 'Hoàng Văn Em',    '0945678901', 'em@email.com',      '56 Điện Biên Phủ, Q10, TP.HCM'),
 (6, 'Võ Thị Phương',   '0956789012', 'phuong@email.com',  '34 Nam Kỳ Khởi Nghĩa, Q3, TP.HCM');
 
--- ── 2. Cấu hình bảng giá (Prices) ───────────────────────────────
 INSERT INTO prices (pet_type, weight_from, weight_to, base_price) VALUES
 ('Dog',    0.00,  10.00, 120000), -- Chó nhỏ (Dưới 10kg)
 ('Dog',   10.01,  30.00, 180000), -- Chó lớn (10kg -> 30kg)
@@ -134,7 +100,6 @@ INSERT INTO prices (pet_type, weight_from, weight_to, base_price) VALUES
 ('Rabbit', 0.00,   5.00,  70000), -- Thỏ
 ('Other',  0.00,  99.99,  80000); -- Các loại khác
 
--- ── 3. Thú cưng (Pets) ──────────────────────────────────────────
 INSERT INTO pets (id, name, type, breed, age, weight, image_url, owner_id) VALUES
 (1, 'Milo',   'Dog',    'Golden Retriever', 3, 28.50, 'https://placedog.net/200/200?id=1',  1), 
 (2, 'Kiki',   'Cat',    'Anh lông ngắn',    2,  4.20, 'https://placekitten.com/200/200',    1), 
@@ -145,7 +110,6 @@ INSERT INTO pets (id, name, type, breed, age, weight, image_url, owner_id) VALUE
 (7, 'Luna',   'Cat',    'Mèo Ta',           3,  3.50, 'https://placekitten.com/201/200',    6), 
 (8, 'Nemo',   'Other',  'Rùa cạn',          8,  0.80, NULL,                             2); 
 
--- ── 4. Nhật ký lưu trú (Boarding Records) ───────────────────────
 INSERT INTO boarding_records 
     (id, pet_id, check_in_date, expected_day, actual_check_out, price_per_day, base_fee, late_fee, total_fee, status, notes)
 VALUES
@@ -170,7 +134,6 @@ INSERT INTO care_notes (boarding_record_id, note) VALUES
 (5, 'Kiki đã ăn sáng đầy đủ'),
 (5, 'Hơi lười vận động, bình thường với mèo');
 
--- ── 6. Tài khoản hệ thống (Users) ───────────────────────────────
 INSERT INTO users (id, username, password, role, owner_id) VALUES
 (1, 'admin', '$2a$10$EFrva6Zd9Ed2zYcM2s5Qw.DbXQ4eRX4xfq3EXauwrgI2QTc26lyvK', 'ROLE_ADMIN', NULL),
 (2, '0901234567', '$2a$10$EFrva6Zd9Ed2zYcM2s5Qw.DbXQ4eRX4xfq3EXauwrgI2QTc26lyvK', 'ROLE_CUSTOMER', 1),

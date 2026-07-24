@@ -682,26 +682,112 @@ input[readonly], .readonly-input {
     color: #0f172a;
 }
 /* =====================================================
-   RESPONSIVE LAYOUT
+   RESPONSIVE LAYOUT OPTIMIZATION (CẬP NHẬT)
 ===================================================== */
+
+/* 1. Màn hình Laptop nhỏ / Tablet ngang (<= 1200px) */
 @media (max-width: 1200px) {
     .summary-cards {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
+/* 2. Màn hình Tablet dọc / iPad (<= 992px) */
 @media (max-width: 992px) {
+    .dashboard-container {
+        padding: 16px;
+    }
+
     .dashboard-content {
         grid-template-columns: 1fr;
     }
+
     .summary-cards {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* Biến bộ lọc nâng cao thành dạng lưới 2 cột co giãn */
+    .boarding-filter-panel {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .boarding-filter-group {
+        min-width: 0;
+    }
+
+    .boarding-filter-actions {
+        grid-column: span 2;
+        justify-content: flex-end;
     }
 }
 
-@media (max-width: 640px) {
+/* 3. Màn hình Điện thoại lớn (<= 768px) */
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .dashboard-header .btn-create {
+        width: 100%;
+        text-align: center;
+    }
+
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    /* Đưa bảng dữ liệu về dạng cuộn ngang mượt mà khi màn hình hẹp */
+    .panel {
+        padding: 16px;
+        overflow-x: auto;
+    }
+
+    .panel table {
+        min-width: 700px; /* Đảm bảo các cột không bị bóp méo */
+    }
+
+    .panel-title-area {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .panel-title-area .filter-group {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    /* Modal hiển thị tràn màn hình di động cho dễ thao tác */
+    .modal-box, .owner-modal-custom {
+        width: 92% !important;
+        max-width: none !important;
+        padding: 20px;
+        margin: 16px;
+    }
+
     .form-grid-2 {
         grid-template-columns: 1fr;
         gap: 0;
+    }
+}
+
+/* 4. Màn hình Điện thoại nhỏ (<= 480px) */
+@media (max-width: 480px) {
+    .boarding-filter-panel {
+        grid-template-columns: 1fr; /* Xếp dọc toàn bộ các ô lọc */
+    }
+
+    .boarding-filter-actions {
+        grid-column: span 1;
+    }
+
+    .dashboard-header h1 {
+        font-size: 22px;
     }
 }

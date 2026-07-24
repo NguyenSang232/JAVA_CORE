@@ -323,3 +323,77 @@
         transform: translateY(0);
     }
 }
+/* =====================================================
+   RESPONSIVE MEDIA QUERIES CHO BẢNG GIÁ & MODAL
+===================================================== */
+
+@media (max-width: 992px) {
+  .price-management-wrapper .price-table-container {
+    padding: 16px;
+    overflow-x: auto;
+  }
+
+  .price-management-wrapper .price-custom-table {
+    min-width: 700px;
+  }
+}
+
+@media (max-width: 768px) {
+  .price-management-wrapper .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .price-management-wrapper .price-header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .price-management-wrapper .price-search-box {
+    width: 100%;
+  }
+
+  .price-management-wrapper .price-search-input {
+    width: 100%;
+  }
+
+  .price-management-wrapper .btn-add-price {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .price-modal-content {
+    width: 92% !important;
+    max-width: none !important;
+    padding: 20px;
+    margin: 16px;
+  }
+
+  .price-form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .price-management-wrapper .price-page-title {
+    font-size: 22px;
+  }
+
+  .price-management-wrapper .price-table-container {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .price-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .price-btn-secondary,
+  .price-btn-primary {
+    width: 100%;
+    text-align: center;
+  }
+}

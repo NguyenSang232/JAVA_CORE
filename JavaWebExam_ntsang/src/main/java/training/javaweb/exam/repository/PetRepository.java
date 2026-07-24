@@ -30,7 +30,6 @@ public class PetRepository {
 		return petMapper.findDetail(id);
 	}
 
-
 	public void update(Pet pet) {
 
 		petMapper.update(pet);
@@ -39,6 +38,11 @@ public class PetRepository {
 	public void softDelete(Long id) {
 
 		petMapper.softDelete(id);
+	}
+
+	public void softDeleteByOnwerId(Long id) {
+
+		petMapper.softDeleteByOwnerId(id);
 	}
 
 	public List<PetResponseDTO> findByType(String type) {

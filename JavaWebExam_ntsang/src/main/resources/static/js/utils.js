@@ -2,6 +2,10 @@
    DATE
 ===================================================== */
 const menuLinks = document.querySelectorAll('.sidebar .menu a');
+const defaultActiveMenu = document.getElementById('menu-dashboard'); 
+if (defaultActiveMenu) {
+    defaultActiveMenu.classList.add('active');
+}
 menuLinks.forEach(link => {
     link.addEventListener('click', function(e) {
         menuLinks.forEach(item => item.classList.remove('active'));

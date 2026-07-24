@@ -1,6 +1,13 @@
+/* =====================================================
+   BOARDING.JS - PHIẾU GỬI MANAGEMENT (ADVANCED FILTER)
+===================================================== */
+
+let allBoardingRecords = [];
+
 async function showBoardingRecords() {
     const mainView = document.getElementById("content");
     if (!mainView) return;
+    
     mainView.innerHTML = `
         <div class="dashboard-container">
             <header class="dashboard-header">
@@ -9,11 +16,6 @@ async function showBoardingRecords() {
                     <p style="color: #999; margin: 4px 0 0 0; font-size: 14px;">Quản lý và theo dõi lịch sử gửi thú cưng</p>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
-                    <div class="pet-toolbar" style="margin-bottom: 0;">
-                        <input type="text" id="boarding-search" placeholder="Tìm tên pet hoặc chủ nuôi..." oninput="searchBoarding(this.value)">
-						<input type="date" id="boarding-start-date" title="Từ ngày" style="padding: 6px; border: 1px solid #ddd; border-radius: 6px;" onchange="filterBoardingByDate()">
-						<input type="date" id="boarding-end-date" title="Đến ngày" style="padding: 6px; border: 1px solid #ddd; border-radius: 6px;" onchange="filterBoardingByDate()">
-                    </div>
                     <button class="btn-create" onclick="openBoardingModal()">+ Thêm Phiếu Gửi</button>
                 </div>
             </header>
@@ -22,20 +24,59 @@ async function showBoardingRecords() {
                 <div class="tab-item">Danh sách phiếu gửi</div>
             </div>
 
+            <!-- BỘ LỌC NÂNG CAO (ADVANCED FILTER PANEL) -->
+            <div class="boarding-filter-panel">
+                <div class="boarding-filter-group" style="flex: 2; min-width: 220px;">
+                    <label>Tìm kiếm nhanh</label>
+                    <input type="text" id="boarding-search" placeholder="Tìm tên pet hoặc chủ nuôi..." oninput="searchBoarding(this.value)">
+                </div>
+
+                <div class="boarding-filter-group">
+                    <label>Loài thú cưng</label>
+                    <select id="filter-pet-type" onchange="applyAdvancedBoardingFilters()">
+                        <option value="">Tất cả loài</option>
+                        <option value="Dog">Chó (Dog)</option>
+                        <option value="Cat">Mèo (Cat)</option>
+                        <option value="Other">Khác</option>
+                    </select>
+                </div>
+
+                <div class="boarding-filter-group">
+                    <label>Chủ nuôi</label>
+                    <select id="filter-owner" onchange="applyAdvancedBoardingFilters()">
+                        <option value="">Tất cả chủ nuôi</option>
+                    </select>
+                </div>
+
+                <div class="boarding-filter-group">
+                    <label>Từ ngày (Check-in)</label>
+                    <input type="date" id="boarding-start-date" onchange="applyAdvancedBoardingFilters()">
+                </div>
+
+                <div class="boarding-filter-group">
+                    <label>Đến ngày (Check-in)</label>
+                    <input type="date" id="boarding-end-date" onchange="applyAdvancedBoardingFilters()">
+                </div>
+
+                <div class="boarding-filter-actions">
+                    <button class="btn-reset-filter" onclick="resetBoardingFilters()" title="Làm mới bộ lọc">Làm mới</button>
+                </div>
+            </div>
+
             <section class="dashboard-grid-owner">
                 <div class="panel">
                     <div class="panel-title-area">
-					<div class="filter-group">
-					    <button class="filter-btn active" onclick="filterBoardingRecord('ALL', this)">
-					        Tất cả <span class="filter-count" id="count-all">0</span>
-					    </button>
-					    <button class="filter-btn" onclick="filterBoardingRecord('BOARDING', this)">
-					        Đang gửi <span class="filter-count" id="count-boarding">0</span>
-					    </button>
-					    <button class="filter-btn" onclick="filterBoardingRecord('RETURNED', this)">
-					        Đã trả <span class="filter-count" id="count-returned">0</span>
-					    </button>
-					</div>
+                        <div class="filter-group">
+                            <button class="filter-btn active" onclick="filterBoardingRecord('ALL', this)">
+                                Tất cả <span class="filter-count" id="count-all">0</span>
+                            </button>
+                            <button class="filter-btn" onclick="filterBoardingRecord('BOARDING', this)">
+                                Đang gửi <span class="filter-count" id="count-boarding">0</span>
+                            </button>
+                            <button class="filter-btn" onclick="filterBoardingRecord('RETURNED', this)">
+                                Đã trả <span class="filter-count" id="count-returned">0</span>
+                            </button>
+                        </div>
                         <div class="filter-group">
                             <select id="boarding-sort" class="filter-btn" style="padding: 5px 10px;" onchange="sortBoarding(this.value)">
                                 <option value="NEW">Mới nhất</option>
@@ -73,137 +114,135 @@ async function showBoardingRecords() {
     currentBoardingFilter = "ALL";
     currentBoardingKeyword = "";
     currentBoardingSort = "NEW";
+    
+    await loadOwnersForBoardingFilter();
     await loadBoardingRecords();
+}
+
+
+async function loadOwnersForBoardingFilter() {
+    try {
+        const response = await fetch(API.owners);
+        if (!response.ok) return;
+        const owners = await response.json();
+        const ownerSelect = document.getElementById("filter-owner");
+        if (ownerSelect) {
+            ownerSelect.innerHTML = `<option value="">Tất cả chủ nuôi</option>` + 
+                owners.map(o => `<option value="${o.id}">${o.name} (${o.phone})</option>`).join("");
+        }
+    } catch (error) {
+        console.error("Lỗi tải danh sách chủ nuôi:", error);
+    }
 }
 
 async function loadBoardingRecords() {
     try {
-        let url = "";
-        let countUrl = "";
-        if (currentStartDate && currentEndDate) {
-            const dateParams = new URLSearchParams({
-                from: currentStartDate,
-                to: currentEndDate
-            });
-            url = `${API.boarding}/date?${dateParams.toString()}`;
-        } else {
-            const params = new URLSearchParams({
-                page: currentBoardingPage - 1,
-                size: BOARDING_PER_PAGE,
-                keyword: currentBoardingKeyword || "",
-                status: currentBoardingFilter
-            });
-            url = `${API.boarding}/paginations?${params.toString()}`;
-
-            const countParams = new URLSearchParams({
-                page: 0,
-                size: 1000,
-                keyword: currentBoardingKeyword || "",
-                status: "ALL"
-            });
-            countUrl = `${API.boarding}/paginations?${countParams.toString()}`;
-        }
+        let url = `${API.boarding}/paginations?page=0&size=1000&status=ALL`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Lỗi tải dữ liệu");    
         const result = await response.json(); 
-        let totalItems = 0;
-        let boardingCount = 0;
-        let returnedCount = 0;
-        let allUnfilteredRecords = [];
-        if (currentStartDate && currentEndDate) {
-            let allRecords = Array.isArray(result) ? result : (result.data || []);          
-            if (currentBoardingKeyword) {
-                allRecords = allRecords.filter(item => {
-                    const text = `${item.petName || ""} ${item.ownerName || ""}`.toLowerCase();
-                    return text.includes(currentBoardingKeyword);
-                });
-            }
-            boardingCount = allRecords.filter(item => item.status === "BOARDING").length;
-            returnedCount = allRecords.filter(item => item.status === "RETURNED").length;            
-            let totalAllRecords = allRecords.length;
-            if (currentBoardingFilter && currentBoardingFilter !== "ALL") {
-                allRecords = allRecords.filter(item => item.status === currentBoardingFilter);
-            }
-            totalItems = allRecords.length;
-            const startIndex = (currentBoardingPage - 1) * BOARDING_PER_PAGE;
-            const endIndex = startIndex + BOARDING_PER_PAGE;
-            boardingRecords = allRecords.slice(startIndex, endIndex);            
-            totalItems = totalAllRecords; 
-        } else {
-            boardingRecords = result.content || result.data || result;            
-            if (countUrl) {
-                try {
-                    const countRes = await fetch(countUrl);
-                    if (countRes.ok) {
-                        const countResult = await countRes.json();
-                        allUnfilteredRecords = countResult.content || countResult.data || countResult;
-                        if (Array.isArray(allUnfilteredRecords)) {
-                            boardingCount = allUnfilteredRecords.filter(item => item.status === "BOARDING").length;
-                            returnedCount = allUnfilteredRecords.filter(item => item.status === "RETURNED").length;                           
-                            totalItems = countResult.totalElements ?? countResult.total ?? allUnfilteredRecords.length;
-                        }
-                    }
-                } catch (e) {
-                    boardingCount = boardingRecords.filter(item => item.status === "BOARDING").length;
-                    returnedCount = boardingRecords.filter(item => item.status === "RETURNED").length;
-                    totalItems = result.totalElements ?? result.total ?? boardingRecords.length;
-                }
-            } else {
-                totalItems = result.totalElements ?? result.total ?? boardingRecords.length;
-            }
-        }        
-        await renderBoardingTable(boardingRecords);
-        updateFilterCounts(totalItems, boardingCount, returnedCount);
-        renderApiBoardingPagination(totalItems);
+        
+        allBoardingRecords = result.content || result.data || result;
+        if (!Array.isArray(allBoardingRecords)) allBoardingRecords = [];
+
+        processAndRenderBoarding();
     } catch (error) {
         console.error("Load boarding error:", error);
         showToast("Không tải được phiếu gửi", "error");
     }
 }
-function renderRecentBoarding(data, limit) {
-    const tableBody = document.getElementById("recent-boarding");
-    const countBadge = document.getElementById("recent-count");
-    if (!tableBody) return;
-    if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px; color: #999;">Chưa có phiếu gửi nào</td></tr>`;
-        if (countBadge) countBadge.textContent = "0";
-        return;
-    }
-    const recent = [...data]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, limit);
-    if (countBadge) countBadge.textContent = recent.length;
-    tableBody.innerHTML = recent.map(item => {
-        const statusText = item.status === "BOARDING" ? "Đang gửi" : "Đã trả";
-        const feeText = item.status === "RETURNED" ? formatMoney(item.totalFee) : "—";
-        const petIcon = typeof getPetIcon === "function" ? getPetIcon(item.petType) : "🐾";
 
-        return `
-            <tr>
-                <td>
-                    <div class="pet-cell">
-                        <div class="pet-avatar-mini">${petIcon}</div>
-                        <div class="pet-meta">
-                            <strong>${item.petName ?? "Thú cưng"}</strong>
-                            <small>${item.petBreed ?? "Giống loại"}</small>
-                        </div>
-                    </div>
-                </td>
-                <td class="owner-cell">${item.ownerName ?? "Người dùng"}</td>
-                <td>${formatDate(item.checkInDate)}</td>
-                <td>
-                    <span class="status-oval">${statusText}</span>
-                </td>
-                <td class="fee-cell">${feeText}</td>
-                <td>
-                    <button class="action-view-btn" title="Xem chi tiết" onclick="editBoarding(${item.id})">👁</button>
-                </td>
-            </tr>
-        `;
-    }).join("");
+async function processAndRenderBoarding() {
+    let filtered = [...allBoardingRecords];
+    if (currentBoardingFilter !== "ALL") {
+        filtered = filtered.filter(item => item.status === currentBoardingFilter);
+    }
+    if (currentBoardingKeyword) {
+        filtered = filtered.filter(item => {
+            const text = `${item.petName || ""} ${item.ownerName || ""}`.toLowerCase();
+            return text.includes(currentBoardingKeyword);
+        });
+    }
+
+	const petTypeVal = document.getElementById("filter-pet-type")?.value;
+	if (petTypeVal && petTypeVal !== "") {
+	    const filterPromises = filtered.map(async item => {
+	        let pType = item.petType || (item.pet ? item.pet.type : null);
+	        if (!pType && item.petId) {
+	            const foundPet = typeof getPetById === "function" ? await getPetById(item.petId) : globalPetsData.find(p => String(p.id) === String(item.petId));
+	            pType = foundPet ? (foundPet.type || foundPet.petType) : "";
+	        }
+	        return (pType || "").trim().toLowerCase() === petTypeVal.trim().toLowerCase();
+	    });
+	    const filterResults = await Promise.all(filterPromises);
+	    filtered = filtered.filter((_, index) => filterResults[index]);
+	}
+
+	const ownerIdVal = document.getElementById("filter-owner")?.value;
+	    if (ownerIdVal) {
+	        const filterPromises = filtered.map(async item => {
+	            let oId = item.ownerId;
+	            if (!oId && item.petId) {
+	                const pet = await getPetById(item.petId);
+	                oId = pet ? pet.ownerId : null;
+	            }
+	            return String(oId) === String(ownerIdVal);
+	        });
+	        const filterResults = await Promise.all(filterPromises);
+	        filtered = filtered.filter((_, index) => filterResults[index]);
+	    }
+    const startDateVal = document.getElementById("boarding-start-date")?.value;
+    const endDateVal = document.getElementById("boarding-end-date")?.value;
+    if (startDateVal || endDateVal) {
+        filtered = filtered.filter(item => {
+            if (!item.checkInDate) return false;
+            const checkInDateStr = item.checkInDate.split('T')[0];
+            if (startDateVal && checkInDateStr < startDateVal) return false;
+            if (endDateVal && checkInDateStr > endDateVal) return false;
+            return true;
+        });
+    }
+
+    filtered.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.checkInDate || 0);
+        const dateB = new Date(b.createdAt || b.checkInDate || 0);
+        return currentBoardingSort === "NEW" ? dateB - dateA : dateA - dateB;
+    });
+
+    const boardingCount = allBoardingRecords.filter(item => item.status === "BOARDING").length;
+    const returnedCount = allBoardingRecords.filter(item => item.status === "RETURNED").length;
+    const totalItems = filtered.length;
+
+    const startIndex = (currentBoardingPage - 1) * BOARDING_PER_PAGE;
+    const endIndex = startIndex + BOARDING_PER_PAGE;
+    const paginatedData = filtered.slice(startIndex, endIndex);
+
+    await renderBoardingTable(paginatedData);
+    updateFilterCounts(allBoardingRecords.length, boardingCount, returnedCount);
+    renderApiBoardingPagination(totalItems);
 }
-async function updateBoardingView() {
-   await loadBoardingRecords();
+
+function applyAdvancedBoardingFilters() {
+    currentBoardingPage = 1;
+    processAndRenderBoarding();
+}
+
+function resetBoardingFilters() {
+    const searchInput = document.getElementById("boarding-search");
+    const petTypeSelect = document.getElementById("filter-pet-type");
+    const ownerSelect = document.getElementById("filter-owner");
+    const startDateInput = document.getElementById("boarding-start-date");
+    const endDateInput = document.getElementById("boarding-end-date");
+
+    if (searchInput) searchInput.value = "";
+    if (petTypeSelect) petTypeSelect.value = "";
+    if (ownerSelect) ownerSelect.value = "";
+    if (startDateInput) startDateInput.value = "";
+    if (endDateInput) endDateInput.value = "";
+
+    currentBoardingKeyword = "";
+    currentBoardingPage = 1;
+    processAndRenderBoarding();
 }
 
 async function renderBoardingTable(data) {
@@ -229,7 +268,7 @@ async function renderBoardingTable(data) {
                     <td>${record.id}</td>
                     <td>
                         <div class="pet-cell">
-                            <div class="pet-avatar-mini">${petIcon}</div>
+                            <img src="${pet.image}" style="width: 20px; height: 20px">
                             <div class="pet-meta">
                                 <strong>${pet ? pet.name : (record.petName ?? "Unknown")}</strong>
                                 <small>${pet ? (pet.breed ?? "Giống loại") : "—"}</small>
@@ -256,6 +295,7 @@ async function renderBoardingTable(data) {
     );
     tableBody.innerHTML = rows.join("");
 }
+
 function updateFilterCounts(totalItems, boardingCount, returnedCount) {
     const countAllEl = document.getElementById("count-all");
     const countBoardingEl = document.getElementById("count-boarding");
@@ -264,6 +304,7 @@ function updateFilterCounts(totalItems, boardingCount, returnedCount) {
     if (countBoardingEl) countBoardingEl.textContent = boardingCount;
     if (countReturnedEl) countReturnedEl.textContent = returnedCount;
 }
+
 async function getPetById(id) {
     if (!id) return null;
     try {
@@ -275,7 +316,6 @@ async function getPetById(id) {
         return null;
     }
 }
-
 
 async function getOwnerById(id) {
     if (!id) return null;
@@ -290,9 +330,9 @@ async function getOwnerById(id) {
 }
 
 function searchBoarding(keyword) {
-    currentBoardingKeyword = keyword.trim();
+    currentBoardingKeyword = keyword.trim().toLowerCase();
     currentBoardingPage = 1;
-    loadBoardingRecords();
+    processAndRenderBoarding();
 }
 
 function filterBoardingRecord(status, btnElement) {
@@ -301,29 +341,13 @@ function filterBoardingRecord(status, btnElement) {
     btnElement.classList.add("active");
     currentBoardingFilter = status;
     currentBoardingPage = 1;
-    loadBoardingRecords();
-}
-
-function filterBoardingByDate() {
-    const startDateInput = document.getElementById("boarding-start-date");
-    const endDateInput = document.getElementById("boarding-end-date");   
-    currentStartDate = startDateInput ? startDateInput.value : "";
-    currentEndDate = endDateInput ? endDateInput.value : "";
-    currentBoardingPage = 1;
-    loadBoardingRecords();
+    processAndRenderBoarding();
 }
 
 function sortBoarding(type) {
     currentBoardingSort = type;
     currentBoardingPage = 1;
-    loadBoardingRecords();
-}
-
-function paginateBoarding(data, page) {
-    const perPage = typeof BOARDING_PER_PAGE !== "undefined" ? BOARDING_PER_PAGE : 5;
-    const start = (page - 1) * perPage;
-    const end = start + perPage;
-    return data.slice(start, end);
+    processAndRenderBoarding();
 }
 
 function renderApiBoardingPagination(totalItems) {
@@ -346,9 +370,10 @@ function renderApiBoardingPagination(totalItems) {
 
 async function changeBoardingPage(page) {
     currentBoardingPage = page;
-    await loadBoardingRecords();
+    await processAndRenderBoarding();
     document.querySelector(".dashboard-grid-owner")?.scrollIntoView({ behavior: 'smooth' });
 }
+
 async function openBoardingModal(record = null) {
     const modal = document.getElementById("boarding-modal");
     const form = document.getElementById("boarding-form");
@@ -356,11 +381,9 @@ async function openBoardingModal(record = null) {
     const ownerInput = document.getElementById("modal-owner-name");
     const checkInInput = document.getElementById("modal-check-in");
     const expectedReturnInput = document.getElementById("modal-expected-return");
-    const totalFeeInput = document.getElementById("modal-total-fee");
-    if (!modal) {
-        console.warn("Không tìm thấy phần tử #boarding-modal trên trang này.");
-        return;
-    }
+    const totalFeeInput = document.getElementById("modal-total-fee");    
+    if (!modal) return;
+    
     let idInput = document.getElementById("modal-boarding-id");
     if (!idInput) {
         idInput = document.createElement("input");
@@ -398,18 +421,16 @@ async function openBoardingModal(record = null) {
         if (record) {
             idInput.value = record.id;
             petSelect.value = record.petId;
-
-            await onModalPetChange();
-
+            if (typeof onModalPetChange === "function") await onModalPetChange();
             if (checkInInput) checkInInput.value = record.checkInDate ? record.checkInDate.split('T')[0] : "";
             if (expectedReturnInput) expectedReturnInput.value = record.expectedReturn ? record.expectedReturn.split('T')[0] : "";
             if (totalFeeInput) totalFeeInput.value = record.totalFee ?? 0;
         } else {
             if (checkInInput) {
-                const today = new Date().toISOString().split('T')[0];
-                checkInInput.value = today;
+                checkInInput.value = new Date().toISOString().split('T')[0];
             }
         }
+		await loadBoardingRecords();
     } catch (error) {
         console.error("Lỗi khi chuẩn bị dữ liệu trong Modal:", error);
         showToast("Không thể tải thông tin biểu mẫu", "error");
@@ -623,7 +644,7 @@ async function saveBoarding(event) {
 }
 
 function editBoarding(id) {
-    const record = boardingRecords.find(item => item.id === id);
+    const record = allBoardingRecords.find(item => item.id === id);
     if (!record) return;
     openBoardingModal(record);
 }
@@ -846,11 +867,13 @@ async function openCheckoutModal(id) {
         showToast("Lỗi kết nối máy chủ", "error");
     }
 }
+
 // Tinh tien 
 function calculateCheckoutFee() {
     if (!currentCheckoutRecord) return;
     
     let lateFee = 0;
+    let discountFee = 0;
     const checkInStr = currentCheckoutRecord.checkInDate;
     const actualStr = document.getElementById("checkout-date").value;
     const pricePerDay = Number(document.getElementById("checkout-price-per-date").value) || currentCheckoutRecord.pricePerDay || 0;
@@ -866,15 +889,17 @@ function calculateCheckoutFee() {
     const expectedStr = currentCheckoutRecord.expectedReturn || currentCheckoutRecord.expectedDay;
     const lateDaysEl = document.getElementById("checkout-late-days");
     
-    if (expectedStr && lateDaysEl) {
+    let expectedDays = 0;
+    if (expectedStr) {
         const expectedDate = new Date(expectedStr);
         const diffTimeExpected = actualDate - expectedDate;
         const diffDays = Math.ceil(diffTimeExpected / (1000 * 60 * 60 * 24));
-        
+        const diffTimeExpTotal = expectedDate - checkInDate;
+        expectedDays = Math.ceil(diffTimeExpTotal / (1000 * 60 * 60 * 24));
+        if (expectedDays < 1) expectedDays = 1;
         if (diffDays > 0) {
             lateDaysEl.textContent = `Trễ ${diffDays} ngày`;
             lateDaysEl.style.color = "#d9534f"; // Màu đỏ
-            // Phạt trễ hạn (ví dụ: tính phụ thu trễ dựa trên % giá ngày hoặc quy định riêng)
             lateFee = diffDays * pricePerDay * 20 / 100; 
         } else if (diffDays === 0) {
             lateDaysEl.textContent = "Đúng hạn";
@@ -886,18 +911,27 @@ function calculateCheckoutFee() {
             lateFee = 0;
         }
     }
-    
-    // Tự động cập nhật vào ô input phụ thu trễ
     const lateFeeInput = document.getElementById("checkout-late-fee");
     if (lateFeeInput) {
         lateFeeInput.value = Number(lateFee) || 0;
     }
-
-    // Tính tổng phí (Tiền cơ bản + Phụ thu trễ)
-    const totalFee = (totalDays * pricePerDay) + Number(lateFee);
+    const baseFee = totalDays * pricePerDay;
+    const evaluatingDays = Math.max(totalDays, expectedDays);
+    let discountPercent = 0;
+    if (evaluatingDays >= 14) {
+        discountPercent = 0.10; // Giảm 10%
+    } else if (evaluatingDays >= 7) {
+        discountPercent = 0.05; // Giảm 5%
+    }
+    discountFee = baseFee * discountPercent;
+    const discountInput = document.getElementById("checkout-discount-fee");
+    if (discountInput) {
+        discountInput.value = discountFee;
+    }
+    const totalFee = baseFee + Number(lateFee) - discountFee;
     const feeInput = document.getElementById("checkout-fee");
     if (feeInput) {
-        feeInput.value = totalFee;
+        feeInput.value = totalFee > 0 ? totalFee : 0;
     }
 }
 function closeCheckoutModal() {

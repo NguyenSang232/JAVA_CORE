@@ -121,7 +121,7 @@ async function loadDashboardData() {
             fetch(API.boarding).then(res => res.json()),
             fetch(API.careNotes || '/api/care-notes').then(res => res.json()).catch(() => [])
         ]);		
-        
+
         owners = ownerData || [];
         pets = petData || [];
         boardings = boardingData || [];
@@ -215,7 +215,7 @@ function renderRecent(data) {
         const statusText = item.status === "BOARDING" ? "Đang gửi" : "Đã trả";
         const feeText = item.status === "RETURNED" ? formatMoney(item.totalFee ?? item.baseFee) : "—";
         const petIcon = typeof getPetIcon === "function" ? getPetIcon(item.petType) : "🐾";
-
+		
         return `
             <tr style="cursor: pointer;" onclick="showBoardingDetail(${item.id})">
                 <td>

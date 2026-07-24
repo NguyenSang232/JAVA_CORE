@@ -9,12 +9,16 @@ import training.javaweb.exam.dto.request.OwnerRequestDTO;
 import training.javaweb.exam.dto.response.OwnerDTO;
 import training.javaweb.exam.entity.Owner;
 import training.javaweb.exam.repository.OwnerRepository;
+import training.javaweb.exam.repository.PetRepository;
 
 @Service
 public class OwnerService {
 
 	@Autowired
 	private OwnerRepository ownerRepository;
+
+	@Autowired
+	private PetRepository petRepository;
 
 	public OwnerDTO createOwner(OwnerRequestDTO dto) {
 		Owner owner = toEntity(dto);
@@ -28,7 +32,6 @@ public class OwnerService {
 
 		Owner owner = toEntity(dto);
 		owner.setId(id);
-
 		ownerRepository.update(owner);
 
 		return ownerRepository.findDTOById(id);
@@ -52,6 +55,7 @@ public class OwnerService {
 
 	public void delete(Long id) {
 		ownerRepository.softDelete(id);
+		petRepository.softDelete(id);
 	}
 
 	public Owner toEntity(OwnerRequestDTO dto) {
@@ -80,6 +84,7 @@ public class OwnerService {
 		dto.setEmail(owner.getEmail());
 		dto.setAddress(owner.getAddress());
 		dto.setCreateAt(owner.getCreatedAt());
+		dto.setDeletedAt(owner.getDeleted());
 		return dto;
 	}
 

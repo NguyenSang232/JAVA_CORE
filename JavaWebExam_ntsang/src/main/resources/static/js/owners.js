@@ -11,7 +11,7 @@ async function showOwners() {
         <div class="dashboard-container">
             <header class="dashboard-header">
                 <div>
-                    <h1>Owners</h1>
+                    <h1>Quản Lý Chủ Nuôi</h1>
                     <p style="color: #999; margin: 4px 0 0 0; font-size: 14px;">Quản lý thông tin chủ nuôi trong hệ thống</p>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
@@ -94,8 +94,7 @@ async function openOwnerModalDetail(ownerId = null) {
     const form = document.getElementById("owner-form-detail");
     const title = document.getElementById("owner-modal-title");
     const listContainer = document.getElementById("pet-detail-list-detail-owner");
-    // Hiển thị modal
-    modalOverlay.style.display = "flex";
+    modalOverlay.style.display = "flex"; 
     if (ownerId) {
         const owner = owners.find(o => o.id == ownerId);
         title.innerText = "Chỉnh sửa chủ nuôi";
@@ -104,12 +103,31 @@ async function openOwnerModalDetail(ownerId = null) {
         document.getElementById("owner-email-detail").value = owner.email;
         document.getElementById("owner-phone-detail").value = owner.phone;
         document.getElementById("owner-address-detail").value = owner.address || "";
-		document.getElementById("owner-username-detail").value = owner.phone;
-        listContainer.innerHTML = "Đang tải...";
+        document.getElementById("owner-username-detail").value = owner.phone;		
+        listContainer.innerHTML = "Đang tải...";        
         const pets = await getPetByOwnerId(ownerId);
+        const hasUser = await getUserByOwnerId(ownerId);       
         console.log(`Thú cưng của Owner ID ${ownerId}:`, pets);
+        console.log(`Trạng thái User của Owner ID ${ownerId}:`, hasUser);
+        const userIdInput = document.getElementById("user-id-detail");
+        const passwordInput = document.getElementById("owner-password-detail");
+        if (hasUser) {
+            try {
+                const response = await fetch(`${API.users}/detail/${ownerId}`);
+                const userData = await response.json();
+				console.log(userData);
+                if (userData) {
+                    if (userIdInput) userIdInput.value = userData.id || "";
+                    if (passwordInput) passwordInput.value = userData.password || "";
+                }
+            } catch (error) {
+                console.error("Lỗi khi lấy thông tin user:", error);
+            }
+        } else {
+            if (userIdInput) userIdInput.value = "";
+        }
         listContainer.innerHTML = pets.map(p => `
-           <div class="pet-card" onclick=editPet(${p.id})>
+           <div class="pet-card" onclick="editPet(${p.id})">
                 <div class="pet-avatar">
                     ${getPetIcon(p.type)}
                 </div>
@@ -124,10 +142,13 @@ async function openOwnerModalDetail(ownerId = null) {
         title.innerText = "Thêm Chủ Nuôi Mới";
         form.reset();
         document.getElementById("owner-id-detail").value = "";
+        const userIdInput = document.getElementById("user-id-detail");
+        if (userIdInput) userIdInput.value = "";
+        const passwordInput = document.getElementById("owner-password-detail");
+        if (passwordInput) passwordInput.value = "";
         listContainer.innerHTML = "Chưa có dữ liệu.";
     }
 }
-
 function closeOwnerModalDetail() {
     document.getElementById("owner-modal-overlay").style.display = "none";
 }
@@ -160,9 +181,7 @@ async function showPetModal(ownerId) {
 
     modal.style.display = "flex";
 }
-/* =====================================================
-   UPDATE OWNER VIEW (KẾT HỢP TÌM KIẾM VÀ PHÂN TRANG)
-===================================================== */
+
 function updateOwnerView() {
     const filteredData = searchOwnerData();
     document.getElementById("owner-countAll").textContent = filteredData.length;
@@ -172,9 +191,6 @@ function updateOwnerView() {
     renderOwnerPagination(filteredData.length);
 }
 
-/* =====================================================
-   RENDER OWNER TABLE
-===================================================== */
 async function renderOwnerTable(ownerList) {
     const tableBody = document.getElementById("owner-table");
     if (!tableBody) return;
@@ -216,9 +232,7 @@ async function renderOwnerTable(ownerList) {
 
     tableBody.innerHTML = rows.join("");
 }
-/* =====================================================
-   GET PET BY OWNER
-===================================================== */
+
 async function getPetByOwnerId(ownerId) {
     try {
         const response = await fetch(`${API.pets}/owner/${ownerId}`);
@@ -241,9 +255,6 @@ async function getUserByOwnerId(ownerId) {
     }
 }
 
-/* =====================================================
-   OWNER SEARCH
-===================================================== */
 function searchOwner(keyword) {
     currentOwnerKeyword = keyword.toLowerCase();
     currentOwnerPage = 1;
@@ -261,9 +272,6 @@ function searchOwnerData() {
     });
 }
 
-/* =====================================================
-   OWNER SORT (THEO ICON MŨI TÊN Ở TIÊU ĐỀ)
-===================================================== */
 function toggleOwnerSort() {
     const iconSpan = document.getElementById("owner-sort-icon");
 
@@ -289,9 +297,6 @@ function sortOwnerData(type, resetPage = true) {
     updateOwnerView();
 }
 
-/* =====================================================
-   OWNER PAGINATION
-===================================================== */
 function paginateOwner(data, page) {
     const perPage = typeof OWNERS_PER_PAGE !== "undefined" ? OWNERS_PER_PAGE : 5;
     const start = (page - 1) * perPage;
@@ -304,7 +309,6 @@ function renderOwnerPagination(total) {
     if (!pagination) return;
     const perPage = typeof OWNERS_PER_PAGE !== "undefined" ? OWNERS_PER_PAGE : 5;
     const totalPage = Math.ceil(total / perPage);
-    
     if (totalPage <= 1) {
         pagination.innerHTML = "";
         return;
@@ -327,9 +331,6 @@ function changeOwnerPage(page) {
     updateOwnerView();
 }
 
-/* =====================================================
-   MODAL LOGIC: CHỦ NUÔI (OWNER)
-===================================================== */
 function openOwnerModal() {
     const modal = document.getElementById("owner-modal");
     const form = document.getElementById("owner-form");
@@ -348,12 +349,7 @@ function closeOwnerModalDetail() {
     const modal = document.getElementById("owner-modal-overlay");
     if (modal) modal.style.display = "none";
 }
-/* =====================================================
-   EDIT OWNER SAVE (CÓ HỖ TRỢ CẬP NHẬT/TẠO TÀI KHOẢN USER KHI CÓ MẬT KHẨU)
-===================================================== */
-/* =====================================================
-   EDIT OWNER SAVE (CHECK ACCOUNT DẠNG TRUE/FALSE)
-===================================================== */
+
 async function editOnwerSave(event) {
     if (event) event.preventDefault();
     
@@ -435,22 +431,14 @@ async function editOnwerSave(event) {
     }
 }
 
-/* =====================================================
-   SAVE OWNER (CÓ HỖ TRỢ TẠO TÀI KHOẢN USER KHI CÓ MẬT KHẨU)
-===================================================== */
 async function saveOwner(event) {
     event.preventDefault();
-    
-    // Lấy thông tin từ form thêm chủ nuôi
     const name = document.getElementById("owner-name").value;
     const phone = document.getElementById("owner-phone").value;
     const address = document.getElementById("owner-address").value;
     const email = document.getElementById("owner-email").value;
-    
-    // Lấy thêm mật khẩu (giả định input nhập mật khẩu trong modal thêm có id là "owner-password")
     const passwordInput = document.getElementById("owner-password");
     const password = passwordInput ? passwordInput.value.trim() : "";
-
     const newOwner = { 
         name, 
         email, 
@@ -460,27 +448,23 @@ async function saveOwner(event) {
     };
 
     try {
-        // Bước 1: Lưu Owner trước để lấy ID trả về
         const response = await fetch(API.owners, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newOwner)
         });
-
         if (!response.ok) {
             showToast("Không thể lưu chủ nuôi mới", "error");
             return;
         }
-
         const createdOwner = await response.json();
         const ownerId = createdOwner.id;
-
         if (password) {
             const newUser = {
-                username: phone, // Sử dụng số điện thoại làm username (hoặc tùy chỉnh theo hệ thống của bạn)
+                username: phone,
                 password: password,
                 ownerId: ownerId,
-                role: "OWNER" // Gán quyền tương ứng nếu cần
+                role: "ROLE_CUSTOMER" 
             };
 
             const userResponse = await fetch(API.users, {
@@ -497,35 +481,24 @@ async function saveOwner(event) {
         } else {
             showToast("Thêm chủ nuôi thành công!", "success");
         }
-
-        // Cập nhật lại giao diện và đóng modal
         await loadOwnersData();
         closeOwnerModal();
         
         if (typeof loadDashboardData === "function") {
             await loadDashboardData();
         }
-
     } catch (error) {
         console.error(error);
         showToast("Lỗi kết nối máy chủ", "error");
     }
 }
 
-/* =====================================================
-   EDIT OWNER
-===================================================== */
 function editOwner(id) {
     const owner = owners.find(item => item.id === id);
     if (!owner) return;
     openOwnerModal(owner);
 }
 
-
-
-/* =====================================================
-   DELETE OWNER
-===================================================== */
 async function deleteOwner(id) {
     const confirm = confirmDelete("Bạn có chắc muốn xóa chủ nuôi này?");
     if (!confirm) return;

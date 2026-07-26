@@ -58,6 +58,10 @@ public class OwnerService {
 		petRepository.softDelete(id);
 	}
 
+	public boolean restoreOwner(Long id) {
+        return ownerRepository.restoreOwner(id) > 0;
+    }
+
 	public Owner toEntity(OwnerRequestDTO dto) {
 		if (dto == null) {
 			return null;

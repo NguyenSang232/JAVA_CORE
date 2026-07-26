@@ -15,10 +15,8 @@
         <result property="email" column="email"/>
         <result property="address" column="address"/>
         <result property="createAt" column="created_at"/>
-       	<result property="deletedAt" column="deleted_at"/>
+        <result property="deletedAt" column="deleted_at"/>
     </resultMap>
-
-    <!-- ===================== Create ===================== -->
     <insert id="insert"
             parameterType="training.javaweb.exam.entity.Owner"
             useGeneratedKeys="true"
@@ -46,20 +44,16 @@
         )
 
     </insert>
-
-    <!-- ===================== Get All ===================== -->
     <select id="findAll"
             resultMap="OwnerDTOMap">
 
         SELECT
             o.*
         FROM owners o
-        WHERE o.deleted_at = false
         ORDER BY o.id DESC
 
     </select>
 
-    <!-- ===================== Detail ===================== -->
     <select id="findDetail"
             parameterType="long"
             resultMap="OwnerDTOMap">
@@ -68,14 +62,12 @@
             name,
             phone,
             email,
-            address
+            address,
+            deleted_at
         FROM owners
         WHERE id = #{id}
-        <!--  AND deleted_at = false-->
     </select>
-	
-	
-    <!-- ===================== Find By Id ===================== -->
+    
     <select id="findDTOById"
             parameterType="long"
             resultMap="OwnerDTOMap">
@@ -85,12 +77,13 @@
             name,
             phone,
             email,
-            address
+            address,
+            deleted_at
         FROM owners
         WHERE id = #{id}
-        <!--  AND deleted_at = false-->
     </select>
-    <!-- ===================== Update ===================== -->
+
+
     <update id="update"
             parameterType="training.javaweb.exam.entity.Owner">
 
@@ -120,7 +113,7 @@
 
     </update>
 
-    <!-- ===================== Search ===================== -->
+
     <select id="search"
             resultMap="OwnerDTOMap">
 
@@ -129,28 +122,28 @@
             name,
             phone,
             email,
-            address
+            address,
+            deleted_at
         FROM owners
-
-        WHERE deleted_at = false
-          AND (
+        WHERE (
                 name LIKE CONCAT('%', #{keyword}, '%')
                 OR phone LIKE CONCAT('%', #{keyword}, '%')
               )
-
         ORDER BY id DESC
 
     </select>
 
-    <!-- ===================== Soft Delete ===================== -->
     <update id="softDelete">
-
         UPDATE owners
         SET
             deleted_at = true,
             updated_at = NOW()
         WHERE id = #{id}
-
     </update>
-
+    <update id="restoreOwner">
+        UPDATE owners
+        SET deleted_at = false,
+            updated_at = NOW()
+        WHERE id = #{id} 
+    </update>
 </mapper>

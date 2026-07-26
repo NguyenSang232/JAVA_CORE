@@ -231,10 +231,15 @@ function updateChartData(filterType, dataList) {
     let values = [];
     const now = new Date();
     const currentYear = now.getFullYear();
+    let highlightIndex = -1;
 
     if (filterType === 'week') {
         labels = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
         values = Array(7).fill(0);
+        
+        let currentDayIndex = now.getDay();
+        highlightIndex = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
+
         dataList.forEach(item => {
             if (item.checkInDate) {
                 const date = new Date(item.checkInDate);
@@ -246,9 +251,10 @@ function updateChartData(filterType, dataList) {
             }
         });
     } else if (filterType === 'month') {
-        // Đồng bộ hiển thị đủ 12 tháng (T1 - T12) giống bên Dashboard
         labels = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"];
         values = Array(12).fill(0);
+        highlightIndex = now.getMonth();
+
         dataList.forEach(item => {
             if (item.checkInDate) {
                 const date = new Date(item.checkInDate);
@@ -258,9 +264,10 @@ function updateChartData(filterType, dataList) {
             }
         });
     } else if (filterType === 'quarter') {
-        // Đồng bộ hiển thị đủ 4 Quý (Quý 1 - Quý 4) giống bên Dashboard
         labels = ["Quý 1", "Quý 2", "Quý 3", "Quý 4"];
         values = Array(4).fill(0);
+        highlightIndex = Math.floor(now.getMonth() / 3);
+
         dataList.forEach(item => {
             if (item.checkInDate) {
                 const date = new Date(item.checkInDate);
@@ -271,10 +278,11 @@ function updateChartData(filterType, dataList) {
             }
         });
     } else if (filterType === 'year') {
-        // Đồng bộ hiển thị 4 năm gần nhất giống bên Dashboard
         const startYear = currentYear - 3;
         labels = [String(startYear), String(startYear + 1), String(startYear + 2), String(currentYear)];
         values = Array(4).fill(0);
+        highlightIndex = 3;
+
         dataList.forEach(item => {
             if (item.checkInDate) {
                 const yearIndex = new Date(item.checkInDate).getFullYear() - startYear;
@@ -291,6 +299,14 @@ function updateChartData(filterType, dataList) {
         totalAmountEl.innerText = (typeof formatMoney === 'function' ? formatMoney(totalAmount) : totalAmount.toLocaleString('vi-VN') + "đ");
     }
 
+    // Áp dụng đúng 2 màu bạn vừa cung cấp cho mọi bộ lọc
+    const backgroundColors = values.map((_, index) => 
+        index === highlightIndex ? "#2563eb" : "#cbd5e1"
+    );
+    const hoverBackgroundColors = values.map((_, index) => 
+        index === highlightIndex ? "#1d4ed8" : "#94a3b8"
+    );
+
     window.revenueChart = new Chart(canvas, {
         type: "bar",
         data: {
@@ -298,8 +314,8 @@ function updateChartData(filterType, dataList) {
             datasets: [{
                 label: "Doanh thu",
                 data: values,
-                backgroundColor: "#2563eb",
-                hoverBackgroundColor: "#1d4ed8",
+                backgroundColor: backgroundColors,
+                hoverBackgroundColor: hoverBackgroundColors,
                 borderRadius: 6
             }]
         },

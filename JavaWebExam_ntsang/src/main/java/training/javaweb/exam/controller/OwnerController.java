@@ -47,21 +47,18 @@ public class OwnerController {
 		return ResponseEntity.ok(owner);
 	}
 
-	// Read All
 	@GetMapping
 	@Operation(summary = "A2 Get all owners", description = "Lấy danh sách tất cả người dùng")
 	public ResponseEntity<?> getAllOwners() {
 		return ResponseEntity.ok(ownerService.getAll());
 	}
 
-	// Read Detail
 	@GetMapping("/{id}")
 	@Operation(summary = "A3 Get details owners", description = "Lấy thông tin chi tiết người dùng")
 	public ResponseEntity<?> getOwnerById(@PathVariable Long id) {
 		return ResponseEntity.ok(ownerService.getDetail(id));
 	}
 
-	// Search
 	@GetMapping("/search")
 	@Operation(summary = "A5 Search owners by phone or name", description = "Tìm kiếm người dùng")
 	public ResponseEntity<?> searchOwner(@RequestParam String keyword) {
@@ -77,11 +74,25 @@ public class OwnerController {
 		return ResponseEntity.status(HttpStatus.CREATED).body("Customer account created and linked successfully.");
 	}
 
-	// Delete (Soft Delete)
 	@DeleteMapping("/{id}")
 	@Operation(summary = "A7 Delete owners", description = "Xóa người dùng")
 	public ResponseEntity<?> deleteOwner(@PathVariable Long id) {
 		ownerService.delete(id);
 		return ResponseEntity.ok("Owner deleted successfully.");
 	}
+
+	@PutMapping("/restore")
+    @Operation(summary = "Restore owners", description = "Khôi phục người dùng")
+    public ResponseEntity<String> restoreOwner(@RequestParam("id") Long id) {
+        try {
+            boolean isRestored = ownerService.restoreOwner(id);
+            if (isRestored) {
+                return ResponseEntity.ok("Khôi phục chủ nuôi thành công!");
+            } else {
+                return ResponseEntity.badRequest().body("Không tìm thấy chủ nuôi hoặc khôi phục thất bại");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Lỗi máy chủ: " + e.getMessage());
+        }
+    }
 }

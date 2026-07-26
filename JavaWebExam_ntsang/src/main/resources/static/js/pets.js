@@ -1,5 +1,5 @@
 /* =====================================================
-   SHOW PET PAGE
+    SHOW PET PAGE (COMPLETE & UPDATED)
 ===================================================== */
 let currentPetSortDirection = "NONE"; // Biến lưu trạng thái sắp xếp theo tên thú cưng ("NONE", "ASC", "DESC")
 
@@ -36,6 +36,7 @@ async function showPets() {
                             <button class="filter-btn" onclick="filterPet('Bird', this)">🐦 Bird</button>
                             <button class="filter-btn" onclick="filterPet('Rabbit', this)">🐰 Rabbit</button>
                             <button class="filter-btn" onclick="filterPet('Other', this)">🐾 Other</button>
+                            <button class="filter-btn" onclick="filterPet('DELETED', this)" style="color: #ef4444; border-color: #fca5a5;">🗑️ Đã xóa</button>
                         </div>
                     </div>
 
@@ -130,7 +131,7 @@ function updatePetView() {
 }
 
 /* =====================================================
-   RENDER PET TABLE
+    RENDER PET TABLE
 ===================================================== */
 function getPetIcon(type) {
     switch (type) {
@@ -157,15 +158,16 @@ async function renderPetTable(petList) {
         petList.map(async (pet, index) => {
             const stt = (currentPetPage - 1) * perPage + (index + 1);
             const owner = await getOwnerById(pet.ownerId);
-			console.log(pet.image);
+            const isDeleted = pet.deletedAt === true || pet.isDeleted === true;
+
             return `
-                <tr class="pet-row" onclick="editPet(${pet.id})">
+                <tr class="pet-row" onclick="editPet(${pet.id})" style="${isDeleted ? 'opacity: 0.6; background: #fafafa;' : ''}">
                     <td>${stt}</td>
                     <td>
                         <div class="pet-cell" style="display: flex; align-items: center; gap: 8px;">
-                            <div class="pet-avatar-mini" style="font-size: 20px;">			
-							<img src="${pet.image}" style="width: 20px; height: 20px">
-							</div>
+                            <div class="pet-avatar-mini" style="font-size: 20px;">        
+                                <img src="${pet.image || ''}" style="width: 20px; height: 20px; object-fit: cover; border-radius: 50%;">
+                            </div>
                             <div class="pet-meta">
                                 <strong style="color: #111; display: block;">${pet.name ?? "-"}</strong>
                             </div>
@@ -176,11 +178,11 @@ async function renderPetTable(petList) {
                     <td><span class="age-badge" style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 13px;">${pet.age ?? 0} tuổi</span></td>
                     <td>${pet.weight ?? 0} kg</td>
                     <td class="owner-cell">👤 ${owner ? owner.name : "-"}</td>
-                    <td>${typeof petStatusBadge === "function" ? petStatusBadge(pet.status) : pet.status}</td>
+                    <td>${isDeleted ? '<span class="status-oval deleted" style="background: #fee2e2; color: #dc2626; padding: 2px 8px; border-radius: 12px; font-size: 12px;">Đã xóa</span>' : (typeof petStatusBadge === "function" ? petStatusBadge(pet.status) : pet.status)}</td>
                     <td>
                         <div class="action-group">
-                            <button class="action-btn edit" title="Chỉnh sửa" onclick="event.stopPropagation(); editPet(${pet.id})">✏️</button>
-                            <button class="action-btn delete" title="Xóa" onclick="event.stopPropagation(); deletePet(${pet.id})">🗑️</button>
+                            ${!isDeleted ? `<button class="action-btn edit" title="Chỉnh sửa" onclick="event.stopPropagation(); editPet(${pet.id})">✏️</button>` : ''}
+                            ${!isDeleted ? `<button class="action-btn delete" title="Xóa" onclick="event.stopPropagation(); deletePet(${pet.id})">🗑️</button>` : ''}
                         </div>
                     </td>
                 </tr>
@@ -213,9 +215,16 @@ function filterPet(type, btnElement) {
 
 function filterPetData() {
     let result = [...pets];
-    if (currentPetFilter !== "ALL") {
-        result = result.filter(pet => pet.type === currentPetFilter);
+    
+    if (currentPetFilter === "DELETED") {
+        result = result.filter(pet => pet.deletedAt === true || pet.isDeleted === true);
+    } else {
+        result = result.filter(pet => !(pet.deletedAt === true || pet.isDeleted === true));
+        if (currentPetFilter !== "ALL") {
+            result = result.filter(pet => pet.type === currentPetFilter);
+        }
     }
+
     if (currentPetKeyword) {
         result = result.filter(pet => {
             const name = pet.name?.toLowerCase() ?? "";
@@ -231,10 +240,7 @@ function searchPet(keyword) {
     updatePetView();
 }
 
-
 function togglePetSort() {
-    const iconSpan = document.getElementById("pet-sort-icon");
-
     if (currentPetSortDirection === "NONE" || currentPetSortDirection === "DESC") {
         currentPetSortDirection = "ASC";
         sortPetData("ASC", true);
@@ -289,60 +295,96 @@ function changePetPage(page) {
     updatePetView();
 }
 
+/* =====================================================
+    MODAL & CHỦ NUÔI INTEGRATION
+===================================================== */
 async function openPetModal(pet = null) {
     const modal = document.getElementById("pet-modal");
     const form = document.getElementById("pet-form");
-    const ownerSelect = document.getElementById("pet-owner-select");
-    const title = document.getElementById("title-detail");
-    if (title) title.textContent = pet ? "Chỉnh sửa thông tin thú cưng" : "Thêm mới thú nuôi";
-
     if (!modal) {
         console.warn("Không tìm thấy phần tử #pet-modal trên trang này.");
         return;
     }
 
-    let idInput = document.getElementById("pet-id");
-    if (!idInput) {
-        idInput = document.createElement("input");
-        idInput.type = "hidden";
-        idInput.id = "pet-id";
-        if (form) form.appendChild(idInput);
-    }
-
-    if (form) form.reset();
-    idInput.value = "";
     modal.style.display = "flex";
 
+    // 1. Tải danh sách chủ nuôi cho thẻ select (đảm bảo luôn có dữ liệu chủ nuôi)
+    await loadOwnerOptionsToSelect();
+
+    if (!pet) {
+        if (form) {
+            form.style.display = "block";
+            form.reset();
+        }
+        const detailContainer = document.getElementById("pet-detail-view-container");
+        if (detailContainer) detailContainer.style.display = "none";
+
+        let idInput = document.getElementById("pet-id");
+        if (idInput) idInput.value = "";
+        const title = document.getElementById("title-detail");
+        if (title) title.textContent = "Thêm mới thú nuôi";
+        return;
+    }
+
+    // --- TRƯỜNG HỢP CHỈNH SỬA / XEM CHI TIẾT THÚ CƯNG ---
+    if (form) {
+        form.style.display = "block"; // Hiển thị form để gán dữ liệu cũ
+    }
+    
+    // Gán dữ liệu cũ vào các input chỉnh sửa
+    const idInput = document.getElementById("pet-id");
+    const nameInput = document.getElementById("pet-name");
+    const typeSelect = document.getElementById("pet-type");
+    const breedInput = document.getElementById("pet-breed");
+    const ageInput = document.getElementById("pet-age");
+    const weightInput = document.getElementById("pet-weight");
+    const ownerSelect = document.getElementById("pet-owner-select");
+    const imageInput = document.getElementById("pet-image");
+
+    if (idInput) idInput.value = pet.id || "";
+    if (nameInput) nameInput.value = pet.name || "";
+    if (typeSelect) typeSelect.value = pet.type || "Dog";
+    if (breedInput) breedInput.value = pet.breed || "";
+    if (ageInput) ageInput.value = pet.age || "";
+    if (weightInput) weightInput.value = pet.weight || "";
+    if (ownerSelect) ownerSelect.value = pet.ownerId || "";
+    if (imageInput) imageInput.value = pet.image || "";
+
+    const title = document.getElementById("title-detail") || modal.querySelector(".modal-title");
+    if (title) {
+        title.textContent = "Chỉnh sửa thông tin thú nuôi";
+    }
+
+    // Ẩn khung xem chi tiết nếu có
+    const detailContainer = document.getElementById("pet-detail-view-container");
+    if (detailContainer) detailContainer.style.display = "none";
+}
+
+// Hàm phụ trợ để tải danh sách chủ nuôi đổ vào thẻ <select id="pet-owner-select">
+async function loadOwnerOptionsToSelect() {
+    const ownerSelect = document.getElementById("pet-owner-select");
     if (!ownerSelect) return;
 
     try {
         const response = await fetch(API.owners);
-        const allOwners = await response.json();
-
-        ownerSelect.innerHTML = `
-            <option value="">-- Chọn chủ nuôi --</option>
-            ${allOwners.map(o => `<option value="${o.id}">${o.name} (${o.phone})</option>`).join("")}
-        `;
-
-        if (pet) {
-            idInput.value = pet.id ?? "";
-            const nameInput = document.getElementById("pet-name");
-            const typeSelect = document.getElementById("pet-type");
-            const breedInput = document.getElementById("pet-breed");
-            const ageInput = document.getElementById("pet-age");
-            const weightInput = document.getElementById("pet-weight");
-			const imageInput = document.getElementById("pet-image");
-            if (nameInput) nameInput.value = pet.name ?? "";
-            if (typeSelect) typeSelect.value = pet.type ?? "Dog";
-            if (breedInput) breedInput.value = pet.breed ?? "";
-            if (ageInput) ageInput.value = pet.age ?? "";
-            if (weightInput) weightInput.value = pet.weight ?? "";
-            if(imageInput) imageInput.value = pet.image ?? ""
-            ownerSelect.value = pet.ownerId ?? "";
+        if (response.ok) {
+            const owners = await response.json();
+            
+            let html = `<option value="">-- Chọn chủ nuôi --</option>`;
+            if (Array.isArray(owners) && owners.length > 0) {
+                owners.forEach(owner => {
+                    html += `<option value="${owner.id}">${owner.name} (${owner.phone || 'Không có SĐT'})</option>`;
+                });
+            } else {
+                html += `<option value="" disabled>Không có chủ nuôi nào trong hệ thống</option>`;
+            }
+            ownerSelect.innerHTML = html;
+        } else {
+            ownerSelect.innerHTML = `<option value="" disabled>Lỗi tải danh sách chủ nuôi</option>`;
         }
     } catch (error) {
-        console.error("Lỗi chuẩn bị dữ liệu trong Pet Modal:", error);
-        showToast("Không thể nạp danh sách chủ nuôi", "error");
+        console.error("Lỗi khi tải danh sách chủ nuôi:", error);
+        ownerSelect.innerHTML = `<option value="" disabled>Lỗi kết nối máy chủ</option>`;
     }
 }
 
@@ -362,11 +404,15 @@ async function savePet(event) {
     const ageInput = document.getElementById("pet-age");
     const weightInput = document.getElementById("pet-weight");
     const ownerSelect = document.getElementById("pet-owner-select");
-	const imageInput = document.getElementById("pet-image");
+    const imageInput = document.getElementById("pet-image");
+    
     const id = idInput ? idInput.value : "";
     const ownerId = ownerSelect ? Number(ownerSelect.value) : 0;
     const name = nameInput ? nameInput.value.trim() : "";
     const type = typeSelect ? typeSelect.value : "Dog";
+    const age = ageInput ? Number(ageInput.value) : 0;
+    const weight = weightInput ? Number(weightInput.value) : 0;
+
     if (!ownerId) {
         showToast("Vui lòng chọn chủ nuôi hợp lệ!", "error");
         return;
@@ -375,6 +421,15 @@ async function savePet(event) {
         showToast("Vui lòng nhập tên thú cưng!", "error");
         return;
     }
+    if (isNaN(age) || age <= 0) {
+        showToast("Tuổi thú cưng phải lớn hơn 0!", "error");
+        return;
+    }
+    if (isNaN(weight) || weight <= 0) {
+        showToast("Cân nặng thú cưng phải lớn hơn 0!", "error");
+        return;
+    }
+    
     const isDuplicate = pets.some(p => {
         const isCurrentPet = id && Number(p.id) === Number(id);
         if (isCurrentPet) return false;
@@ -382,20 +437,22 @@ async function savePet(event) {
                p.name.trim().toLowerCase() === name.toLowerCase() &&
                p.type === type;
     });
+
     if (isDuplicate) {
         showToast(`Chủ nuôi này đã có thú cưng loại "${type}" tên là "${name}" rồi!`, "error");
         return;
     }
+
     const petData = {
         name: name,
         type: type,
         breed: breedInput ? breedInput.value : "",
-        age: ageInput ? Number(ageInput.value) || 0 : 0,
-        weight: weightInput ? Number(weightInput.value) || 0 : 0,
+        age: age,
+        weight: weight,
         ownerId: ownerId,
-		image: imageInput.value
+        image: imageInput ? imageInput.value : ""
     };
-	
+    
     if (id) {
         const existingPet = pets.find(p => Number(p.id) === Number(id));
         if (existingPet) {
@@ -404,6 +461,7 @@ async function savePet(event) {
     } else {
         petData.createdAt = new Date().toISOString();
     }
+
     try {
         let response;
         if (id) {
@@ -441,10 +499,26 @@ function editPet(id) {
     if (!pet) return;
     openPetModal(pet);
 }
+
+/* =====================================================
+   XÓA THÚ CƯNG (DỰA TRÊN LOGIC TRẠNG THÁI pet.status)
+===================================================== */
 async function deletePet(id) {
+    const pet = pets.find(item => Number(item.id) === Number(id));
+    if (!pet) {
+        showToast("Không tìm thấy thông tin thú cưng", "error");
+        return;
+    }
+
+    if (pet.status === "BOARDING") {
+        showToast("Không thể xóa thú cưng đang trong quá trình đang gửi!", "error");
+        return;
+    }
+
     const confirm = typeof confirmDelete === "function" 
         ? confirmDelete("Bạn có chắc muốn xóa thú cưng này?") 
         : window.confirm("Bạn có chắc muốn xóa thú cưng này?");
+    
     if (!confirm) return;
 
     try {
@@ -455,11 +529,15 @@ async function deletePet(id) {
         if (response.ok) {
             showToast("Xóa thú cưng thành công", "success");
             await loadPetData();
+            
+            if (typeof loadDashboardData === "function") {
+                await loadDashboardData();
+            }
         } else {
             showToast("Không thể xóa thú cưng này", "error");
         }
     } catch (error) {
-        console.error(error);
+        console.error("Lỗi kết nối khi xóa:", error);
         showToast("Xóa thất bại", "error");
     }
 }

@@ -113,6 +113,19 @@ async function showDashboard() {
 /* =====================================================
    LOAD DASHBOARD DATA
 ===================================================== */
+
+async function fetchPetById(petId) {
+    try {
+        const response = await fetch(`${API.pets}/${petId}`);
+        if (!response.ok) throw new Error("Không thể lấy dữ liệu thú cưng");
+        const pet = await response.json();
+        return pet;
+    } catch (error) {
+        console.error("Lỗi khi fetch pet:", error);
+        return null;
+    }
+}
+
 async function loadDashboardData() {
     try {
         const [ownerData, petData, boardingData, noteData] = await Promise.all([
@@ -120,7 +133,7 @@ async function loadDashboardData() {
             fetch(API.pets).then(res => res.json()),
             fetch(API.boarding).then(res => res.json()),
             fetch(API.careNotes || '/api/care-notes').then(res => res.json()).catch(() => [])
-        ]);		
+        ]);    
 
         owners = ownerData || [];
         pets = petData || [];
@@ -146,30 +159,38 @@ async function loadDashboardData() {
         const chartAmountEl = document.getElementById("chart-total-amount");
         if (chartAmountEl) chartAmountEl.textContent = formatMoney(totalRevenue);
 
-		const today = new Date().toLocaleDateString('en-CA'); 
-		        
-		const isDateToday = (dateStr) => {
-		   if (!dateStr) return false;
-		       const datePart = String(dateStr).trim().substring(0, 10);
-		       return datePart === today;
-		  };
-        const newOwners = owners.filter(i => isDateToday(i.createAt)).length;
-		console.log(today);
-		console.log("Danh sách owners:", owners);
-		console.log("Danh sách owners:", pets);
-		console.log("Danh sách owners:", noteData);
-		console.log("Ngày của owner đầu tiên:", pets[0]?.createdAt);
-		console.log("Ngày của owner đầu tiên:", boardings[0]?.createdAt);
-        const newPets = pets.filter(i => isDateToday(i.createdAt)).length;
-        const newNotes = noteData.filter(i => isDateToday(i.createdAt)).length;
+        const todayDate = new Date();
+        const today = todayDate.toLocaleDateString('en-CA'); 
+        
+        const yesterdayDate = new Date();
+        yesterdayDate.setDate(todayDate.getDate() - 1);
+        const yesterday = yesterdayDate.toLocaleDateString('en-CA');
+
+        const isDateToday = (dateStr, targetDate) => {
+           if (!dateStr) return false;
+           const datePart = String(dateStr).trim().substring(0, 10);
+           return datePart === targetDate;
+        };
+
+        const newOwners = owners.filter(i => isDateToday(i.createAt || i.createdAt, today)).length;
+        const newPets = pets.filter(i => isDateToday(i.createdAt, today)).length;
+        const newNotes = noteData.filter(i => isDateToday(i.createdAt, today)).length;
         const revToday = boardings
-            .filter(i => isDateToday(i.actualCheckOut))
+            .filter(i => isDateToday(i.actualCheckOut || i.checkInDate, today))
             .reduce((s, i) => s + (i.totalFee || i.baseFee || 0), 0);
-		console.log(revToday);
-        renderSimpleTrend("trend-owner", newOwners);
-        renderSimpleTrend("trend-pet", newPets);
-        renderSimpleTrend("trend-notes", newNotes);
-        renderSimpleTrend("trend-revenue", revToday, true);
+
+        const yesterdayOwners = owners.filter(i => isDateToday(i.createAt || i.createdAt, yesterday)).length;
+        const yesterdayPets = pets.filter(i => isDateToday(i.createdAt, yesterday)).length;
+        const yesterdayNotes = noteData.filter(i => isDateToday(i.createdAt, yesterday)).length;
+        const revYesterday = boardings
+            .filter(i => isDateToday(i.actualCheckOut || i.checkInDate, yesterday))
+            .reduce((s, i) => s + (i.totalFee || i.baseFee || 0), 0);
+
+        renderSimpleTrend("trend-owner", newOwners, false, yesterdayOwners);
+        renderSimpleTrend("trend-pet", newPets, false, yesterdayPets);
+        renderSimpleTrend("trend-notes", newNotes, false, yesterdayNotes);
+        renderSimpleTrend("trend-revenue", revToday, true, revYesterday);
+
         if (document.getElementById("recent-table") || typeof renderRecent === "function") {
             try { renderRecent(boardings); } catch (err) {}
         }
@@ -183,10 +204,12 @@ async function loadDashboardData() {
         console.error("Dashboard error:", e);
     }
 }
-function renderSimpleTrend(id, val, isMoney = false) {
+
+function renderSimpleTrend(id, val, isMoney = false, compareVal = 0) {
     const el = document.getElementById(id);
     if (!el) return;
     el.style.display = "inline-block";
+    
     if (val > 0) {
         el.textContent = isMoney ? `+${formatMoney(val)}` : `+${val}`;
         el.style.color = "#15803d"; 
@@ -194,8 +217,27 @@ function renderSimpleTrend(id, val, isMoney = false) {
         el.textContent = "+0";
         el.style.color = "#999999";
     }
+
+    if (isMoney) {
+        let percentStr = "0%";
+        if (compareVal > 0) {
+            const percent = ((val - compareVal) / compareVal) * 100;
+            percentStr = `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`;
+        } else if (val > 0) {
+            percentStr = "+100%";
+        }
+        el.title = `So với hôm qua: ${percentStr} (Hôm qua: ${formatMoney(compareVal)})`;
+    } else {
+        const diff = val - compareVal;
+        const diffStr = diff >= 0 ? `+${diff}` : `${diff}`;
+        el.title = `So với hôm qua: ${diffStr} (Hôm qua: ${compareVal})`;
+    }
 }
-function renderRecent(data) {
+
+/* =====================================================
+   RENDER RECENT BOARDING
+===================================================== */
+async function renderRecent(data) {
     const tableBody = document.getElementById("recent-boarding");
     const countBadge = document.getElementById("recent-count");
     if (!tableBody) return;
@@ -205,55 +247,92 @@ function renderRecent(data) {
         if (countBadge) countBadge.textContent = "0";
         return;
     }
+    
     const recent = [...data]
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
         .slice(0, 5);
 
     if (countBadge) countBadge.textContent = recent.length;
 
-    tableBody.innerHTML = recent.map(item => {
-        const statusText = item.status === "BOARDING" ? "Đang gửi" : "Đã trả";
+    const petPromises = recent.map(async (item) => {
+        const petId = item.petId || (item.pet ? item.pet.id : null);
+        if (!petId) return null;
+        
+        let foundPet = (typeof pets !== 'undefined') ? pets.find(p => String(p.id) === String(petId)) : null;
+        if (foundPet) return foundPet;
+
+        try {
+            const response = await fetch(`${API.pets}/${petId}`);
+            if (!response.ok) return null;
+            return await response.json();
+        } catch (error) {
+            return null;
+        }
+    });
+
+    const resolvedPets = await Promise.all(petPromises);
+
+    tableBody.innerHTML = recent.map((item, index) => {
+        const foundPet = resolvedPets[index];
+        const petImg = foundPet?.image;
+        
+        const avatarHTML = petImg 
+            ? `<img src="${petImg}" alt="${foundPet?.name || 'Pet'}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`
+            : (typeof getPetIcon === "function" ? getPetIcon(foundPet?.type || item.petType) : "🐾");
+
+        const isDeleted = item.isDeleted || item.deleted === true;
+        let statusText = "Đang gửi";
+        let badgeStyle = "background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;";
+
+        if (item.status === "RETURNED") {
+            statusText = "Đã trả";
+            badgeStyle = "background: #fef3c7; color: #d97706; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;";
+        }
+        if (isDeleted) {
+            statusText = "Đã xóa";
+            badgeStyle = "background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;";
+        }
+
+        const statusClass = isDeleted ? "deleted" : (item.status ?? 'boarding').toLowerCase();
         const feeText = item.status === "RETURNED" ? formatMoney(item.totalFee ?? item.baseFee) : "—";
-        const petIcon = typeof getPetIcon === "function" ? getPetIcon(item.petType) : "🐾";
-		
+        
         return `
             <tr style="cursor: pointer;" onclick="showBoardingDetail(${item.id})">
                 <td>
                     <div class="pet-cell">
-                        <div class="pet-avatar-mini">${petIcon}</div>
+                        <div class="pet-avatar-mini" style="width: 36px; height: 36px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 50%;">
+                            ${avatarHTML}
+                        </div>
                         <div class="pet-meta">
-                            <strong>${item.petName ?? "Thú cưng"}</strong>
-                            <small>${item.petBreed ?? item.petType ?? "Giống loại"}</small>
+                            <strong>${foundPet?.name || item.petName || "Thú cưng"}</strong>
+                            <small>${foundPet?.breed || item.petBreed || foundPet?.type || item.petType || "Giống loại"}</small>
                         </div>
                     </div>
                 </td>
                 <td class="owner-cell">${item.ownerName ?? "Người dùng"}</td>
                 <td>${formatDate(item.checkInDate)}</td>
                 <td>
-                    <span class="status-oval status-${(item.status ?? 'boarding').toLowerCase()}">${statusText}</span>
+                    <span class="status-oval status-${statusClass}" style="${badgeStyle}">${statusText}</span>
                 </td>
                 <td class="fee-cell">${feeText}</td>
                 <td>
-                    <button class="action-view-btn" title="Xem chi tiết" onclick="editBoarding(${item.id})">👁</button>
+                    <button class="action-view-btn" title="Xem chi tiết" onclick="event.stopPropagation(); editBoarding(${item.id})">👁</button>
                 </td>
             </tr>
         `;
     }).join("");
 }
 
-/* =====================================================
-   RENDER RECENT BOARDING
-===================================================== */
 function filterRecent(status, btnElement) {
     const buttons = btnElement.parentElement.querySelectorAll(".filter-btn");
     buttons.forEach(btn => btn.classList.remove("active"));
     btnElement.classList.add("active");
 
     if (status === "ALL") {
-        renderRecentBoarding(boardings,5);
+        renderRecent(boardings);
     } else {
         const filtered = boardings.filter(item => item.status === status);
-        renderRecentBoarding(filtered,5);
+         renderRecent(filtered);
     }
 }
 
@@ -266,12 +345,22 @@ function drawBoardingChart(data) {
     }
     const months = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"];
     const values = Array(12).fill(0);
+    
     data.forEach(item => {
         if (item.checkInDate) {
             const month = new Date(item.checkInDate).getMonth();
             values[month] += (item.totalFee ?? 0);
         }
     });
+
+    const currentMonthIndex = new Date().getMonth();
+
+    const backgroundColors = months.map((_, index) => 
+        index === currentMonthIndex ? "#2563eb" : "#cbd5e1"
+    );
+    const hoverColors = months.map((_, index) => 
+        index === currentMonthIndex ? "#1d4ed8" : "#94a3b8"
+    );
 
     window.revenueChart = new Chart(canvas, {
         type: "bar",
@@ -280,8 +369,8 @@ function drawBoardingChart(data) {
             datasets: [{
                 label: "Doanh thu",
                 data: values,
-                backgroundColor: "#4899ea",
-                hoverBackgroundColor: "#3068ea",
+                backgroundColor: backgroundColors,
+                hoverBackgroundColor: hoverColors,
                 borderRadius: 4
             }]
         },
@@ -291,6 +380,21 @@ function drawBoardingChart(data) {
             plugins: {
                 legend: {
                     display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += formatMoney(context.raw);
+                            if (context.dataIndex === currentMonthIndex) {
+                                label += " (Tháng hiện tại)";
+                            }
+                            return label;
+                        }
+                    }
                 }
             },
             scales: {

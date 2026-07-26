@@ -380,6 +380,159 @@ body {
   background: #dc2626;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
+
+/* --- BỐ CỤC & GIAO DIỆN MODAL CHECK-OUT --- */
+
+/* Khung tổng thể modal */
+#checkout-modal .modal-box {
+    max-width: 550px;
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    background: #fff;
+}
+
+/* Header modal */
+#checkout-modal .modal-header {
+    background: #f8fafc;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#checkout-modal .modal-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+/* Thẻ thông tin tổng quan (Card thông tin pet, chủ nuôi, ngày check-in) */
+.checkout-info-card {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0;
+    padding: 14px 16px !important;
+    border-radius: 8px !important;
+    margin-bottom: 18px !important;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #334155;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Chia thành 2 cột cân đối */
+    gap: 8px 16px;
+}
+
+.checkout-info-card p {
+    margin: 0;
+}
+
+/* Dòng hiển thị số ngày trễ chiếm trọn 2 cột nếu muốn nổi bật */
+.checkout-info-card p:last-child {
+    grid-column: span 2;
+    border-top: 1px dashed #cbd5e1;
+    padding-top: 6px;
+    margin-top: 4px;
+}
+
+/* Nhóm form input */
+#checkout-modal .form-group {
+    margin-bottom: 14px !important;
+}
+
+checkout-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* 2. Tạo một lớp CSS để bọc các trường nằm chung một hàng (Ví dụ: Dùng class .form-row-2cols) */
+.form-row-2cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Chia làm 2 cột bằng nhau trên một hàng */
+    gap: 15px; /* Khoảng cách giữa các cột */
+    align-items: flex-end;
+}
+
+#checkout-modal label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+/* Các trường input và textarea chung */
+#checkout-modal .form-control {
+    width: 100% !important;
+    padding: 9px 12px !important;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #1e293b;
+    background-color: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+#checkout-modal .form-control:focus {
+    border-color: #15803d;
+    box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.15);
+    outline: none;
+}
+
+/* Trường readonly (Giảm giá theo số ngày gửi) */
+#checkout-modal input[readonly].form-control {
+    background-color: #f1f5f9;
+    color: #64748b;
+    cursor: not-allowed;
+}
+
+/* Footer chứa nút bấm */
+#checkout-modal .modal-actions-footer {
+    background: #f8fafc;
+    padding: 14px 20px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 0;
+}
+
+/* Nút Hủy */
+#checkout-modal .btn-footer-close {
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#checkout-modal .btn-footer-close:hover {
+    background: #f1f5f9;
+}
+
+/* Nút Xác nhận Check-out */
+#checkout-modal .btn-primary {
+    background: #15803d !important;
+    color: white !important;
+    padding: 8px 18px !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#checkout-modal .btn-primary:hover {
+    background: #166534 !important;
+}
 .trend-badge {
   background-color: #dcfce7;
   color: #166534;

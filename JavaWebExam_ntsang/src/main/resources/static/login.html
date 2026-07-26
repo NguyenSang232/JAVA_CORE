@@ -19,6 +19,9 @@
             Hệ thống quản lý khách sạn thú cưng chuyên nghiệp
         </p>
         <form action="/login" method="post">
+            <div id="error-message" class="alert-error">
+        ⚠️ Sai số điện thoại hoặc mật khẩu. Vui lòng thử lại!
+            </div>
             <div class="input-group">
                 <label>
                     Phone Number
@@ -62,5 +65,13 @@
     </div>
 </div>
 </body>
-
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('error')) {
+        const errorDiv = document.getElementById('error-message');
+        if (errorDiv) {
+            errorDiv.style.display = 'block';
+        }
+    }
+</script>
 </html>

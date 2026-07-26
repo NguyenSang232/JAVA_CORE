@@ -1,5 +1,5 @@
 /* =====================================================
-   BOARDING.JS - PHIẾU GỬI MANAGEMENT (ADVANCED FILTER)
+    BOARDING.JS - PHIẾU GỬI MANAGEMENT (ADVANCED FILTER)
 ===================================================== */
 
 let allBoardingRecords = [];
@@ -50,7 +50,7 @@ async function showBoardingRecords() {
 
                 <div class="boarding-filter-group">
                     <label>Từ ngày (Check-in)</label>
-                    <input type="date" id="boarding-start-date" onchange="applyAdvancedBoardingFilters()">
+                    <input type="date" id="boarding-start-date" onchange="onStartDateFilterChange()">
                 </div>
 
                 <div class="boarding-filter-group">
@@ -75,6 +75,9 @@ async function showBoardingRecords() {
                             </button>
                             <button class="filter-btn" onclick="filterBoardingRecord('RETURNED', this)">
                                 Đã trả <span class="filter-count" id="count-returned">0</span>
+                            </button>
+                            <button class="filter-btn" onclick="filterBoardingRecord('DELETED', this)">
+                                Đã xóa <span class="filter-count" id="count-deleted">0</span>
                             </button>
                         </div>
                         <div class="filter-group">
@@ -119,6 +122,19 @@ async function showBoardingRecords() {
     await loadBoardingRecords();
 }
 
+// Xử lý ràng buộc ngày ở bộ lọc
+function onStartDateFilterChange() {
+    const startDateInput = document.getElementById("boarding-start-date");
+    const endDateInput = document.getElementById("boarding-end-date");
+    
+    if (startDateInput && endDateInput) {
+        endDateInput.min = startDateInput.value;
+        if (endDateInput.value && endDateInput.value < startDateInput.value) {
+            endDateInput.value = startDateInput.value;
+        }
+    }
+    applyAdvancedBoardingFilters();
+}
 
 async function loadOwnersForBoardingFilter() {
     try {
@@ -154,9 +170,18 @@ async function loadBoardingRecords() {
 
 async function processAndRenderBoarding() {
     let filtered = [...allBoardingRecords];
-    if (currentBoardingFilter !== "ALL") {
-        filtered = filtered.filter(item => item.status === currentBoardingFilter);
+
+    // Lọc theo Tab trạng thái
+    if (currentBoardingFilter === "DELETED") {
+        filtered = filtered.filter(item => item.isDeleted || item.deleted);
+    } else {
+        // Loại bỏ các bản ghi đã xóa ở các tab thông thường
+        filtered = filtered.filter(item => !(item.isDeleted || item.deleted));
+        if (currentBoardingFilter !== "ALL") {
+            filtered = filtered.filter(item => item.status === currentBoardingFilter);
+        }
     }
+
     if (currentBoardingKeyword) {
         filtered = filtered.filter(item => {
             const text = `${item.petName || ""} ${item.ownerName || ""}`.toLowerCase();
@@ -164,33 +189,34 @@ async function processAndRenderBoarding() {
         });
     }
 
-	const petTypeVal = document.getElementById("filter-pet-type")?.value;
-	if (petTypeVal && petTypeVal !== "") {
-	    const filterPromises = filtered.map(async item => {
-	        let pType = item.petType || (item.pet ? item.pet.type : null);
-	        if (!pType && item.petId) {
-	            const foundPet = typeof getPetById === "function" ? await getPetById(item.petId) : globalPetsData.find(p => String(p.id) === String(item.petId));
-	            pType = foundPet ? (foundPet.type || foundPet.petType) : "";
-	        }
-	        return (pType || "").trim().toLowerCase() === petTypeVal.trim().toLowerCase();
-	    });
-	    const filterResults = await Promise.all(filterPromises);
-	    filtered = filtered.filter((_, index) => filterResults[index]);
-	}
+    const petTypeVal = document.getElementById("filter-pet-type")?.value;
+    if (petTypeVal && petTypeVal !== "") {
+        const filterPromises = filtered.map(async item => {
+            let pType = item.petType || (item.pet ? item.pet.type : null);
+            if (!pType && item.petId) {
+                const foundPet = typeof getPetById === "function" ? await getPetById(item.petId) : globalPetsData.find(p => String(p.id) === String(item.petId));
+                pType = foundPet ? (foundPet.type || foundPet.petType) : "";
+            }
+            return (pType || "").trim().toLowerCase() === petTypeVal.trim().toLowerCase();
+        });
+        const filterResults = await Promise.all(filterPromises);
+        filtered = filtered.filter((_, index) => filterResults[index]);
+    }
 
-	const ownerIdVal = document.getElementById("filter-owner")?.value;
-	    if (ownerIdVal) {
-	        const filterPromises = filtered.map(async item => {
-	            let oId = item.ownerId;
-	            if (!oId && item.petId) {
-	                const pet = await getPetById(item.petId);
-	                oId = pet ? pet.ownerId : null;
-	            }
-	            return String(oId) === String(ownerIdVal);
-	        });
-	        const filterResults = await Promise.all(filterPromises);
-	        filtered = filtered.filter((_, index) => filterResults[index]);
-	    }
+    const ownerIdVal = document.getElementById("filter-owner")?.value;
+    if (ownerIdVal) {
+        const filterPromises = filtered.map(async item => {
+            let oId = item.ownerId;
+            if (!oId && item.petId) {
+                const pet = await getPetById(item.petId);
+                oId = pet ? pet.ownerId : null;
+            }
+            return String(oId) === String(ownerIdVal);
+        });
+        const filterResults = await Promise.all(filterPromises);
+        filtered = filtered.filter((_, index) => filterResults[index]);
+    }
+
     const startDateVal = document.getElementById("boarding-start-date")?.value;
     const endDateVal = document.getElementById("boarding-end-date")?.value;
     if (startDateVal || endDateVal) {
@@ -209,16 +235,22 @@ async function processAndRenderBoarding() {
         return currentBoardingSort === "NEW" ? dateB - dateA : dateA - dateB;
     });
 
-    const boardingCount = allBoardingRecords.filter(item => item.status === "BOARDING").length;
-    const returnedCount = allBoardingRecords.filter(item => item.status === "RETURNED").length;
-    const totalItems = filtered.length;
+    // Tính toán số lượng cho các Badge
+    const activeRecords = allBoardingRecords.filter(item => !(item.isDeleted || item.deleted));
+    const totalItems = filtered.length; // Số lượng theo kết quả tìm kiếm/lọc hiện tại của bảng
+
+    // Cố định số lượng các badge thống kê từ dữ liệu gốc
+    const allCount = activeRecords.length;
+    const boardingCount = activeRecords.filter(item => item.status === "BOARDING").length;
+    const returnedCount = activeRecords.filter(item => item.status === "RETURNED").length;
+    const deletedCount = allBoardingRecords.filter(item => item.isDeleted || item.deleted).length;
 
     const startIndex = (currentBoardingPage - 1) * BOARDING_PER_PAGE;
     const endIndex = startIndex + BOARDING_PER_PAGE;
     const paginatedData = filtered.slice(startIndex, endIndex);
 
     await renderBoardingTable(paginatedData);
-    updateFilterCounts(allBoardingRecords.length, boardingCount, returnedCount);
+    updateFilterCounts(allCount, boardingCount, returnedCount, deletedCount);
     renderApiBoardingPagination(totalItems);
 }
 
@@ -238,7 +270,10 @@ function resetBoardingFilters() {
     if (petTypeSelect) petTypeSelect.value = "";
     if (ownerSelect) ownerSelect.value = "";
     if (startDateInput) startDateInput.value = "";
-    if (endDateInput) endDateInput.value = "";
+    if (endDateInput) {
+        endDateInput.value = "";
+        endDateInput.min = "";
+    }
 
     currentBoardingKeyword = "";
     currentBoardingPage = 1;
@@ -258,17 +293,25 @@ async function renderBoardingTable(data) {
             const pet = await getPetById(record.petId);
             const owner = pet ? await getOwnerById(pet.ownerId) : null;
             const petIcon = typeof getPetIcon === "function" && pet ? getPetIcon(pet.type) : "🐾";
-            const checkoutBtn = record.status === "BOARDING"
+            const isDeleted = record.isDeleted || record.deleted;
+
+            const checkoutBtn = record.status === "BOARDING" && !isDeleted
                 ? `<button class="action-btn edit" style="background: #dcfce7; color: #15803d;" title="Trả thú cưng" onclick="checkoutBoarding(${record.id})">🏠</button>`
                 : "";
-            const statusText = record.status === "BOARDING" ? "Đang gửi" : "Đã trả";
+            
+                
+            let statusText = record.status === "BOARDING" ? "Đang gửi" : "Đã trả";
+            if (isDeleted) statusText = "Đã xóa";
+
+            const statusClass = isDeleted ? "deleted" : record.status.toLowerCase();
             const feeText = record.status === "RETURNED" || record.totalFee > 0 ? formatMoney(record.totalFee) : "—";
+            
             return `
-                <tr style="cursor: pointer;" onclick="event.stopPropagation(); showBoardingDetail(${record.id})">
+                <tr style="cursor: pointer; ${isDeleted ? 'opacity: 0.6; background: #fafafa;' : ''}" onclick="event.stopPropagation(); showBoardingDetail(${record.id})">
                     <td>${record.id}</td>
                     <td>
                         <div class="pet-cell">
-                            <img src="${pet.image}" style="width: 20px; height: 20px">
+                            <img src="${pet?.image || ''}" style="width: 20px; height: 20px; object-fit: cover; border-radius: 50%;">
                             <div class="pet-meta">
                                 <strong>${pet ? pet.name : (record.petName ?? "Unknown")}</strong>
                                 <small>${pet ? (pet.breed ?? "Giống loại") : "—"}</small>
@@ -280,13 +323,13 @@ async function renderBoardingTable(data) {
                     <td>${formatDate(record.expectedReturn)}</td>
                     <td class="fee-cell">${feeText}</td>
                     <td>
-                        <span class="status-oval ${record.status.toLowerCase()}">${statusText}</span>
+                        <span class="status-oval ${statusClass}">${statusText}</span>
                     </td>
                     <td>
                         <div class="action-group" onclick="event.stopPropagation();">
                             ${checkoutBtn}
-                            <button class="action-btn edit" title="Chỉnh sửa" onclick="editBoarding(${record.id})">✏️</button>
-                            <button class="action-btn delete" title="Xóa" onclick="deleteBoarding(${record.id})">🗑️</button>
+                            ${!isDeleted ? `<button class="action-btn edit" title="Chỉnh sửa" onclick="editBoarding(${record.id})">✏️</button>` : ''}
+                            ${!isDeleted ? `<button class="action-btn delete" title="Xóa" onclick="deleteBoarding(${record.id})">🗑️</button>` : ''}
                         </div>
                     </td>
                 </tr>
@@ -296,13 +339,16 @@ async function renderBoardingTable(data) {
     tableBody.innerHTML = rows.join("");
 }
 
-function updateFilterCounts(totalItems, boardingCount, returnedCount) {
+function updateFilterCounts(totalItems, boardingCount, returnedCount, deletedCount) {
     const countAllEl = document.getElementById("count-all");
     const countBoardingEl = document.getElementById("count-boarding");
     const countReturnedEl = document.getElementById("count-returned");
+    const countDeletedEl = document.getElementById("count-deleted");
+
     if (countAllEl) countAllEl.textContent = totalItems;
     if (countBoardingEl) countBoardingEl.textContent = boardingCount;
     if (countReturnedEl) countReturnedEl.textContent = returnedCount;
+    if (countDeletedEl) countDeletedEl.textContent = deletedCount;
 }
 
 async function getPetById(id) {
@@ -401,10 +447,14 @@ async function openBoardingModal(record = null) {
     try {
         const response = await fetch(API.pets);
         const allPets = await response.json();
-        const activePetIds = (typeof boardings !== 'undefined' ? boardings : [])
-            .filter(b => b.status === "BOARDING" && (!record || b.id !== record.id))
-            .map(b => b.petId);
-        const availablePets = allPets.filter(p => !activePetIds.includes(p.id));
+        
+        // Chỉ cho phép chọn thú cưng chưa từng được gửi hoặc đã trả (loại bỏ những con đang ở trạng thái BOARDING)
+        const activePetIds = allBoardingRecords
+            .filter(b => b.status === "BOARDING" && !(b.isDeleted || b.deleted) && (!record || b.id !== record.id))
+            .map(b => String(b.petId));
+
+        const availablePets = allPets.filter(p => !activePetIds.includes(String(p.id)));
+
         petSelect.innerHTML = `
             <option value="">-- Chọn thú cưng --</option>
             ${availablePets.map(p => `
@@ -418,25 +468,43 @@ async function openBoardingModal(record = null) {
             `).join("")}
         `;
 
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        if (checkInInput) {
+            checkInInput.min = todayStr;
+            checkInInput.value = todayStr;
+            checkInInput.onchange = function() {
+                if (expectedReturnInput) {
+                    expectedReturnInput.min = checkInInput.value;
+                    if (expectedReturnInput.value && expectedReturnInput.value < checkInInput.value) {
+                        expectedReturnInput.value = checkInInput.value;
+                    }
+                }
+            };
+        }
+
+        if (expectedReturnInput) {
+            expectedReturnInput.min = todayStr;
+        }
+
         if (record) {
             idInput.value = record.id;
             petSelect.value = record.petId;
             if (typeof onModalPetChange === "function") await onModalPetChange();
-            if (checkInInput) checkInInput.value = record.checkInDate ? record.checkInDate.split('T')[0] : "";
-            if (expectedReturnInput) expectedReturnInput.value = record.expectedReturn ? record.expectedReturn.split('T')[0] : "";
-            if (totalFeeInput) totalFeeInput.value = record.totalFee ?? 0;
-        } else {
             if (checkInInput) {
-                checkInInput.value = new Date().toISOString().split('T')[0];
+                checkInInput.value = record.checkInDate ? record.checkInDate.split('T')[0] : todayStr;
             }
+            if (expectedReturnInput) {
+                expectedReturnInput.min = checkInInput.value;
+                expectedReturnInput.value = record.expectedReturn ? record.expectedReturn.split('T')[0] : "";
+            }
+            if (totalFeeInput) totalFeeInput.value = record.totalFee ?? 0;
         }
-		await loadBoardingRecords();
     } catch (error) {
         console.error("Lỗi khi chuẩn bị dữ liệu trong Modal:", error);
         showToast("Không thể tải thông tin biểu mẫu", "error");
     }
 }
-
 async function onModalPetChange() {
     console.log("Tetdb");
     const petSelect = document.getElementById("modal-pet-select");

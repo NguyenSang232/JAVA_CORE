@@ -3,6 +3,7 @@ package training.javaweb.exam.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import training.javaweb.exam.dto.response.OwnerDTO;
 import training.javaweb.exam.entity.Owner;
@@ -23,5 +24,7 @@ public interface OwnerMapper {
 	List<OwnerDTO> search(String keyword);
 
 	void softDelete(Long id);
+
+	int restoreOwner(@Param("id") Long id);
 
 }

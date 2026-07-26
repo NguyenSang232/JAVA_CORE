@@ -372,60 +372,68 @@
 	</div>
 	
 	<!-- CHECKOUT MODAL -->
-	<div id="checkout-modal" class="modal-overlay" style="display: none;">
-	    <div class="modal-box">
-	        <div class="modal-header">
-	            <h2>Xác nhận Check-out</h2>
-	            <button class="close-btn" onclick="closeCheckoutModal()">&times;</button>
-	        </div>
-	        
-	        <form id="checkout-form" onsubmit="submitCheckout(event)">
-	            <div class="modal-body">
-	                <input type="hidden" id="checkout-boarding-id">
-	                
-	                <!-- Hiển thị thông tin tổng quan từ trên xuống -->
-	                <div class="checkout-info-card" style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-	                    <p><strong>👤 Chủ nuôi:</strong> <span id="checkout-owner-text">-</span></p>
-	                    <p><strong>🐾 Thú cưng:</strong> <span id="checkout-pet-text">-</span></p>
-	                    <p><strong>📅 Ngày check-in:</strong> <span id="checkout-checkin-text">-</span></p>
-	                    <p><strong>⏳ Dự kiến trả:</strong> <span id="checkout-expected-text">-</span></p>
-	                    <p><strong>⚠️ Số ngày trễ:</strong> <span id="checkout-late-days" style="color: #d9534f; font-weight: bold;">0 ngày</span></p>
-	                </div>
+<!-- =====================================================
+    CHECKOUT MODAL (COMPLETE & BALANCED LAYOUT)
+===================================================== -->
+<div id="checkout-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Xác nhận Check-out</h2>
+            <button class="close-btn" onclick="closeCheckoutModal()">&times;</button>
+        </div>
+        
+        <form id="checkout-form" onsubmit="submitCheckout(event)">
+            <div class="modal-body">
+                <input type="hidden" id="checkout-boarding-id">
+                
+                <!-- Hiển thị thông tin tổng quan chia lưới cân đối -->
+                <div class="checkout-info-card">
+                    <p><strong>👤 Chủ nuôi:</strong> <span id="checkout-owner-text">-</span></p>
+                    <p><strong>🐾 Thú cưng:</strong> <span id="checkout-pet-text">-</span></p>
+                    <p><strong>📅 Check-in:</strong> <span id="checkout-checkin-text">-</span></p>
+                    <p><strong>⏳ Dự kiến:</strong> <span id="checkout-expected-text">-</span></p>
+                    <p><strong>⚠️ Số ngày trễ:</strong> <span id="checkout-late-days" style="color: #d9534f; font-weight: bold;">0 ngày</span></p>
+                </div>
+				<div class="form-row-2cols">
+                <div class="form-group">
+                    <label for="checkout-date">Ngày thực tế trả (Actual Return Date) <span style="color: red;">*</span></label>
+                    <input type="date" id="checkout-date" class="form-control" required onchange="calculateCheckoutFee()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="checkout-price-per-date">Chi phí trên ngày <span style="color: red;">*</span></label>
+                    <input type="number" id="checkout-price-per-date" class="form-control" required onchange="calculateCheckoutFee()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="checkout-late-fee">Phí trễ: <span style="color: red;">*</span></label>
+                    <input type="number" id="checkout-late-fee" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="checkout-discount-fee">Giảm giá theo số ngày gửi:</label>
+                    <input type="text" id="checkout-discount-fee" readonly class="form-control" required/>
+                </div>
+                
+                <div class="form-group">
+                    <label for="checkout-fee">Tổng phí (Có thể chỉnh sửa nếu phát sinh) <span style="color: red;">*</span></label>
+                    <input type="number" id="checkout-fee" class="form-control" required>
+                </div>
 
-	                <div class="form-group" style="margin-bottom: 15px;">
-	                    <label for="checkout-date">Ngày thực tế trả (Actual Return Date) <span style="color: red;">*</span></label>
-	                    <input type="date" id="checkout-date" class="form-control" required style="width: 100%; padding: 8px;" onchange="calculateCheckoutFee()">
-	                </div>
-					<div class="form-group" style="margin-bottom: 15px;">
-						<label for="checkout-price-per-date">Chi phí trên ngày <span style="color: red;">*</span></label>
-						<input type="number" id="checkout-price-per-date" class="form-control" required style="width: 100%; padding: 8px;" onchange="calculateCheckoutFee()">
-					</div>
-					<div class="form-group" style="margin-bottom: 15px;">
-						<label for="checkout-fee">Phí trễ:  <span style="color: red;">*</span></label>
-						<input type="number" id="checkout-late-fee" class="form-control" required style="width: 100%; padding: 8px;">
-					</div>
-					<div class="form-group">
-					    <label for="checkout-discount-fee">Giảm giá theo số ngày gửi:</label>
-					    <input type="text" id="checkout-discount-fee" readonly class="form-control" required style="width: 100%; padding: 8px;"/>
-					</div>
-	                <div class="form-group" style="margin-bottom: 15px;">
-	                    <label for="checkout-fee">Tổng phí (Có thể chỉnh sửa nếu phát sinh) <span style="color: red;">*</span></label>
-	                    <input type="number" id="checkout-fee" class="form-control" required style="width: 100%; padding: 8px;">
-	                </div>
+                <div class="form-group">
+                    <label for="checkout-note">Ghi chú check-out</label>
+                    <textarea id="checkout-note" class="form-control" rows="3" placeholder="Nhập ghi chú khi trả thú cưng..."></textarea>
+                </div>
+                </div>
+			</div>
 
-	                <div class="form-group">
-	                    <label for="checkout-note">Ghi chú check-out</label>
-	                    <textarea id="checkout-note" class="form-control" rows="3" placeholder="Nhập ghi chú khi trả thú cưng..." style="width: 100%; padding: 8px;"></textarea>
-	                </div>
-	            </div>
-
-	            <div class="modal-actions-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-	                <button type="button" class="btn-footer-close" onclick="closeCheckoutModal()">Hủy</button>
-	                <button type="submit" class="btn-primary" style="background: #15803d; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">Xác nhận Check-out</button>
-	            </div>
-	        </form>
-	    </div>
-	</div>
+            <div class="modal-actions-footer">
+                <button type="button" class="btn-footer-close" onclick="closeCheckoutModal()">Hủy</button>
+                <button type="submit" class="btn-primary">Xác nhận Check-out</button>
+            </div>
+        </form>
+    </div>
+</div>
 	
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script src="js/config.js"></script>

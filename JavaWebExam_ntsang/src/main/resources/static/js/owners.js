@@ -1,8 +1,9 @@
 /* =====================================================
    OWNER.JS
-   OWNER MANAGEMENT
+   OWNER MANAGEMENT (Supports Active & Deleted Tabs)
 ===================================================== */
 let currentSortDirection = "NONE"; // Biến lưu trạng thái sắp xếp ("NONE", "ASC", "DESC")
+let currentOwnerTab = "ACTIVE";    // Trạng thái tab hiện tại: "ACTIVE" hoặc "DELETED"
 
 async function showOwners() {
     const mainView = document.getElementById("content");
@@ -22,14 +23,19 @@ async function showOwners() {
                 </div>
             </header>
 
-            <div class="dashboard-tabs">
-                <div class="tab-item">Danh sách chủ nuôi</div>
+            <div class="dashboard-tabs" style="display: flex; gap: 15px; border-bottom: 2px solid #eee; margin-bottom: 20px;">
+                <div class="tab-item active" id="tab-owner-active" onclick="switchOwnerTab('ACTIVE')" style="padding: 10px 15px; cursor: pointer; font-weight: bold; border-bottom: 2px solid #007bff; color: #007bff;">
+                    Đang hoạt động
+                </div>
+                <div class="tab-item" id="tab-owner-deleted" onclick="switchOwnerTab('DELETED')" style="padding: 10px 15px; cursor: pointer; font-weight: bold; color: #666;">
+                    Đã xóa
+                </div>
             </div>
 
             <section class="dashboard-grid-owner">
                 <div class="panel">
                     <div class="panel-title-area">
-                        <h3>Tất cả chủ nuôi <span class="count-badge" id="owner-countAll">0</span></h3>
+                        <h3 id="owner-panel-title">Danh sách chủ nuôi <span class="count-badge" id="owner-countAll">0</span></h3>
                     </div>
 
                     <table>
@@ -62,6 +68,7 @@ async function showOwners() {
     currentOwnerPage = 1;
     currentOwnerKeyword = "";
     currentSortDirection = "NONE";
+    currentOwnerTab = "ACTIVE";
     await loadOwnersData();
 }
 
@@ -71,6 +78,7 @@ async function showOwners() {
 async function loadOwnersData() {
     try {
         const response = await fetch(API.owners);
+        if (!response.ok) throw new Error("Lỗi gọi API owners");
         owners = await response.json();
 
         // Giữ nguyên trạng thái sắp xếp nếu đang bật
@@ -85,8 +93,26 @@ async function loadOwnersData() {
     }
 }
 
-async function getDetaiOwner(owenerId){
+function switchOwnerTab(tab) {
+    currentOwnerTab = tab;
+    currentOwnerPage = 1;
 
+    const tabActive = document.getElementById("tab-owner-active");
+    const tabDeleted = document.getElementById("tab-owner-deleted");
+
+    if (tab === "ACTIVE") {
+        tabActive.style.borderBottom = "2px solid #007bff";
+        tabActive.style.color = "#007bff";
+        tabDeleted.style.borderBottom = "none";
+        tabDeleted.style.color = "#666";
+    } else {
+        tabDeleted.style.borderBottom = "2px solid #dc3545";
+        tabDeleted.style.color = "#dc3545";
+        tabActive.style.borderBottom = "none";
+        tabActive.style.color = "#666";
+    }
+
+    updateOwnerView();
 }
 
 async function openOwnerModalDetail(ownerId = null) {
@@ -94,28 +120,30 @@ async function openOwnerModalDetail(ownerId = null) {
     const form = document.getElementById("owner-form-detail");
     const title = document.getElementById("owner-modal-title");
     const listContainer = document.getElementById("pet-detail-list-detail-owner");
+    if (!modalOverlay) return;
+    
     modalOverlay.style.display = "flex"; 
     if (ownerId) {
         const owner = owners.find(o => o.id == ownerId);
+        if (!owner) return;
         title.innerText = "Chỉnh sửa chủ nuôi";
         document.getElementById("owner-id-detail").value = owner.id;
         document.getElementById("owner-name-detail").value = owner.name;
         document.getElementById("owner-email-detail").value = owner.email;
         document.getElementById("owner-phone-detail").value = owner.phone;
         document.getElementById("owner-address-detail").value = owner.address || "";
-        document.getElementById("owner-username-detail").value = owner.phone;		
+        document.getElementById("owner-username-detail").value = owner.phone;       
         listContainer.innerHTML = "Đang tải...";        
+        
         const pets = await getPetByOwnerId(ownerId);
         const hasUser = await getUserByOwnerId(ownerId);       
-        console.log(`Thú cưng của Owner ID ${ownerId}:`, pets);
-        console.log(`Trạng thái User của Owner ID ${ownerId}:`, hasUser);
+        
         const userIdInput = document.getElementById("user-id-detail");
         const passwordInput = document.getElementById("owner-password-detail");
         if (hasUser) {
             try {
                 const response = await fetch(`${API.users}/detail/${ownerId}`);
                 const userData = await response.json();
-				console.log(userData);
                 if (userData) {
                     if (userIdInput) userIdInput.value = userData.id || "";
                     if (passwordInput) passwordInput.value = userData.password || "";
@@ -126,6 +154,7 @@ async function openOwnerModalDetail(ownerId = null) {
         } else {
             if (userIdInput) userIdInput.value = "";
         }
+        
         listContainer.innerHTML = pets.map(p => `
            <div class="pet-card" onclick="editPet(${p.id})">
                 <div class="pet-avatar">
@@ -140,7 +169,7 @@ async function openOwnerModalDetail(ownerId = null) {
         `).join("");
     } else {
         title.innerText = "Thêm Chủ Nuôi Mới";
-        form.reset();
+        if (form) form.reset();
         document.getElementById("owner-id-detail").value = "";
         const userIdInput = document.getElementById("user-id-detail");
         if (userIdInput) userIdInput.value = "";
@@ -149,8 +178,10 @@ async function openOwnerModalDetail(ownerId = null) {
         listContainer.innerHTML = "Chưa có dữ liệu.";
     }
 }
+
 function closeOwnerModalDetail() {
-    document.getElementById("owner-modal-overlay").style.display = "none";
+    const modal = document.getElementById("owner-modal-overlay");
+    if (modal) modal.style.display = "none";
 }
 
 async function showPetModal(ownerId) {
@@ -178,8 +209,7 @@ async function showPetModal(ownerId) {
             </div>
         `).join("");
     }
-
-    modal.style.display = "flex";
+    if (modal) modal.style.display = "flex";
 }
 
 function updateOwnerView() {
@@ -196,7 +226,7 @@ async function renderOwnerTable(ownerList) {
     if (!tableBody) return;
 
     if (!ownerList || ownerList.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: #999;">Chưa có chủ nuôi nào phù hợp</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: #999;">Không có chủ nuôi nào</td></tr>`;
         return;
     }
 
@@ -210,7 +240,9 @@ async function renderOwnerTable(ownerList) {
                 getPetByOwnerId(owner.id),
                 getUserByOwnerId(owner.id)
             ]);
-            console.log(`Owner ID ${owner.id} có tài khoản không:`, hasAccount);
+
+            const isDeleted = owner.deletedAt === true;
+
             return `
                 <tr onclick="openOwnerModalDetail(${owner.id})" style="cursor: pointer;">
                     <td>${stt}</td>
@@ -221,8 +253,12 @@ async function renderOwnerTable(ownerList) {
                     <td>${accountBadge(hasAccount)}</td>
                     <td>
                         <div class="action-group">
-                            <button class="action-btn edit" title="Chỉnh sửa" onclick="event.stopPropagation(); openOwnerModalDetail(${owner.id})">✏️</button>
-                            <button class="action-btn delete" title="Xóa" onclick="event.stopPropagation(); deleteOwner(${owner.id})">🗑️</button>
+                            ${isDeleted ? `
+                                <button class="action-btn restore" title="Khôi phục" onclick="event.stopPropagation(); restoreOwner(${owner.id})">♻️</button>
+                            ` : `
+                                <button class="action-btn edit" title="Chỉnh sửa" onclick="event.stopPropagation(); openOwnerModalDetail(${owner.id})">✏️</button>
+                                <button class="action-btn delete" title="Xóa" onclick="event.stopPropagation(); deleteOwner(${owner.id})">🗑️</button>
+                            `}
                         </div>
                     </td>
                 </tr>
@@ -262,19 +298,23 @@ function searchOwner(keyword) {
 }
 
 function searchOwnerData() {
-    if (!currentOwnerKeyword) {
-        return owners;
-    }
-    return owners.filter(owner => {
-        const name = owner.name?.toLowerCase() ?? "";
-        const phone = owner.phone?.toLowerCase() ?? "";
-        return name.includes(currentOwnerKeyword) || phone.includes(currentOwnerKeyword);
+    // Phân loại danh sách theo tab Đang hoạt động hoặc Đã xóa
+    let data = owners.filter(owner => {
+        const isDeleted = owner.deletedAt === true;
+        return currentOwnerTab === "DELETED" ? isDeleted : !isDeleted;
     });
+
+    if (currentOwnerKeyword) {
+        data = data.filter(owner => {
+            const name = owner.name?.toLowerCase() ?? "";
+            const phone = owner.phone?.toLowerCase() ?? "";
+            return name.includes(currentOwnerKeyword) || phone.includes(currentOwnerKeyword);
+        });
+    }
+    return data;
 }
 
 function toggleOwnerSort() {
-    const iconSpan = document.getElementById("owner-sort-icon");
-
     if (currentSortDirection === "NONE" || currentSortDirection === "DESC") {
         currentSortDirection = "ASC";
         sortOwnerData("ASC", true);
@@ -342,12 +382,13 @@ function closeOwnerModal() {
     const modal = document.getElementById("owner-modal");
     if (modal) modal.style.display = "none";
 }
-document.getElementById("owner-phone").addEventListener("input", function() {
-    document.getElementById("owner-username-display").value = this.value;
-});
-function closeOwnerModalDetail() {
-    const modal = document.getElementById("owner-modal-overlay");
-    if (modal) modal.style.display = "none";
+
+const phoneInput = document.getElementById("owner-phone");
+if (phoneInput) {
+    phoneInput.addEventListener("input", function() {
+        const usernameDisplay = document.getElementById("owner-username-display");
+        if (usernameDisplay) usernameDisplay.value = this.value;
+    });
 }
 
 async function editOnwerSave(event) {
@@ -357,9 +398,24 @@ async function editOnwerSave(event) {
     if (!id) return;
 
     const name = document.getElementById("owner-name-detail").value;
-    const email = document.getElementById("owner-email-detail").value;
-    const phone = document.getElementById("owner-phone-detail").value;
+    const email = document.getElementById("owner-email-detail").value.trim();
+    const phone = document.getElementById("owner-phone-detail").value.trim();
     const address = document.getElementById("owner-address-detail").value;
+
+    // --- KIỂM TRA ĐỊNH DẠNG ---
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone)) {
+        showToast("Số điện thoại phải bao gồm đúng 10 chữ số!", "error");
+        return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email && !emailRegex.test(email)) {
+        showToast("Email không đúng định dạng!", "error");
+        return;
+    }
+    // -------------------------
+
     const passwordInput = document.getElementById("owner-password-detail");
     const password = passwordInput ? passwordInput.value.trim() : "";
     const updateOwner = {
@@ -434,9 +490,24 @@ async function editOnwerSave(event) {
 async function saveOwner(event) {
     event.preventDefault();
     const name = document.getElementById("owner-name").value;
-    const phone = document.getElementById("owner-phone").value;
+    const phone = document.getElementById("owner-phone").value.trim();
     const address = document.getElementById("owner-address").value;
-    const email = document.getElementById("owner-email").value;
+    const email = document.getElementById("owner-email").value.trim();
+
+    // --- KIỂM TRA ĐỊNH DẠNG ---
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone)) {
+        showToast("Số điện thoại phải bao gồm đúng 10 chữ số!", "error");
+        return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email && !emailRegex.test(email)) {
+        showToast("Email không đúng định dạng!", "error");
+        return;
+    }
+    // -------------------------
+
     const passwordInput = document.getElementById("owner-password");
     const password = passwordInput ? passwordInput.value.trim() : "";
     const newOwner = { 
@@ -500,8 +571,8 @@ function editOwner(id) {
 }
 
 async function deleteOwner(id) {
-    const confirm = confirmDelete("Bạn có chắc muốn xóa chủ nuôi này?");
-    if (!confirm) return;
+    const confirmAction = confirm("Bạn có chắc muốn xóa chủ nuôi này? (Các thú cưng của chủ nuôi cũng sẽ bị xóa)");
+    if (!confirmAction) return;
 
     try {
         const response = await fetch(`${API.owners}/${id}`, {
@@ -511,9 +582,29 @@ async function deleteOwner(id) {
         if (response.ok) {
             showToast("Xóa Owner thành công");
             await loadOwnersData();
+        } else {
+            showToast("Xóa thất bại", "error");
         }
     } catch (error) {
         console.error(error);
         showToast("Xóa thất bại", "error");
+    }
+}
+
+async function restoreOwner(id) {
+    try {
+        const response = await fetch(`${API.owners}/restore?id=${id}`, {
+            method: "PUT"
+        });
+
+        if (response.ok) {
+            showToast("Khôi phục chủ nuôi thành công!");
+            await loadOwnersData();
+        } else {
+            showToast("Khôi phục thất bại", "error");
+        }
+    } catch (error) {
+        console.error(error);
+        showToast("Lỗi kết nối máy chủ", "error");
     }
 }

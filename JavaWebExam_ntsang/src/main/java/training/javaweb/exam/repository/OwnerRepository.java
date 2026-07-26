@@ -43,4 +43,8 @@ public class OwnerRepository {
 		ownerMapper.softDelete(id);
 	}
 
+    public int restoreOwner(Long id) {
+       return ownerMapper.restoreOwner(id);
+    }
+
 }

@@ -56,7 +56,95 @@
   margin-bottom: 18px;
   gap: 10px;
 }
+/* --- CSS CHO MODAL CHI TIẾT THÚ CƯNG --- */
+.pet-detail-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-size: 14px;
+    color: #333;
+    padding: 10px 0;
+}
 
+.pet-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 12px;
+}
+
+.pet-detail-row.no-border {
+    border-bottom: none;
+    padding-bottom: 4px;
+}
+
+.pet-detail-label {
+    color: #888;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.pet-detail-value {
+    font-weight: 600;
+    color: #111;
+}
+
+.pet-detail-badge {
+    background: #f3f4f6;
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.pet-detail-status-boarding {
+    background: #fef3c7;
+    color: #d97706;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.pet-detail-status-default {
+    background: #f3f4f6;
+    padding: 4px 10px;
+    border-radius: 12px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.pet-detail-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.pet-detail-close-btn {
+    background: #f3f4f6;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.pet-detail-close-btn:hover {
+    background: #e5e7eb;
+}
+
+.pet-modal-title-icon {
+    font-size: 24px;
+    margin-right: 8px;
+}
+
+.pet-modal-title-text {
+    font-size: 20px;
+    font-weight: bold;
+    color: #111;
+}
 .pet-toolbar input {
   width: 260px;
   height: 38px;

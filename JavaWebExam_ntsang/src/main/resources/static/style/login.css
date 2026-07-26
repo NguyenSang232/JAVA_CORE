@@ -109,3 +109,21 @@ button:hover{
     border-top: 1px solid #eee;
     padding-top: 20px;
 }
+/* Kiểu dáng cho hộp thông báo lỗi hiện đại */
+.alert-error {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 20px;
+    display: none; /* Mặc định ẩn đi */
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

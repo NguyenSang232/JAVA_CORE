@@ -494,7 +494,6 @@ async function saveOwner(event) {
     const address = document.getElementById("owner-address").value;
     const email = document.getElementById("owner-email").value.trim();
 
-    // --- KIỂM TRA ĐỊNH DẠNG ---
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(phone)) {
         showToast("Số điện thoại phải bao gồm đúng 10 chữ số!", "error");

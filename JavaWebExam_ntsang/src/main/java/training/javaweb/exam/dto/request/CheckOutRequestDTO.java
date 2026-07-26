@@ -6,8 +6,6 @@ public class CheckOutRequestDTO {
 
 	private LocalDate actualCheckOut;
 
-	private Long pricePerDay;
-
 	public LocalDate getActualCheckOut() {
 		return actualCheckOut;
 	}
@@ -15,13 +13,4 @@ public class CheckOutRequestDTO {
 	public void setActualCheckOut(LocalDate actualCheckOut) {
 		this.actualCheckOut = actualCheckOut;
 	}
-
-	public Long getPricePerDay() {
-		return pricePerDay;
-	}
-
-	public void setPricePerDay(Long pricePerDay) {
-		this.pricePerDay = pricePerDay;
-	}
-
 }

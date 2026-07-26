@@ -767,8 +767,11 @@ async function showBoardingDetail(id) {
         const response = await fetch(`${API.boarding}/${id}`);
         if (!response.ok) throw new Error("Không thể tải phiếu gửi");
         const record = await response.json();
-		        let pet = null
-		console.log(record);
+        console.log("Chi tiết phiếu gửi:", record);
+        console.log(record.lateFee);   
+        const detIdEl = document.getElementById("det-id-detail");
+        if (detIdEl) detIdEl.value = record.id;
+        let pet = null;
         let owner = null;
         try {
             pet = await getPetById(record.petId);
@@ -777,7 +780,8 @@ async function showBoardingDetail(id) {
             }
         } catch (e) {
             console.warn("Không lấy được dữ liệu chi tiết của Pet/Owner từ API phụ:", e);
-        }       
+        }  
+          
         const petIcon = typeof getPetIcon === "function" && pet ? getPetIcon(pet.type) : "🐾";
         const petNameToShow = record.petName || (pet ? pet.name : "Unknown");
         const petTypeToShow = pet ? pet.type : "Khác";        
@@ -791,22 +795,35 @@ async function showBoardingDetail(id) {
                 ? `${record.ownerName} ${owner ? `• ${owner.phone}` : ""}` 
                 : (owner ? `${owner.name} • ${owner.phone}` : "—");
         }
-            
         const detCheckInEl = document.getElementById("det-check-in-detail");
         if (detCheckInEl) {
             detCheckInEl.textContent = formatDate(record.checkInDate);
         }
         const actualReturnEl = document.getElementById("det-actual-return-detail");
+        const lateFeeEl = document.getElementById("det-late-return-detail");
+        const discountEl = document.getElementById("det-discount-detail");
         const feeEl = document.getElementById("det-fee-detail");
-        
         if (actualReturnEl && feeEl) {
             if (record.status === "BOARDING") {
                 actualReturnEl.textContent = "—";
-                feeEl.textContent = record.pricePerDay;
+                if (lateFeeEl) lateFeeEl.textContent = "0đ";
+                if (discountEl) discountEl.textContent = "0đ";
+                feeEl.textContent = `${formatMoney(record.pricePerDay)} / ngày`;
                 feeEl.style.color = "#888";
             } else {
-                actualReturnEl.textContent = formatDate(record.actualCheckOut);
-                feeEl.textContent = record.totalFee ? formatMoney(record.totalFee) : "0đ";
+                actualReturnEl.textContent = formatDate(record.actualCheckOut || record.actualReturnDate);
+                if (lateFeeEl) {
+                   const lateFeeVal = Number(record.lateFee) || 0;
+                    console.log("Late fee value:", lateFeeVal);
+                    lateFeeEl.textContent = lateFeeVal > 0 ? formatMoney(lateFeeVal) : "0đ";
+                    lateFeeEl.style.color = lateFeeVal > 0 ? "#d9534f" : "#333";
+                }
+                if (discountEl) {
+                    const discountVal = record.discount || 0;
+                    discountEl.textContent = discountVal > 0 ? formatMoney(discountVal) : "0đ";
+                    discountEl.style.color = discountVal > 0 ? "#0275d8" : "#333";
+                }
+                feeEl.textContent = record.totalFee !== undefined ? formatMoney(record.totalFee) : "0đ";
                 feeEl.style.color = "#15803d"; 
             }
         }
@@ -819,39 +836,35 @@ async function showBoardingDetail(id) {
         if (detNotesEl) {
             detNotesEl.textContent = record.notes || "Không có ghi chú ban đầu";
         }
-        renderCareNotesList(record.careNote || []);
+        renderCareNotesList(record.careNote || []);    
         const btnSubmit = document.getElementById("btn-submit-care-note");
         const inputField = document.getElementById("new-care-note-text");
         const inputContainer = document.getElementById("care-note-input-container");
-
         if (record.status === "BOARDING") {
-            if (inputContainer) inputContainer.style.display = "flex"; 
-            
+            if (inputContainer) inputContainer.style.display = "flex";           
             if (btnSubmit) {
                 btnSubmit.onclick = async () => {
                     const noteText = inputField.value.trim();
-                    if (!noteText) return;
-					if( noteText == ""){
-						showToast("Vui lòng nhập thông tin ghi chú đầy đủ", "Retry");
-					}
+                    if (!noteText) {
+                        showToast("Vui lòng nhập thông tin ghi chú đầy đủ", "warning");
+                        return;
+                    }                  
                     const newCareNoteObj = {
                         note: noteText,
                         boardingRecordId: record.id
                     };
-					console.log(newCareNoteObj);
-                    const updatedCareNote = [...(record.careNote || []), newCareNoteObj];
 
                     try {
                         const updateRes = await fetch(`${API.careNotes}`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(
-                              newCareNoteObj)
+                            body: JSON.stringify(newCareNoteObj)
                         });
+                        
                         if (updateRes.ok) {
                             inputField.value = "";                            
                             const freshDataRes = await fetch(`${API.boarding}/${id}`);
-                            const freshRecord = await freshDataRes.json();                          
+                            const freshRecord = await freshDataRes.json();                           
                             record.careNote = freshRecord.careNote; 
                             renderCareNotesList(freshRecord.careNote || []); 
                             showToast("Đã thêm ghi chú chăm sóc!", "success");
@@ -867,18 +880,21 @@ async function showBoardingDetail(id) {
         } else {
             if (inputContainer) inputContainer.style.display = "none"; 
         }
+
+        // 8. Nút Check-out
         const checkoutBtn = document.getElementById("btn-detail-checkout");
-		if (checkoutBtn) {
-		            if (record.status === "BOARDING") {
-		                checkoutBtn.style.display = "block";		       
-		                checkoutBtn.onclick = async () => {
-		                    closeDetailModalNote();
-		                    await openCheckoutModal(record.id); 
-		                };
-		            } else {
-		                checkoutBtn.style.display = "none";
-		            }
-		        }
+        if (checkoutBtn) {
+            if (record.status === "BOARDING") {
+                checkoutBtn.style.display = "block";              
+                checkoutBtn.onclick = async () => {
+                    closeDetailModalNote();
+                    await openCheckoutModal(record.id); 
+                };
+            } else {
+                checkoutBtn.style.display = "none";
+            }
+        }
+
         modal.style.display = "flex";
     } catch (error) {
         console.error("Lỗi khi tải chi tiết phiếu gửi:", error);
@@ -1090,25 +1106,5 @@ async function saveNote(event) {
     } catch (error) {
         console.error(error);
         showToast("Lỗi kết nối lưu ghi chú", "error");
-    }
-}
-async function deleteBoarding(id) {
-    const confirm = typeof confirmDelete === "function" 
-        ? confirmDelete("Bạn có chắc muốn xóa phiếu gửi?") 
-        : window.confirm("Bạn có chắc muốn xóa phiếu gửi?");
-    if (!confirm) return;
-
-    try {
-        const response = await fetch(`${API.boarding}/${id}`, {
-            method: "DELETE"
-        });
-
-        if (response.ok) {
-            showToast("Xóa phiếu gửi thành công", "success");
-            await loadBoardingRecords();
-        }
-    } catch (error) {
-        console.error(error);
-        showToast("Xóa thất bại", "error");
     }
 }

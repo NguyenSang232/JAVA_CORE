@@ -416,7 +416,6 @@ async function openPetModal(pet = null) {
     if (detailContainer) detailContainer.style.display = "none";
 }
 
-// --- HÀM PHỤ TRỢ: TẢI BẢNG GIÁ DỊCH VỤ THEO CÂN NẶNG ---
 async function loadPricingOptionsToSelect() {
     const pricingSelect = document.getElementById("pet-pricing-select");
     if (!pricingSelect) return;
@@ -425,7 +424,6 @@ async function loadPricingOptionsToSelect() {
         const response = await fetch(`${API.prices}`);
         if (response.ok) {
             const pricings = await response.json();
-            
             let html = `<option value="">-- Chọn mức giá theo cân nặng --</option>`;
             if (Array.isArray(pricings) && pricings.length > 0) {
                 pricings.forEach(item => {

@@ -70,31 +70,44 @@ public class BoardingRecordService {
 	public List<BoardingRecordResponseDTO> getMyHistory(Long userId) {
 		return boardingRecordRepository.findMyHistory(userId);
 	}
-
 	public void checkOut(Long boardingId, LocalDate actualCheckOut) {
-		BoardingRecordResponseDTO record = boardingRecordRepository.findDetail(boardingId);
-		if (record == null) {
-			throw new RuntimeException("Boarding record not found");
-		}
-		long actualDays = ChronoUnit.DAYS.between(record.getCheckInDate(), actualCheckOut);
-		long expectedDays = ChronoUnit.DAYS.between(record.getCheckInDate(), record.getExpectedReturn());
-		long lateFee = 0;
-		if (actualDays > expectedDays) {
-			lateFee = (long) ((actualDays - expectedDays) * record.getPricePerDay() * 20 / 100);
-		}
-		long totalFee = record.getBaseFee() + lateFee;
-		if (expectedDays > 7 && expectedDays < 10) {
-			totalFee = totalFee - totalFee * 5 / 100;
-		} else if (expectedDays >= 10) {
-			totalFee = totalFee - totalFee * 10 / 100;
-		}
-		BoardingRecord entity = new BoardingRecord();
-		entity.setId(boardingId);
-		entity.setActualCheckOut(actualCheckOut);
-		entity.setLateFee(lateFee);
-		entity.setTotalFee(totalFee);
-		boardingRecordRepository.checkOut(entity);
-	}
+    BoardingRecordResponseDTO record = boardingRecordRepository.findDetail(boardingId);
+    if (record == null) {
+        throw new RuntimeException("Boarding record not found");
+    }
+    
+    long actualDays = ChronoUnit.DAYS.between(record.getCheckInDate(), actualCheckOut);
+    long expectedDays = ChronoUnit.DAYS.between(record.getCheckInDate(), record.getExpectedReturn());
+    
+    System.out.println(">>> expectedDays: " + expectedDays); // In ra số ngày dự kiến
+    
+    long lateFee = 0;
+    if (actualDays > expectedDays) {
+        lateFee = (long) ((actualDays - expectedDays) * record.getPricePerDay() * 20 / 100);
+    }
+    
+    long baseFee = record.getBaseFee() != null ? record.getBaseFee() : 0;
+    long tempTotal = baseFee + lateFee;
+    
+    long discount = 0;
+    if (expectedDays > 7 && expectedDays < 10 || actualDays > 7 && actualDays < 10) {
+        discount = tempTotal * 5 / 100;
+    } else if (expectedDays >= 10 || actualDays >= 10) {
+        discount = tempTotal * 10 / 100;
+    }
+    
+    System.out.println(">>> discount tính được: " + discount); // In ra tiền giảm giá
+    
+    long totalFee = tempTotal - discount;
+    
+    BoardingRecord entity = new BoardingRecord();
+    entity.setId(boardingId);
+    entity.setActualCheckOut(actualCheckOut);
+    entity.setLateFee(lateFee);
+    entity.setDiscount(discount);
+    entity.setTotalFee(totalFee);
+    boardingRecordRepository.checkOut(entity);
+}
 
 	public Map<String, Object> getBoardingRecords(int page, int size, String status, String keyword) {
 		int offset = page * size;

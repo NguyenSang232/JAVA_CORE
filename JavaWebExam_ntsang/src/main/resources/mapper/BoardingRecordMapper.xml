@@ -16,6 +16,7 @@
         <result property="pricePerDay" column="price_per_day"/>
         <result property="baseFee" column="base_fee"/>
         <result property="lateFee" column="late_fee"/>
+        <result property="discount" column="discount_fee"/>
         <result property="totalFee" column="total_fee"/>
         <result property="status" column="status"/>
         <result property="notes" column="notes"/>
@@ -40,7 +41,7 @@
             #{petId},
             #{checkInDate},
             #{expectedReturn},
-            #{pricePerDay},    
+            #{pricePerDay},  
             #{baseFee},
             'BOARDING',
             #{notes},
@@ -81,6 +82,7 @@
 	        actual_check_out = #{actualCheckOut},
 	        late_fee = #{lateFee},
 	        total_fee = #{totalFee},
+            discount_fee = #{discount},
 	        status = 'RETURNED',
 	        updated_at = NOW()
 	    WHERE id = #{id}

@@ -33,6 +33,16 @@ public class BoardingRecordResponseDTO {
 
 	private List<CareNoteResponseDTO> careNote;
 
+	private Long discount;
+
+	public Long getDiscount() {
+		return discount;
+	}
+
+	public void setDiscount(Long discount) {
+		this.discount = discount;
+	}
+
 	public List<CareNoteResponseDTO> getCareNote() {
 		return careNote;
 	}

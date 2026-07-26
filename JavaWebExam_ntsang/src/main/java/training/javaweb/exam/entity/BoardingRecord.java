@@ -38,6 +38,8 @@ public class BoardingRecord {
 
 	private List<CareNote> careNotes;
 
+	private Long discount;
+
 	public BoardingRecord() {
 		super();
 	}
@@ -62,6 +64,15 @@ public class BoardingRecord {
 		this.pet = pet;
 		this.careNotes = careNotes;
 	}
+
+	public Long getDiscount() {
+		return discount;
+	}
+
+	public void setDiscount(Long discount) {
+		this.discount = discount;
+	}
+
 
 	public Long getPricePerDay() {
 		return pricePerDay;

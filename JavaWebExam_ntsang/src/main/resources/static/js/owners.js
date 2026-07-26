@@ -536,7 +536,6 @@ async function saveOwner(event) {
                 ownerId: ownerId,
                 role: "ROLE_CUSTOMER" 
             };
-
             const userResponse = await fetch(API.users, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

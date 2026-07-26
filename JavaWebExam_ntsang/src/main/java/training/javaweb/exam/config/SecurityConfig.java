@@ -27,7 +27,7 @@ public class SecurityConfig {
 						.requestMatchers("/login", "/.well-known/**", "/login.html", "/auth/**", "/static/**",
 								"/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/style/**", "/js/**")
 						.permitAll().requestMatchers("/admin.html").hasRole("ADMIN").requestMatchers("/user.html")
-						.hasAnyRole("CUSTOMER", "ADMIN").requestMatchers("/api/owners/**").hasRole("ADMIN")
+						.hasAnyRole("CUSTOMER", "ADMIN").requestMatchers("/api/owners/**","/api/prices/**").hasRole("ADMIN")
 						.requestMatchers("/api/boarding-records/checkout/**", "/api/boarding-records/admin/**")
 						.hasRole("ADMIN")
 						.requestMatchers("/api/pets/my-pets", "/api/boarding-records/my-boarding",

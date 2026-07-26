@@ -48,6 +48,12 @@
                     <span>Đăng xuất</span>
                 </a>		                
             </div>
+			<div class="sidebar-footer">
+				<div class="admin-badge">
+					<span class="admin-avatar">AD</span>
+					<span class="admin-name">Admin</span>
+				</div>
+			</div>
         </aside>
         <!-- ================= Content ================= -->
         <main class="content">
@@ -332,13 +338,9 @@
 	            </div>
 	            <div class="form-group">
 	                <label>Loài <span style="color: red;">*</span></label>
-	                <select id="pet-type" required>
-	                    <option value="Dog">🐶 Chó (Dog)</option>
-	                    <option value="Cat">🐱 Mèo (Cat)</option>
-	                    <option value="Bird">🦜 Chim (Bird)</option>
-	                    <option value="Rabbit">🐰 Thỏ (Rabbit)</option>
-	                    <option value="Other">🐾 Khác</option>
-	                </select>
+	                <select id="pet-pricing-select" required>
+						<option value="">-- Đang tải bảng giá dịch vụ... --</option>
+					</select>
 	            </div>
 	            <div class="form-group">
 				    <label>Chủ nuôi <span style="color: red;">*</span></label>
@@ -436,6 +438,7 @@
 </div>
 	
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="js/login.js"></script>
 	<script src="js/config.js"></script>
 	<script src="js/utils.js"></script>
 	<script src="js/boardingRecord.js"></script>

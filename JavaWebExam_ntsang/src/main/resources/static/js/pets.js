@@ -161,7 +161,7 @@ async function renderPetTable(petList) {
             const isDeleted = pet.deletedAt === true || pet.isDeleted === true;
 
             return `
-                <tr class="pet-row" onclick="editPet(${pet.id})" style="${isDeleted ? 'opacity: 0.6; background: #fafafa;' : ''}">
+                <tr class="pet-row" onclick="viewPetDetail(${pet.id})" style="${isDeleted ? 'opacity: 0.6; background: #fafafa;' : ''}">
                     <td>${stt}</td>
                     <td>
                         <div class="pet-cell" style="display: flex; align-items: center; gap: 8px;">
@@ -295,6 +295,38 @@ function changePetPage(page) {
     updatePetView();
 }
 
+// Hàm tải danh sách bảng giá đổ vào thẻ <select id="pet-pricing-select">
+async function loadPricingOptionsToSelect() {
+    const pricingSelect = document.getElementById("pet-pricing-select");
+    if (!pricingSelect) return;
+
+    try {
+        // Thay API.pricings bằng đường dẫn API thực tế của bạn
+        const response = await fetch(`${API.prices}`);
+        if (response.ok) {
+            const pricings = await response.json();
+            
+            let html = `<option value="">-- Chọn mức giá theo cân nặng --</option>`;
+            if (Array.isArray(pricings) && pricings.length > 0) {
+                pricings.forEach(item => {
+                    // item mẫu: { id: 1, petType: "Dog", weightFrom: 0, weightTo: 10, actualPrice: 120000 }
+                    html += `<option value="${item.id}">
+                        [${item.petType}] Từ ${item.weightFrom}kg - ${item.weightTo}kg 
+                        (Giá: ${item.actualPrice.toLocaleString('vi-VN')} VNĐ)
+                    </option>`;
+                });
+            } else {
+                html += `<option value="" disabled>Không có dữ liệu bảng giá</option>`;
+            }
+            pricingSelect.innerHTML = html;
+        } else {
+            pricingSelect.innerHTML = `<option value="" disabled>Lỗi tải bảng giá</option>`;
+        }
+    } catch (error) {
+        console.error("Lỗi khi tải bảng giá:", error);
+        pricingSelect.innerHTML = `<option value="" disabled>Lỗi kết nối máy chủ</option>`;
+    }
+}
 /* =====================================================
     MODAL & CHỦ NUÔI INTEGRATION
 ===================================================== */
@@ -308,8 +340,12 @@ async function openPetModal(pet = null) {
 
     modal.style.display = "flex";
 
-    // 1. Tải danh sách chủ nuôi cho thẻ select (đảm bảo luôn có dữ liệu chủ nuôi)
-    await loadOwnerOptionsToSelect();
+    const currentPetType = pet ? (pet.type || "Dog") : (document.getElementById("pet-type")?.value || "Dog");
+
+    await Promise.all([
+        loadOwnerOptionsToSelect(),
+        loadPricingOptionsToSelect(currentPetType)
+    ]);
 
     if (!pet) {
         if (form) {
@@ -321,17 +357,16 @@ async function openPetModal(pet = null) {
 
         let idInput = document.getElementById("pet-id");
         if (idInput) idInput.value = "";
+        
         const title = document.getElementById("title-detail");
         if (title) title.textContent = "Thêm mới thú nuôi";
         return;
     }
 
-    // --- TRƯỜNG HỢP CHỈNH SỬA / XEM CHI TIẾT THÚ CƯNG ---
     if (form) {
-        form.style.display = "block"; // Hiển thị form để gán dữ liệu cũ
+        form.style.display = "block";
     }
     
-    // Gán dữ liệu cũ vào các input chỉnh sửa
     const idInput = document.getElementById("pet-id");
     const nameInput = document.getElementById("pet-name");
     const typeSelect = document.getElementById("pet-type");
@@ -340,6 +375,7 @@ async function openPetModal(pet = null) {
     const weightInput = document.getElementById("pet-weight");
     const ownerSelect = document.getElementById("pet-owner-select");
     const imageInput = document.getElementById("pet-image");
+    const pricingSelect = document.getElementById("pet-pricing-select");
 
     if (idInput) idInput.value = pet.id || "";
     if (nameInput) nameInput.value = pet.name || "";
@@ -350,14 +386,66 @@ async function openPetModal(pet = null) {
     if (ownerSelect) ownerSelect.value = pet.ownerId || "";
     if (imageInput) imageInput.value = pet.image || "";
 
+    if (pricingSelect && pet.weight && pet.type) {
+        const petWeight = Number(pet.weight);
+        const matchingOption = Array.from(pricingSelect.options).find(option => {
+            if (!option.value) return false;
+            const text = option.textContent;
+            const matchType = text.includes(`[${pet.type}]`);
+            const regex = /Từ\s+(\d+(?:\.\d+)?)\s*kg\s*-\s*(\d+(?:\.\d+)?)\s*kg/i;
+            const match = text.match(regex);
+            if (match && matchType) {
+                const weightFrom = Number(match[1]);
+                const weightTo = Number(match[2]);
+                return petWeight >= weightFrom && petWeight <= weightTo;
+            }
+            return false;
+        });
+
+        if (matchingOption) {
+            pricingSelect.value = matchingOption.value;
+        }
+    }
+
     const title = document.getElementById("title-detail") || modal.querySelector(".modal-title");
     if (title) {
         title.textContent = "Chỉnh sửa thông tin thú nuôi";
     }
 
-    // Ẩn khung xem chi tiết nếu có
     const detailContainer = document.getElementById("pet-detail-view-container");
     if (detailContainer) detailContainer.style.display = "none";
+}
+
+// --- HÀM PHỤ TRỢ: TẢI BẢNG GIÁ DỊCH VỤ THEO CÂN NẶNG ---
+async function loadPricingOptionsToSelect() {
+    const pricingSelect = document.getElementById("pet-pricing-select");
+    if (!pricingSelect) return;
+
+    try {
+        const response = await fetch(`${API.prices}`);
+        if (response.ok) {
+            const pricings = await response.json();
+            
+            let html = `<option value="">-- Chọn mức giá theo cân nặng --</option>`;
+            if (Array.isArray(pricings) && pricings.length > 0) {
+                pricings.forEach(item => {
+                    // item mẫu: { id: 1, petType: "Dog", weightFrom: 0, weightTo: 10, actualPrice: 120000 }
+                    html += `<option value="${item.id}">
+                        [${item.petType}] Từ ${item.weightFrom}kg - ${item.weightTo}kg 
+                        (Giá: ${item.actualPrice ? item.actualPrice.toLocaleString('vi-VN') : 0} VNĐ)
+                    </option>`;
+                });
+            } else {
+                html += `<option value="" disabled>Không có dữ liệu bảng giá</option>`;
+            }
+            pricingSelect.innerHTML = html;
+        } else {
+            pricingSelect.innerHTML = `<option value="" disabled>Lỗi tải bảng giá</option>`;
+        }
+    } catch (error) {
+        console.error("Lỗi khi tải bảng giá:", error);
+        pricingSelect.innerHTML = `<option value="" disabled>Lỗi kết nối máy chủ</option>`;
+    }
 }
 
 // Hàm phụ trợ để tải danh sách chủ nuôi đổ vào thẻ <select id="pet-owner-select">
@@ -539,5 +627,116 @@ async function deletePet(id) {
     } catch (error) {
         console.error("Lỗi kết nối khi xóa:", error);
         showToast("Xóa thất bại", "error");
+    }
+}
+
+/* =====================================================
+    XEM CHI TIẾT THÚ CƯNG & THỐNG KÊ LẦN GỬI
+===================================================== */
+async function viewPetDetail(id) {
+    const pet = pets.find(item => Number(item.id) === Number(id));
+    if (!pet) return;
+
+    // 1. Mở modal chính
+    const modal = document.getElementById("pet-modal");
+    if (!modal) {
+        showToast("Không tìm thấy modal hiển thị!", "error");
+        return;
+    }
+    modal.style.display = "flex";
+
+    // 2. Ẩn form chỉnh sửa, hiện container xem chi tiết
+    const form = document.getElementById("pet-form");
+    if (form) form.style.display = "none";
+
+    let detailContainer = document.getElementById("pet-detail-view-container");
+    if (!detailContainer) {
+        // Nếu chưa có container chi tiết trong HTML, tự động tạo bên trong modal-content
+        const modalContent = modal.querySelector(".modal-content") || modal.querySelector("div");
+        detailContainer = document.createElement("div");
+        detailContainer.id = "pet-detail-view-container";
+        if (modalContent) modalContent.appendChild(detailContainer);
+    }
+    detailContainer.style.display = "block";
+
+    // 3. Lấy thông tin chủ nuôi
+    const owner = await getOwnerById(pet.ownerId);
+
+    // 4. Lấy lịch sử gửi thú cưng (boarding records) để tính toán số lần & thời gian gần nhất
+    let totalBoardingCount = 0;
+    let latestBoardingText = "Chưa từng gửi";
+
+    try {
+        const response = await fetch(API.boarding);
+        if (response.ok) {
+            const boardingRecords = await response.json();
+            // Lọc các bản ghi gửi của thú cưng này dựa trên petId
+            const petRecords = boardingRecords.filter(item => Number(item.petId) === Number(pet.id));
+            
+            totalBoardingCount = petRecords.length;
+
+            if (totalBoardingCount > 0) {
+                // Sắp xếp giảm dần theo checkInDate mới nhất
+                petRecords.sort((a, b) => new Date(b.checkInDate) - new Date(a.checkInDate));
+                
+                const latest = petRecords[0];
+                const checkIn = latest.checkInDate ? new Date(latest.checkInDate).toLocaleDateString("vi-VN") : "N/A";
+                
+                // Ưu tiên hiển thị ngày trả thực tế (actualCheckOut), nếu chưa có thì lấy ngày dự kiến (expectedReturn), nếu không thì ghi "Đang gửi"
+                let checkOut = "Đang gửi";
+                if (latest.actualCheckOut) {
+                    checkOut = new Date(latest.actualCheckOut).toLocaleDateString("vi-VN");
+                } else if (latest.expectedReturn) {
+                    checkOut = new Date(latest.expectedReturn).toLocaleDateString("vi-VN") + " (Dự kiến)";
+                }
+                
+                latestBoardingText = `${checkIn} ➔ ${checkOut}`;
+            }
+        }
+    } catch (error) {
+        console.error("Lỗi khi tải lịch sử gửi:", error);
+    }
+
+    // 5. Render nội dung chi tiết vào modal
+    detailContainer.innerHTML = `
+        <div class="pet-detail-header" style="text-align: center; margin-bottom: 20px;">
+            <img src="${pet.image || ''}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 3px solid #f3f4f6; margin-bottom: 10px;">
+            <h2 style="margin: 0; color: #111;">${pet.name ?? "Không rõ"}</h2>
+            <p style="color: #666; font-size: 14px; margin: 4px 0 0 0;">${pet.type} - ${pet.breed || "Không rõ giống"}</p>
+        </div>
+
+        <div class="pet-detail-info" style="background: #f9fafb; padding: 16px; border-radius: 8px; font-size: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #666;">🎂 Tuổi:</span>
+                <strong>${pet.age ?? 0} tuổi</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #666;">⚖️ Cân nặng:</span>
+                <strong>${pet.weight ?? 0} kg</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #666;">👤 Chủ nuôi:</span>
+                <strong>${owner ? owner.name + ' (' + (owner.phone || 'Không có SĐT') + ')' : 'Không có'}</strong>
+            </div>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 4px 0;">
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #666;">📦 Tổng số lần gửi:</span>
+                <strong style="color: #2563eb;">${totalBoardingCount} lần</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #666;">⏱️ Khung thời gian gửi gần nhất:</span>
+                <strong style="color: #16a34a;">${latestBoardingText}</strong>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn-secondary" onclick="closePetModal()" style="padding: 8px 16px; background: #e5e7eb; border: none; border-radius: 6px; cursor: pointer;">Đóng</button>
+            <button type="button" class="btn-primary" onclick="closePetModal(); editPet(${pet.id});" style="padding: 8px 16px; background: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer;">Chỉnh sửa</button>
+        </div>
+    `;
+
+    const modalTitle = document.getElementById("title-detail") || modal.querySelector(".modal-title");
+    if (modalTitle) {
+        modalTitle.textContent = "Chi tiết thú nuôi";
     }
 }

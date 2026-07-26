@@ -76,9 +76,6 @@ async function showBoardingRecords() {
                             <button class="filter-btn" onclick="filterBoardingRecord('RETURNED', this)">
                                 Đã trả <span class="filter-count" id="count-returned">0</span>
                             </button>
-                            <button class="filter-btn" onclick="filterBoardingRecord('DELETED', this)">
-                                Đã xóa <span class="filter-count" id="count-deleted">0</span>
-                            </button>
                         </div>
                         <div class="filter-group">
                             <select id="boarding-sort" class="filter-btn" style="padding: 5px 10px;" onchange="sortBoarding(this.value)">
@@ -325,13 +322,12 @@ async function renderBoardingTable(data) {
                     <td>
                         <span class="status-oval ${statusClass}">${statusText}</span>
                     </td>
-                    <td>
-                        <div class="action-group" onclick="event.stopPropagation();">
-                            ${checkoutBtn}
-                            ${!isDeleted ? `<button class="action-btn edit" title="Chỉnh sửa" onclick="editBoarding(${record.id})">✏️</button>` : ''}
-                            ${!isDeleted ? `<button class="action-btn delete" title="Xóa" onclick="deleteBoarding(${record.id})">🗑️</button>` : ''}
-                        </div>
-                    </td>
+                 <td>
+                    <div class="action-group" onclick="event.stopPropagation();">
+                        ${!isDeleted && record.status === "BOARDING" ? `<button class="action-btn checkout" title="Check-out" onclick="openCheckoutModal(${record.id})">🚪</button>` : ''}
+                        ${!isDeleted ? `<button class="action-btn edit" title="Chỉnh sửa" onclick="showBoardingDetail(${record.id})">👁</button>` : ''}
+                    </div>
+                </td>
                 </tr>
             `;
         })

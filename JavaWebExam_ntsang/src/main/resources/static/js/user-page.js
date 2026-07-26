@@ -22,7 +22,7 @@ const petServiceAPI = {
                     if (pId) activePetIds.add(String(pId));
                 }
             });
-			
+            
             petsList.forEach(pet => {
                 const petIdStr = String(pet.id);
                 if (activePetIds.has(petIdStr) || currentBoardings.some(b => (b.petId === pet.id || b.pet?.id === pet.id))) {
@@ -33,7 +33,7 @@ const petServiceAPI = {
                     pet.badgeClass = "badge-gray";
                 }
             });
-			
+            
             const activeSendingCount = activePetIds.size > 0 ? activePetIds.size : (currentBoardings.length > 0 && currentBoardings[0].id ? 1 : 0);
             return {
                 totalPets: petsList.length,
@@ -67,7 +67,14 @@ const petServiceAPI = {
             const response = await fetch(`${API.boarding}/my-history`, { method: "GET", credentials: "include" });
             const data = response.ok ? await response.json() : [];
             const historyList = Array.isArray(data) ? data : (data.content || []);
-            return { historyList: historyList };
+            
+            // Lọc chỉ lấy những phiếu có trạng thái là returned / đã trả (loại bỏ BOARDING / đang gửi)
+            const filteredHistory = historyList.filter(item => {
+                const status = (item.status || "").toUpperCase();
+                return status === 'RETURNED' || status === 'ĐÃ TRẢ' || status === 'COMPLETED';
+            });
+
+            return { historyList: filteredHistory };
         } catch (error) {
             console.error("Lỗi lấy lịch sử:", error);
             return { historyList: [] };
@@ -240,7 +247,7 @@ const renderTemplates = {
                 <div class="sending-header-info">
                     <div class="sending-pet-name">${pet.petName || pet.name || 'N/A'}</div>
                     <span class="badge-tag badge-gray">${pet.petType || pet.type || 'Pet'}</span>
-                    <span class="badge-tag badge-slate">${pet.status || 'Đang gửi'}</span>
+                    <span class="badge-tag badge-slate">Đang gửi</span>
                 </div>
                 
                 <p class="sending-date">
@@ -282,9 +289,10 @@ const renderTemplates = {
             data.historyList.forEach((item, index) => {
                 const isBoarding = item.status === 'BOARDING' || item.status === 'Đang gửi' || !item.actualCheckOut;
                 
+                // Cập nhật trạng thái hiển thị: Nếu đang gửi hiện "Đang gửi", ngược lại hiển thị ngày trả hoặc trạng thái return
                 const returnDateDisplay = isBoarding 
                     ? `<span style="color: #0284c7; font-weight: 500;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Đang gửi</span>` 
-                    : (item.returnDate || item.actualCheckOut || 'N/A');
+                    : (item.returnDate || item.actualCheckOut || 'Return');
 
                 let calculatedDays = item.totalDays;
                 const checkInStr = item.checkInDate || item.checkIn;
@@ -336,7 +344,7 @@ const renderTemplates = {
                             <th>#</th>
                             <th>THÚ CƯNG</th>
                             <th>CHECK-IN</th>
-                            <th>NGÀY TRẢ</th>
+                            <th>TRẠNG THÁI / NGÀY TRẢ</th>
                             <th>SỐ NGÀY</th>
                             <th>TỔNG PHÍ</th>
                             <th>PHỤ THU TRỄ</th>
@@ -365,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("click", (e) => {
         if (e.target === detailModal) detailModal.style.display = "none";
     });
-	
+    
     async function loadPage(targetKey) {
         if (renderTemplates[targetKey]) {
             mainContent.innerHTML = `<div style="padding: 20px; color: #888;">Đang kết nối đến hệ thống máy chủ...</div>`;
@@ -428,16 +436,23 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // 2. Xem chi tiết Phiếu gửi lịch sử
-        document.querySelectorAll(".btn-view-boarding").forEach(btn => {
+            document.querySelectorAll(".btn-view-boarding").forEach(btn => {
             btn.addEventListener("click", async function() {
                 const boardingId = this.getAttribute("data-id");
                 const item = await petServiceAPI.fetchBoardingDetail(boardingId);
                 if (!item) return alert("Không tìm thấy thông tin phiếu gửi!");
                 
+                // Kiểm tra xem phiếu có phải trạng thái Return hay không
                 const isBoarding = item.status === 'BOARDING' || item.status === 'Đang gửi' || !item.actualCheckOut;
-                const statusClass = isBoarding ? 'boarding' : 'completed';
-                const statusText = isBoarding ? 'Đang gửi' : 'Đã hoàn thành';
+                
+                // Nếu bạn muốn CHỈ cho phép xem các phiếu có trạng thái Return:
+                if (isBoarding) {
+                    alert("Phiếu gửi này đang trong trạng thái gửi, không phải trạng thái Return!");
+                    return;
+                }
+
+                const statusClass = 'completed';
+                const statusText = 'Return';
 
                 modalBody.innerHTML = `
                     <div class="modal-detail-header">
@@ -461,8 +476,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="value">${item.checkInDate || item.checkIn || 'N/A'}</span>
                         </div>
                         <div class="modal-info-item">
-                            <span>Ngày Trả / Dự kiến</span>
-                            <span class="value">${item.returnDate || item.actualCheckOut || item.expectedReturn || 'N/A'}</span>
+                            <span>Ngày Trả / Return</span>
+                            <span class="value">${item.returnDate || item.actualCheckOut || item.expectedReturn || 'Return'}</span>
                         </div>
                     </div>
 
@@ -481,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         <div class="modal-price-row total">
                             <span>Tổng cộng:</span>
-                            <span>${item.totalFee ? item.totalFee.toLocaleString('vi-VN') + 'đ' : (isBoarding ? 'Đang cập nhật' : 'N/A')}</span>
+                            <span>${item.totalFee ? item.totalFee.toLocaleString('vi-VN') + 'đ' : 'N/A'}</span>
                         </div>
                     </div>
 
@@ -493,7 +508,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // 3. Xem danh sách ghi chú chăm sóc (Care Notes)
         document.querySelectorAll(".btn-view-notes").forEach(btn => {
             btn.addEventListener("click", async function() {
                 const boardingId = this.getAttribute("data-boarding-id");

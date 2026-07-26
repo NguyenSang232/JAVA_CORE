@@ -185,11 +185,17 @@ async function loadDashboardData() {
         const revYesterday = boardings
             .filter(i => isDateToday(i.actualCheckOut || i.checkInDate, yesterday))
             .reduce((s, i) => s + (i.totalFee || i.baseFee || 0), 0);
-
+       let percentStr = "+0.0%";
+        if (revYesterday > 0) {
+            const percent = ((revToday - revYesterday) / revYesterday) * 100;
+            percentStr = `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`;
+        } else if (revToday > 0) {
+            percentStr = "+100.0%"; // Hôm qua 0, hôm nay có doanh thu -> tăng 100%
+        }
         renderSimpleTrend("trend-owner", newOwners, false, yesterdayOwners);
         renderSimpleTrend("trend-pet", newPets, false, yesterdayPets);
         renderSimpleTrend("trend-notes", newNotes, false, yesterdayNotes);
-        renderSimpleTrend("trend-revenue", revToday, true, revYesterday);
+        renderSimpleTrend("trend-revenue", percentStr , true, revYesterday);
 
         if (document.getElementById("recent-table") || typeof renderRecent === "function") {
             try { renderRecent(boardings); } catch (err) {}
@@ -210,7 +216,18 @@ function renderSimpleTrend(id, val, isMoney = false, compareVal = 0) {
     if (!el) return;
     el.style.display = "inline-block";
     
-    if (val > 0) {
+    if (isMoney && typeof val === 'string') {
+        el.textContent = val;
+        if (val.includes('+') && !val.includes('+0.0')) {
+            el.style.color = "#15803d";
+        } else {
+            el.style.color = "#999999";
+        }
+        el.title = `So với hôm qua (Hôm qua: ${formatMoney(compareVal)})`;
+        return;
+    }
+
+    if (Number(val) > 0) {
         el.textContent = isMoney ? `+${formatMoney(val)}` : `+${val}`;
         el.style.color = "#15803d"; 
     } else {
@@ -221,14 +238,14 @@ function renderSimpleTrend(id, val, isMoney = false, compareVal = 0) {
     if (isMoney) {
         let percentStr = "0%";
         if (compareVal > 0) {
-            const percent = ((val - compareVal) / compareVal) * 100;
+            const percent = ((Number(val) - compareVal) / compareVal) * 100;
             percentStr = `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`;
-        } else if (val > 0) {
+        } else if (Number(val) > 0) {
             percentStr = "+100%";
         }
         el.title = `So với hôm qua: ${percentStr} (Hôm qua: ${formatMoney(compareVal)})`;
     } else {
-        const diff = val - compareVal;
+        const diff = Number(val) - compareVal;
         const diffStr = diff >= 0 ? `+${diff}` : `${diff}`;
         el.title = `So với hôm qua: ${diffStr} (Hôm qua: ${compareVal})`;
     }
@@ -316,7 +333,7 @@ async function renderRecent(data) {
                 </td>
                 <td class="fee-cell">${feeText}</td>
                 <td>
-                    <button class="action-view-btn" title="Xem chi tiết" onclick="event.stopPropagation(); editBoarding(${item.id})">👁</button>
+                    <button class="action-view-btn" title="Xem chi tiết" onclick="event.stopPropagation(); showBoardingDetail(${item.id})">👁</button>
                 </td>
             </tr>
         `;

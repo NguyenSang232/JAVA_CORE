@@ -1,3 +1,21 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const logoutBtn = document.getElementById("menu-logout");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            handleLogout();
+        });
+    }
+});
+
+function handleLogout() {
+    if (confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        sessionStorage.clear();
+        window.location.href = "/login.html"; 
+    }
+}
 const petServiceAPI = {
     fetchDashboardData: async () => {
         try {
@@ -6,7 +24,6 @@ const petServiceAPI = {
                 fetch(`${API.boarding}/my-current`, { method: "GET", credentials: "include" }),
                 fetch(`${API.boarding}/my-history`, { method: "GET", credentials: "include" })
             ]);
-
             const petsData = petsRes.ok ? await petsRes.json() : [];
             const boardingData = boardingRes.ok ? await boardingRes.json() : [];
             const historyData = historyRes.ok ? await historyRes.json() : [];
@@ -175,7 +192,7 @@ const renderTemplates = {
                 <table class="custom-table">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>STT</th>
                             <th>THÚ CƯNG</th>
                             <th>LOẠI</th>
                             <th>GIỐNG</th>
@@ -249,7 +266,6 @@ const renderTemplates = {
                     <span class="badge-tag badge-gray">${pet.petType || pet.type || 'Pet'}</span>
                     <span class="badge-tag badge-slate">Đang gửi</span>
                 </div>
-                
                 <p class="sending-date">
                     <i class="fa-regular fa-calendar"></i> Check-in: ${checkInStr || 'N/A'} &nbsp;|&nbsp; 
                     <i class="fa-regular fa-calendar-check"></i> Dự kiến trả: ${expectedStr || 'N/A'}
@@ -288,7 +304,7 @@ const renderTemplates = {
         } else {
             data.historyList.forEach((item, index) => {
                 const isBoarding = item.status === 'BOARDING' || item.status === 'Đang gửi' || !item.actualCheckOut;
-                
+          
                 // Cập nhật trạng thái hiển thị: Nếu đang gửi hiện "Đang gửi", ngược lại hiển thị ngày trả hoặc trạng thái return
                 const returnDateDisplay = isBoarding 
                     ? `<span style="color: #0284c7; font-weight: 500;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Đang gửi</span>` 
@@ -389,16 +405,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 const petId = this.getAttribute("data-id");
                 const pet = await petServiceAPI.fetchPetDetail(petId);
                 if (!pet) return alert("Không tìm thấy thông tin thú cưng!");
-
-                const petStatus = pet.computedStatus || pet.status || 'Ở nhà';
-                const statusBadgeClass = petStatus === 'Đang gửi' ? 'boarding' : 'completed';
-
                 modalBody.innerHTML = `
                     <div class="modal-detail-header">
                         <h3 class="modal-detail-title">
-                            <i class="fa-solid fa-paw" style="color: #0284c7;"></i> Chi tiết Thú cưng #${pet.id}
+                            <i class="fa-solid fa-paw" style="color: #0284c7;"></i> Chi tiết Thú cưng
                         </h3>
-                        <span class="modal-badge ${statusBadgeClass}">${petStatus}</span>
                     </div>
 
                     <div class="modal-info-grid">
@@ -422,10 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span>Cân nặng</span>
                             <span class="value">${pet.weight ? pet.weight + ' kg' : 'N/A'}</span>
                         </div>
-                        <div class="modal-info-item">
-                            <span>Trạng thái</span>
-                            <span class="value">${petStatus}</span>
-                        </div>
+           
                     </div>
 
                     <div class="modal-note-box">
@@ -435,17 +443,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 detailModal.style.display = "flex";
             });
         });
-
             document.querySelectorAll(".btn-view-boarding").forEach(btn => {
             btn.addEventListener("click", async function() {
                 const boardingId = this.getAttribute("data-id");
                 const item = await petServiceAPI.fetchBoardingDetail(boardingId);
                 if (!item) return alert("Không tìm thấy thông tin phiếu gửi!");
                 
-                // Kiểm tra xem phiếu có phải trạng thái Return hay không
                 const isBoarding = item.status === 'BOARDING' || item.status === 'Đang gửi' || !item.actualCheckOut;
-                
-                // Nếu bạn muốn CHỈ cho phép xem các phiếu có trạng thái Return:
+               
                 if (isBoarding) {
                     alert("Phiếu gửi này đang trong trạng thái gửi, không phải trạng thái Return!");
                     return;
@@ -453,11 +458,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const statusClass = 'completed';
                 const statusText = 'Return';
-
                 modalBody.innerHTML = `
                     <div class="modal-detail-header">
                         <h3 class="modal-detail-title">
-                            <i class="fa-solid fa-file-invoice" style="color: #0284c7;"></i> Chi tiết Phiếu Gửi #${item.id}
+                            <i class="fa-solid fa-file-invoice" style="color: #0284c7;"></i> Chi tiết Phiếu Gửi
                         </h3>
                         <span class="modal-badge ${statusClass}">${statusText}</span>
                     </div>
@@ -465,15 +469,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="modal-info-grid">
                         <div class="modal-info-item">
                             <span>Thú cưng</span>
-                            <strong>${item.petName || 'N/A'}</strong>
+                            <strong>${item.petName || ''}</strong>
                         </div>
                         <div class="modal-info-item">
                             <span>Chủ nhân</span>
-                            <strong>${item.ownerName || 'N/A'}</strong>
+                            <strong>${item.ownerName || ''}</strong>
                         </div>
                         <div class="modal-info-item">
                             <span>Ngày Check-in</span>
-                            <span class="value">${item.checkInDate || item.checkIn || 'N/A'}</span>
+                            <span class="value">${item.checkInDate || item.checkIn || ''}</span>
                         </div>
                         <div class="modal-info-item">
                             <span>Ngày Trả / Return</span>
@@ -494,6 +498,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span>Phụ thu trễ hạn:</span>
                             <span style="color: ${item.lateFee > 0 ? '#dc2626' : '#334155'};">${item.lateFee ? item.lateFee.toLocaleString('vi-VN') + 'đ' : '0đ'}</span>
                         </div>
+						<div class="modal-price-row">
+						     <span>Giảm giá:</span>
+						     <span>${item.discount ? item.discount.toLocaleString('vi-VN') + 'đ' : '0'}</span>
+						  </div>
                         <div class="modal-price-row total">
                             <span>Tổng cộng:</span>
                             <span>${item.totalFee ? item.totalFee.toLocaleString('vi-VN') + 'đ' : 'N/A'}</span>
@@ -530,7 +538,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 detailModal.style.display = "flex";
             });
         });
-    }
+    }S
 
     loadPage("pets");
 
@@ -544,3 +552,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+function filterPriceData() {
+    const keyword = document.getElementById('petSearchInput').value.toLowerCase();
+    const filtered =  boardingRes.filter(item => 
+        item.petName && item.petName.toLowerCase().includes(keyword)
+    );
+    renderPriceTable(filtered);
+}

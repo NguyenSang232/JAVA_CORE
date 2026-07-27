@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truy cập bị từ chối - Pet Boarding</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a90e2; /* Xanh chủ đạo */
+            --error-color: #e74c3c;  /* Đỏ cảnh báo */
+            --text-dark: #333;
+            --text-light: #777;
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .forbidden-card {
+            background-color: var(--card-bg);
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .icon-container {
+            font-size: 100px;
+            color: var(--error-color);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 80px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--error-color);
+            line-height: 1;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            color: var(--text-light);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #357abd;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #eee;
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .footer-text {
+            margin-top: 40px;
+            font-size: 14px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="forbidden-card">
+    <div class="icon-container">
+        🚧
+    </div>
+    <h1>403</h1>
+    <h2>Rất tiếc, bạn không có quyền này!</h2>
+    <p>Hệ thống phát hiện tài khoản của bạn đã đăng nhập, nhưng bạn không được phép truy cập vào trang này. Vui lòng kiểm tra lại quyền hạn hoặc quay về trang chủ.</p>
+    <div class="actions">
+        <a href="/login.html" class="btn btn-primary">Về trang chủ/Đăng nhập lại</a>
+        <!-- Tùy chọn: Nút quay lại trang trước đó -->
+        <button onclick="history.back()" class="btn btn-secondary">Quay lại</button>
+    </div>
+    <div class="footer-text">
+        🌟 Pet Boarding System
+    </div>
+</div>
+
+</body>
+</html>

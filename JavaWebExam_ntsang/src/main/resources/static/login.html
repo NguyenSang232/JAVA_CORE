@@ -71,6 +71,10 @@
         const errorDiv = document.getElementById('error-message');
         if (errorDiv) {
             errorDiv.style.display = 'block';
+            if (window.history.replaceState) {
+                const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+            }
         }
     }
 </script>

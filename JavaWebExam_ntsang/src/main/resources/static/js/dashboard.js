@@ -3,6 +3,7 @@
 ===================================================== */
 window.onload = function () {
     showDashboard();
+	loadBoardingRecords();
 };
 
 /* =====================================================
@@ -121,7 +122,6 @@ async function fetchPetById(petId) {
         const pet = await response.json();
         return pet;
     } catch (error) {
-        console.error("Lỗi khi fetch pet:", error);
         return null;
     }
 }
@@ -148,14 +148,15 @@ async function loadDashboardData() {
         const totalNotesEl = document.getElementById("total-notes");
         if (totalNotesEl) totalNotesEl.textContent = noteData.length || 0;
 
-        const totalBoardingEl = document.getElementById("total-boarding");
-        if (totalBoardingEl) totalBoardingEl.textContent = boardings.filter(i => i.status === "BOARDING").length;
+		const totalBoardingEl = document.getElementById("total-boarding");
+		        if (totalBoardingEl) totalBoardingEl.textContent = boardings.filter(i => i.status === "BOARDING" || i.status === "RETURN").length;
 
-        const totalRevenue = boardings.reduce((sum, item) => sum + (item.totalFee ?? item.baseFee ?? 0), 0);
-        
-        const totalRevEl = document.getElementById("total-revenue");
-        if (totalRevEl) totalRevEl.textContent = formatMoney(totalRevenue);
-
+		const totalRevenue = boardings
+		            .filter(item => item.status === "RETURNED")
+		            .reduce((sum, item) => sum + (item.totalFee ?? item.baseFee ?? 0), 0);
+		        
+		const totalRevEl = document.getElementById("total-revenue");
+		        if (totalRevEl) totalRevEl.textContent = formatMoney(totalRevenue);
         const chartAmountEl = document.getElementById("chart-total-amount");
         if (chartAmountEl) chartAmountEl.textContent = formatMoney(totalRevenue);
 
@@ -185,13 +186,15 @@ async function loadDashboardData() {
         const revYesterday = boardings
             .filter(i => isDateToday(i.actualCheckOut || i.checkInDate, yesterday))
             .reduce((s, i) => s + (i.totalFee || i.baseFee || 0), 0);
+            
        let percentStr = "+0.0%";
         if (revYesterday > 0) {
             const percent = ((revToday - revYesterday) / revYesterday) * 100;
             percentStr = `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`;
         } else if (revToday > 0) {
-            percentStr = "+100.0%"; // Hôm qua 0, hôm nay có doanh thu -> tăng 100%
+            percentStr = "+100.0%";
         }
+        
         renderSimpleTrend("trend-owner", newOwners, false, yesterdayOwners);
         renderSimpleTrend("trend-pet", newPets, false, yesterdayPets);
         renderSimpleTrend("trend-notes", newNotes, false, yesterdayNotes);
@@ -210,7 +213,6 @@ async function loadDashboardData() {
         console.error("Dashboard error:", e);
     }
 }
-
 function renderSimpleTrend(id, val, isMoney = false, compareVal = 0) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -251,9 +253,6 @@ function renderSimpleTrend(id, val, isMoney = false, compareVal = 0) {
     }
 }
 
-/* =====================================================
-   RENDER RECENT BOARDING
-===================================================== */
 async function renderRecent(data) {
     const tableBody = document.getElementById("recent-boarding");
     const countBadge = document.getElementById("recent-count");

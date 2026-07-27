@@ -1,15 +1,13 @@
 # NOTES — JavaWebExam_ntsang
-
 Học viên: Nguyễn Thanh Sáng
 Ngày bắt đầu: 13/07/2026
 Branch: `java-web/exam`
 
 ---
 
+
 ## 1. Nhật ký hàng ngày
-
 > Bắt buộc cập nhật mỗi ngày làm việc trước khi commit (theo yêu cầu đề bài).
-
 ### Day 1 — 13/07/2026
 
 - **Đã làm:**
@@ -174,12 +172,32 @@ Branch: `java-web/exam`
 * Cập nhật lại database
 - **Khó khăn:** Hiện tại đã lấy thông tin tất cả bản ghi nhưng chưa hiển thị được thái.
 - **Cách giải quyết:** Sẽ thêm một cột trạng thái đã xóa để người khi lick vào đã xóa sẽ hiển thị list, Khi xóa mềm owner thì sẽ xóa mềm luôn thú nuôi thuộc owner đó + Pet phải đã RETURN trong bảng boarding_record.
-  **Commit:** `[Day9]`
+  **Commit:** `[9120679]`
+  
+### Day 10 — 27/07/2026
+- **Đã làm:**
+* Hoàn thành giao diện quản lý Boarding.
+* Hoàn thành giao diện của User
+* Hiển thị chi tiết đầy đủ thông tin checkout
+** Cập nhật logic tính theo yêu cầu của đề , hiển thị thông tin đầy đủ thông tin khi tiến hành checkout.
+* Hoàn thành giao diện báo cáo
+* Validation các dữ liệu được nhập vào từ người dùng.
+** Cập nhật lại database lần cuối
+- **Khó khăn:** Chức năng xóa mềm owner vẫn chưa hoạt động đúng logic. Nếu chủ có thú nuôi đang gửi thì không thể xóa được nhưng mà 
+hiện tại vẫn xóa dù đã check điều kiện ở backend. Theo thiết kế thì có thêm bảng giá dựa vào type và weight của thú nuôi nhưng nếu người dùng nhập giá trị cân nặng nằm ngoài khoảng đã chọn thì không thể tạo được phiếu gửi.
++ Chức năng search theo tên ở giao diện người dùng chưa hoàn thành.
+- **Cách giải quyết:**
+- Tiếp tục về nhà xem lại và hoàn thành chức năng này hoàn chỉnh. 
+- Lấy lại giá trị của select giá để ràng buộc 2 đầu khi người dùng nhập vào, nếu nằm ngoài sẽ hiện lên thông báo và người dùng phải nhập 
+lại cho đúng với cái giá đã chọn ban đầu.
+  **Commit:** `[Day10]`
+  
+  
 ## 2. Quyết định thiết kế (các phần đề không đặc tả đầy đủ)
 
 > Schema và quyết định cách làm.
 > Miễn là **nhất quán** và **giải thích được lý do** ở đây.
-> Thiết kế cơ sơ dữ liệu gồm 5 bảng: owners, pets, boarding_records, users, care_notes
+> Thiết kế cơ sơ dữ liệu gồm 6 bảng: owners, pets, boarding_records, users, care_notes, prices
 
 ### 2.1 Thiết kế database chung
 
@@ -194,12 +212,11 @@ Branch: `java-web/exam`
 * Bảng boarding_records: Vì theo giao diện mẫu lúc tạo chi tiết phiếu gửi có để trống chỗ "Thời gian trả thực tế" nên cần thêm cột updated_at để lấy thống kê và hiển thị được thông tin chính xác nhất.
 
 - **Thay đổi schema (nếu có):**
-
 * pets: thêm updated_at, deleted_at
 * owner: thêm updated_at, deleted_at. (dự định sẽ thêm cột customer_money)
-* boarding_records: thêm updated_at, price_per_day, expected_return;
+* boarding_records: thêm updated_at, price_per_day, expected_return, discount_fee
 * users: có thể sẽ thêm updated_at, delete_at.
-* price: quan hệ 1 - 1 với bảng pets
+* prices: để xác định giá cho từng loại dựa vào cân nặng và loại động vật
 * Cập nhật thêm bảng Price: Sẽ chia ra tùy theo cân nặng của pet, Ví dụ 0 -> 10kg là 100.000, 10.1 - 30kg sẽ là 180000. Trên giao diện sẽ tự động tính giá theo Type và Weight của Pet
 
 ### 2.2 Bảng Pets chi tiết
@@ -211,7 +228,7 @@ Branch: `java-web/exam`
 ### 2.3 Bảng Boarding_records
 
 - **Vấn đề:** Theo đề cần các trường như giá theo ngày, ngày thực tế trả pet nhưng thực tế database chưa có các bản này
-- **Quyết định của tôi:** thêm vào trường expected_return, price_per_day. Xóa mềm để vẫn nắm được lịch sử thống kê.
+- **Quyết định của tôi:** thêm vào trường expected_return, price_per_day. Xóa mềm để vẫn nắm được lịch sử thống kê. Thêm cột discount_fee để lưu giá giảm.
 - **Lý do chọn:** để được chính xác ngày trả, giá trên để tính theo ngày nhưng database hiện tại chưa có trường này
 
 ### 2..4 Bảng Owners
@@ -219,6 +236,31 @@ Branch: `java-web/exam`
 - **Vấn đề:** Xóa cứng hay xóa mềm.
 - **Quyết định của tôi:** xóa mềm vì số điện thoại là unique thì nếu khách sao này có quay lại thì có thể và set active cho người dùng này. Thống kê người dùng đã sử dụng dịch vụ cũng sẽ tốt hơn.
 
-## 3. Ghi chú kỹ thuật khác
+### 2.4 Vấn đề tạo phiếu gửi.
 
-- Điểm chưa hoàn thành hoặc biết còn lỗi (nếu deadline không đủ thời gian).
+-**Vấn đề:** Giá và ngày tạo, ngày dự kiến, người chủ nuôi sẽ là người dùng nhập hay tự điền.
+-**Quyết định của tôi:** Sẽ tự động điền bằng cách truy vấn theo chủ nuôi và lấy giá theo từng loại động vật, gàng buộc thời gian để k chọn người nhỏ hơn ngày checkin. 
+- **Lý do chọn:** Có thể hạn chế được dữ liệu không đúng format, quản lý giá sẽ dễ dàng hơn khi có thể chọn khoảng giá phù hợp thay vì nhập.
+
+### 2.5 Vấn đề tạo thú cưng
+
+**Vấn đề:**: Một chủ có thể có nhiều thú cưng cùng loại
+**Quyết định của tôi:** Ràng buộc điều kiện là không thể có 2 thú cưng cùng thuộc về một chủ nuôi.
+- **Lý do chọn:** Có thể không rõ ràng hoặc bị trùng lặp dữ liệu khi thực hiện thao tác tạo phiếu gửi.
+
+### 2.6 Tính tiền khi checkout
+
+**Vấn đề:**: Khi gửi dự kiến không đủ ngày để tính giảm giá nhưng nhận trễ số ngày nằm trong khoảng giảm giá thì có giảm giá không.
+**Quyết định của tôi:** Có giảm giá để thu hút thêm khách hàng, Tại vì khi trễ đã tính thêm phí trên ngày + phí trễ nếu khách hàng gửi đủ khoảng.
+thời gian thì vẫn áp dụng giảm giá cho họ.n
+- **Lý do chọn:** Giảm giá cho hàng để có thể giữ chân họ. Nếu khách hàng gửi đủ thời gian để áp dụng giảm giá thì đó cũng dấu hiệu tốt là cửa hàng đang được khách hàng ưa chuộng. 
+
+### 2.6 Thêm nhiều thú cưng cho một chủ nuôi
+**Vấn đề:**: Một chủ có thể có nhiều thú cưng cùng loại.i
+**Quyết định của tôi:** Ràng buộc điều kiện là không thể có 2 thú cưng cùng thuộc về một chủ nuôi..
+- **Lý do chọn:** Có thể không rõ ràng hoặc bị trùng lặp dữ liệu khi thực hiện thao tác tạo phiếu gửi..
+
+## 3. Ghi chú kỹ thuật khác
+- Điểm chưa hoàn thành hoặc biết còn lỗi (nếu deadline không kịp thời gian)
++ Chức năng xóa mềm người dùng hiện tại xóa được nhưng chưa đúng logic (Có pet đang gửi nhưng vẫn xóa được chủ nuôi))
++ Chưa hoàn thành chức năng search ở giao diện người dùngg

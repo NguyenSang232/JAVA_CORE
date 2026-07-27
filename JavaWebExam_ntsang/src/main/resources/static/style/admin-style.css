@@ -55,53 +55,15 @@ body {
   z-index: 100;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   box-shadow: 4px 0 25px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease;
 }
-/* =====================================
-    SIDEBAR FOOTER & ADMIN BADGE
-===================================== */
-.sidebar {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100vh;
-    box-sizing: border-box;
-}
 
 .sidebar .menu {
-    flex-grow: 1;
+  flex-grow: 1;
 }
 
-.sidebar-footer {
-    padding: 15px 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.admin-badge {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 30px; /* Bo tròn viền khung */
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.admin-avatar {
-    width: 32px;
-    height: 32px;
-    background: #4f46e5;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%; /* Bo tròn hoàn toàn chữ AD */
-    font-size: 12px;
-    font-weight: bold;
-}
 .logo {
   width: 48px;
   height: 48px;
@@ -162,6 +124,37 @@ body {
   transform: none;
 }
 
+/* Sidebar Footer & Admin Badge */
+.sidebar-footer {
+  padding: 15px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 30px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-avatar {
+  width: 32px;
+  height: 32px;
+  background: #4f46e5;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+}
+
 /* ==========================================================================
    3. CONTENT AREA
    ========================================================================== */
@@ -173,7 +166,7 @@ body {
 }
 
 /* ==========================================================================
-   4. MODAL CHI TIẾT & CHĂM SÓC THÚ CƯNG (Responsive & Mượt mà)
+   4. MODALS & OVERLAYS
    ========================================================================== */
 .modal-overlay {
   position: fixed;
@@ -234,16 +227,13 @@ body {
   color: #0f172a;
 }
 
-/* Custom cho Modal Chi Tiết Boarding */
+/* Boarding Detail Box */
 .boarding-detail-box {
-  width: 100%;
   max-width: 500px;
-  border-radius: 24px;
   padding: 0;
   overflow: hidden;
 }
 
-/* Grid thông tin hàng ngang */
 .detail-info-grid {
   display: flex;
   flex-direction: column;
@@ -281,7 +271,7 @@ body {
   font-weight: 600;
 }
 
-/* Khu vực ghi chú chăm sóc */
+/* Care Notes Section */
 .care-notes-section {
   margin-top: 20px;
 }
@@ -305,10 +295,10 @@ body {
   padding-right: 4px;
 }
 
-/* Custom Scrollbar */
 .care-notes-list::-webkit-scrollbar {
   width: 6px;
 }
+
 .care-notes-list::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 10px;
@@ -316,15 +306,13 @@ body {
 
 .care-note-item {
   background: #f8fafc;
+  border: 1px solid #f1f5f9;
   border-left: 4px solid #3b82f6;
   border-radius: 10px;
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border-top: 1px solid #f1f5f9;
-  border-right: 1px solid #f1f5f9;
-  border-bottom: 1px solid #f1f5f9;
 }
 
 .care-note-content {
@@ -339,7 +327,6 @@ body {
   color: #94a3b8;
 }
 
-/* Khung nhập ghi chú nhanh */
 .care-note-input-group {
   display: flex;
   gap: 8px;
@@ -378,7 +365,7 @@ body {
   background: #0f172a;
 }
 
-/* Footer điều hướng modal */
+/* Modal Actions Footer */
 .modal-actions-footer {
   display: flex;
   justify-content: flex-end;
@@ -424,158 +411,144 @@ body {
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
-/* --- BỐ CỤC & GIAO DIỆN MODAL CHECK-OUT --- */
-
-/* Khung tổng thể modal */
-#checkout-modal .modal-box {
-    max-width: 550px;
-    width: 100%;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-    background: #fff;
+/* ==========================================================================
+   5. CHECKOUT MODAL STYLES
+   ========================================================================== */
+#checkout-modal .modal-content {
+  max-width: 550px;
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
 }
 
-/* Header modal */
 #checkout-modal .modal-header {
-    background: #f8fafc;
-    padding: 16px 20px;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  background: #f8fafc;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 #checkout-modal .modal-header h2 {
-    font-size: 18px;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
 }
 
-/* Thẻ thông tin tổng quan (Card thông tin pet, chủ nuôi, ngày check-in) */
+#checkout-modal .modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .checkout-info-card {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0;
-    padding: 14px 16px !important;
-    border-radius: 8px !important;
-    margin-bottom: 18px !important;
-    font-size: 14px;
-    line-height: 1.7;
-    color: #334155;
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Chia thành 2 cột cân đối */
-    gap: 8px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #334155;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
 }
 
 .checkout-info-card p {
-    margin: 0;
+  margin: 0;
 }
 
-/* Dòng hiển thị số ngày trễ chiếm trọn 2 cột nếu muốn nổi bật */
 .checkout-info-card p:last-child {
-    grid-column: span 2;
-    border-top: 1px dashed #cbd5e1;
-    padding-top: 6px;
-    margin-top: 4px;
+  grid-column: span 2;
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 6px;
+  margin-top: 4px;
 }
 
-/* Nhóm form input */
 #checkout-modal .form-group {
-    margin-bottom: 14px !important;
+  margin-bottom: 0;
 }
 
-checkout-modal .modal-body {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-/* 2. Tạo một lớp CSS để bọc các trường nằm chung một hàng (Ví dụ: Dùng class .form-row-2cols) */
 .form-row-2cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Chia làm 2 cột bằng nhau trên một hàng */
-    gap: 15px; /* Khoảng cách giữa các cột */
-    align-items: flex-end;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  align-items: flex-end;
 }
 
 #checkout-modal label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: #475569;
-    margin-bottom: 6px;
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
 }
 
-/* Các trường input và textarea chung */
 #checkout-modal .form-control {
-    width: 100% !important;
-    padding: 9px 12px !important;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #1e293b;
-    background-color: #fff;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    box-sizing: border-box;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1e293b;
+  background-color: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
 }
 
 #checkout-modal .form-control:focus {
-    border-color: #15803d;
-    box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.15);
-    outline: none;
+  border-color: #15803d;
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.15);
+  outline: none;
 }
 
-/* Trường readonly (Giảm giá theo số ngày gửi) */
 #checkout-modal input[readonly].form-control {
-    background-color: #f1f5f9;
-    color: #64748b;
-    cursor: not-allowed;
+  background-color: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
 }
 
-/* Footer chứa nút bấm */
 #checkout-modal .modal-actions-footer {
-    background: #f8fafc;
-    padding: 14px 20px;
-    border-top: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-    margin-bottom: 0;
+  background: #f8fafc;
+  padding: 14px 20px;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 0;
 }
 
-/* Nút Hủy */
 #checkout-modal .btn-footer-close {
-    background: #fff;
-    border: 1px solid #cbd5e1;
-    color: #475569;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 8px 16px;
+  border-radius: 6px;
 }
 
 #checkout-modal .btn-footer-close:hover {
-    background: #f1f5f9;
+  background: #f1f5f9;
 }
 
-/* Nút Xác nhận Check-out */
 #checkout-modal .btn-primary {
-    background: #15803d !important;
-    color: white !important;
-    padding: 8px 18px !important;
-    border: none !important;
-    border-radius: 6px !important;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
+  background: #15803d;
+  color: white;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 #checkout-modal .btn-primary:hover {
-    background: #166534 !important;
+  background: #166534;
 }
+
+/* ==========================================================================
+   6. MISC COMPONENTS (Badges, Filters, Toasts)
+   ========================================================================== */
 .trend-badge {
   background-color: #dcfce7;
   color: #166534;
@@ -587,7 +560,110 @@ checkout-modal .modal-body {
   letter-spacing: 0.3px;
 }
 
-/* Màn hình Tablet hoặc nhỏ hơn (dưới 1024px) */
+.boarding-filter-panel {
+  background: #ffffff;
+  padding: 16px 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: flex-end;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.boarding-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.boarding-filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.boarding-filter-group select,
+.boarding-filter-group input {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1e293b;
+  background-color: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.boarding-filter-group select:focus,
+.boarding-filter-group input:focus {
+  border-color: #3b82f6;
+  background-color: #ffffff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.boarding-filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-reset-filter {
+  padding: 8px 14px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-reset-filter:hover {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
+.toast, #toast, .toast-container {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: #ffffff;
+  color: #1e293b;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  visibility: visible;
+  animation: toastSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toastSlideDown {
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ==========================================================================
+   7. RESPONSIVE QUERIES
+   ========================================================================== */
+/* Tablet & smaller (max-width: 1024px) */
 @media (max-width: 1024px) {
   .sidebar {
     width: 80px;
@@ -602,7 +678,7 @@ checkout-modal .modal-body {
   }
 
   .sidebar a span {
-    display: none; /* Ẩn chữ, chỉ hiển thị icon trên tablet */
+    display: none;
   }
 
   .sidebar a {
@@ -617,7 +693,7 @@ checkout-modal .modal-body {
   }
 }
 
-/* Màn hình Mobile (dưới 640px) */
+/* Mobile (max-width: 640px) */
 @media (max-width: 640px) {
   .sidebar {
     width: 100%;
@@ -683,107 +759,5 @@ checkout-modal .modal-body {
   
   .btn-add-care-note {
     width: 100%;
-  }
-}
-/* =====================================================
-   BOARDING ADVANCED FILTER & UI STYLES
-===================================================== */
-.boarding-filter-panel {
-    background: #ffffff;
-    padding: 16px 20px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    align-items: flex-end;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-
-.boarding-filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    min-width: 160px;
-}
-
-.boarding-filter-group label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #475569;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.boarding-filter-group select,
-.boarding-filter-group input {
-    padding: 8px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #1e293b;
-    background-color: #f8fafc;
-    transition: all 0.2s ease;
-}
-
-.boarding-filter-group select:focus,
-.boarding-filter-group input:focus {
-    border-color: #3b82f6;
-    background-color: #ffffff;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.boarding-filter-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.btn-reset-filter {
-    padding: 8px 14px;
-    background-color: #f1f5f9;
-    color: #64748b;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.btn-reset-filter:hover {
-    background-color: #e2e8f0;
-    color: #334155;
-}
-
-.toast, #toast, .toast-container {
-  position: fixed;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-20px);
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 24px;
-  background: #ffffff;
-  color: #1e293b;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  font-size: 14px;
-  font-weight: 600;
-  opacity: 0;
-  visibility: visible;
-  animation: toastSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes toastSlideDown {
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
   }
 }

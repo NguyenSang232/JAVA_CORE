@@ -27,7 +27,8 @@ public class SecurityConfig {
 						.requestMatchers("/login", "/.well-known/**", "/login.html", "/auth/**", "/static/**",
 								"/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/style/**", "/js/**")
 						.permitAll().requestMatchers("/admin.html").hasRole("ADMIN").requestMatchers("/user.html")
-						.hasAnyRole("CUSTOMER", "ADMIN").requestMatchers("/api/owners/**","/api/prices/**").hasRole("ADMIN")
+						.hasAnyRole("CUSTOMER", "ADMIN").requestMatchers("/api/owners/**", "/api/prices/**")
+						.hasRole("ADMIN")
 						.requestMatchers("/api/boarding-records/checkout/**", "/api/boarding-records/admin/**")
 						.hasRole("ADMIN")
 						.requestMatchers("/api/pets/my-pets", "/api/boarding-records/my-boarding",
@@ -35,7 +36,8 @@ public class SecurityConfig {
 						.hasRole("CUSTOMER").anyRequest().authenticated())
 				.formLogin(form -> form.loginPage("/login.html").loginProcessingUrl("/login")
 						.successHandler(successHandler).permitAll())
-				.logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/login.html?logout").permitAll());
+				.logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/login.html?logout").permitAll())
+				.exceptionHandling(exception -> exception.accessDeniedPage("/403.html"));
 		return http.build();
 	}
 
@@ -45,4 +47,3 @@ public class SecurityConfig {
 	}
 
 }
-//.rememberMe(remember -> remember.key("pet-boarding-key").tokenValiditySeconds(86400 * 7))

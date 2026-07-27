@@ -156,7 +156,7 @@ async function openOwnerModalDetail(ownerId = null) {
         }
         
         listContainer.innerHTML = pets.map(p => `
-           <div class="pet-card" onclick="editPet(${p.id})">
+           <div class="pet-card" onclick="viewPetDetail(${p.id})">
                 <div class="pet-avatar">
                     ${getPetIcon(p.type)}
                 </div>
@@ -211,7 +211,6 @@ async function showPetModal(ownerId) {
     }
     if (modal) modal.style.display = "flex";
 }
-
 function updateOwnerView() {
     const filteredData = searchOwnerData();
     document.getElementById("owner-countAll").textContent = filteredData.length;
@@ -543,7 +542,7 @@ async function saveOwner(event) {
             });
 
             if (!userResponse.ok) {
-                showToast("Thêm chủ nuôi thành công nhưng tạo tài khoản thất bại!", "warning");
+                showToast("Thêm chủ nuôi thành công !", "warning");
             } else {
                 showToast("Thêm chủ nuôi và tài khoản thành công!", "success");
             }
@@ -569,24 +568,25 @@ function editOwner(id) {
 }
 
 async function deleteOwner(id) {
-    const confirmAction = confirm("Bạn có chắc muốn xóa chủ nuôi này? (Các thú cưng của chủ nuôi cũng sẽ bị xóa)");
-    if (!confirmAction) return;
+  const confirmAction = confirm(
+    "Bạn có chắc muốn xóa chủ nuôi này? (Các thú cưng của chủ nuôi cũng sẽ bị xóa)",
+  );
+  if (!confirmAction) return;
 
-    try {
-        const response = await fetch(`${API.owners}/${id}`, {
-            method: "DELETE"
-        });
-
-        if (response.ok) {
-            showToast("Xóa Owner thành công");
-            await loadOwnersData();
-        } else {
-            showToast("Xóa thất bại", "error");
-        }
-    } catch (error) {
-        console.error(error);
-        showToast("Xóa thất bại", "error");
+  try {
+    const response = await fetch(`${API.owners}/${id}`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      showToast("Xóa Owner thành công");
+      await loadOwnersData();
+    } else {
+      showToast("Xóa thất bại", "error");
     }
+  } catch (error) {
+    console.error(error);
+    showToast("Xóa thất bại", "error");
+  }
 }
 
 async function restoreOwner(id) {

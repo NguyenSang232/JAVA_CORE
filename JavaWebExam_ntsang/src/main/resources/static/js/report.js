@@ -237,9 +237,8 @@ function updateChartData(filterType, dataList) {
         labels = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
         values = Array(7).fill(0);
         
-        let currentDayIndex = now.getDay();
+        let currentDayIndex = now.getDay();		
         highlightIndex = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
-
         dataList.forEach(item => {
             if (item.checkInDate) {
                 const date = new Date(item.checkInDate);
@@ -299,7 +298,6 @@ function updateChartData(filterType, dataList) {
         totalAmountEl.innerText = (typeof formatMoney === 'function' ? formatMoney(totalAmount) : totalAmount.toLocaleString('vi-VN') + "đ");
     }
 
-    // Áp dụng đúng 2 màu bạn vừa cung cấp cho mọi bộ lọc
     const backgroundColors = values.map((_, index) => 
         index === highlightIndex ? "#2563eb" : "#cbd5e1"
     );
@@ -335,48 +333,35 @@ function drawFilteredPetTypeChart(filteredBoarding) {
     const container = document.getElementById("pet-type-container");
     const subtitle = document.getElementById("distribution-subtitle");
     if (!container) return;
-    
     if (subtitle) {
         const filterNames = { week: '7 ngày qua', month: 'Tháng này', quarter: 'Quý này', year: 'Năm nay' };
         subtitle.innerText = filterNames[currentReportFilter] || '';
     }
-
-    if (!filteredBoarding || filteredBoarding.length === 0) {
-        container.innerHTML = `<p class="empty-text">Không có dữ liệu trong kỳ này</p>`;
+    if (!globalPetsData || globalPetsData.length === 0) {
+        container.innerHTML = `<p style="color: #999; font-size: 13px;">Chưa có dữ liệu phân bố</p>`;
         return;
     }
-
-    const typeCountMap = {};
-    let totalValidPetsCount = 0;
-
-    filteredBoarding.forEach(item => {
-        const pId = item.petId || (item.pet ? item.pet.id : null);
-        if (pId) {
-            const foundPet = globalPetsData.find(p => String(p.id) === String(pId));
-            if (foundPet) {
-                const type = foundPet.type || "Other";
-                typeCountMap[type] = (typeCountMap[type] || 0) + 1;
-                totalValidPetsCount++;
-            }
-        }
+    const types = {};
+    globalPetsData.forEach(p => {
+        const type = p.type || "Other";
+        types[type] = (types[type] || 0) + 1;
     });
-
-    if (totalValidPetsCount === 0) {
-        container.innerHTML = `<p class="empty-text">Không có dữ liệu loài trong kỳ này</p>`;
+    const totalPets = globalPetsData.length;
+    if (totalPets === 0) {
+        container.innerHTML = `<p style="color: #999; font-size: 13px;">Chưa có dữ liệu phân bố</p>`;
         return;
     }
-
-    const sortedTypes = Object.entries(typeCountMap).sort((a, b) => b[1] - a[1]);
+    const sortedTypes = Object.entries(types).sort((a, b) => b[1] - a[1]);
 
     container.innerHTML = sortedTypes.map(([type, count]) => {
-        const percentage = Math.round((count / totalValidPetsCount) * 100);
+        const percentage = Math.round((count / totalPets) * 100);
         const petIcon = typeof getPetIcon === "function" ? getPetIcon(type) : "🐾";
 
         return `
             <div class="distribution-row">
                 <div class="distribution-meta">
-                    <span>${petIcon} ${type}</span>
-                    <span>${count} (${percentage}%)</span>
+                    <span class="type-label">${petIcon} ${type}</span>
+                    <span class="stats-data">${count} <span>${percentage}%</span></span>
                 </div>
                 <div class="progress-bar-bg">
                     <div class="progress-bar-fill" style="width: ${percentage}%;"></div>

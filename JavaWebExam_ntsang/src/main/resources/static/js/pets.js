@@ -116,7 +116,6 @@ function getPetStatus(petId, boardingRecords) {
 
 function updatePetView() {
     let processedData = filterPetData();
-
     if (currentPetSortDirection === "ASC" || currentPetSortDirection === "DESC") {
         processedData.sort((a, b) => {
             const nameA = a.name?.toLowerCase() ?? "";
@@ -124,15 +123,11 @@ function updatePetView() {
             return currentPetSortDirection === "ASC" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
         });
     }
-
     const pageData = paginatePet(processedData, currentPetPage);
     renderPetTable(pageData);
     renderPetPagination(processedData.length);
 }
 
-/* =====================================================
-    RENDER PET TABLE
-===================================================== */
 function getPetIcon(type) {
     switch (type) {
         case "Dog": return "🐶";
@@ -295,21 +290,17 @@ function changePetPage(page) {
     updatePetView();
 }
 
-// Hàm tải danh sách bảng giá đổ vào thẻ <select id="pet-pricing-select">
 async function loadPricingOptionsToSelect() {
     const pricingSelect = document.getElementById("pet-pricing-select");
     if (!pricingSelect) return;
-
     try {
-        // Thay API.pricings bằng đường dẫn API thực tế của bạn
         const response = await fetch(`${API.prices}`);
         if (response.ok) {
             const pricings = await response.json();
             
             let html = `<option value="">-- Chọn mức giá theo cân nặng --</option>`;
             if (Array.isArray(pricings) && pricings.length > 0) {
-                pricings.forEach(item => {
-                    // item mẫu: { id: 1, petType: "Dog", weightFrom: 0, weightTo: 10, actualPrice: 120000 }
+                pricings.forEach(item => {        
                     html += `<option value="${item.id}">
                         [${item.petType}] Từ ${item.weightFrom}kg - ${item.weightTo}kg 
                         (Giá: ${item.actualPrice.toLocaleString('vi-VN')} VNĐ)
@@ -327,9 +318,7 @@ async function loadPricingOptionsToSelect() {
         pricingSelect.innerHTML = `<option value="" disabled>Lỗi kết nối máy chủ</option>`;
     }
 }
-/* =====================================================
-    MODAL & CHỦ NUÔI INTEGRATION
-===================================================== */
+
 async function openPetModal(pet = null) {
     const modal = document.getElementById("pet-modal");
     const form = document.getElementById("pet-form");
@@ -337,37 +326,13 @@ async function openPetModal(pet = null) {
         console.warn("Không tìm thấy phần tử #pet-modal trên trang này.");
         return;
     }
-
-    modal.style.display = "flex";
-
+    modal.style.display = "flex";   
     const currentPetType = pet ? (pet.type || "Dog") : (document.getElementById("pet-type")?.value || "Dog");
-
     await Promise.all([
         loadOwnerOptionsToSelect(),
         loadPricingOptionsToSelect(currentPetType)
     ]);
-
-    if (!pet) {
-        if (form) {
-            form.style.display = "block";
-            form.reset();
-        }
-        const detailContainer = document.getElementById("pet-detail-view-container");
-        if (detailContainer) detailContainer.style.display = "none";
-
-        let idInput = document.getElementById("pet-id");
-        if (idInput) idInput.value = "";
-        
-        const title = document.getElementById("title-detail");
-        if (title) title.textContent = "Thêm mới thú nuôi";
-        return;
-    }
-
-    if (form) {
-        form.style.display = "block";
-    }
-    
-    const idInput = document.getElementById("pet-id");
+    const idInput = document.getElementById("pet-id-detail");
     const nameInput = document.getElementById("pet-name");
     const typeSelect = document.getElementById("pet-type");
     const breedInput = document.getElementById("pet-breed");
@@ -376,7 +341,22 @@ async function openPetModal(pet = null) {
     const ownerSelect = document.getElementById("pet-owner-select");
     const imageInput = document.getElementById("pet-image");
     const pricingSelect = document.getElementById("pet-pricing-select");
-
+    const title = document.getElementById("title-detail") || modal.querySelector(".modal-title");
+    const detailContainer = document.getElementById("pet-detail-view-container");
+    if (!pet) {
+        if (form) {
+            form.style.display = "block";
+            form.reset();
+        }
+        if (detailContainer) detailContainer.style.display = "none";
+        if (idInput) idInput.value = "";
+        
+        if (title) title.textContent = "Thêm mới thú nuôi";
+        return;
+    }
+    if (form) {
+        form.style.display = "block";
+    }
     if (idInput) idInput.value = pet.id || "";
     if (nameInput) nameInput.value = pet.name || "";
     if (typeSelect) typeSelect.value = pet.type || "Dog";
@@ -401,18 +381,15 @@ async function openPetModal(pet = null) {
             }
             return false;
         });
-
+		console.log(matchingOption);
         if (matchingOption) {
             pricingSelect.value = matchingOption.value;
         }
     }
-
-    const title = document.getElementById("title-detail") || modal.querySelector(".modal-title");
     if (title) {
         title.textContent = "Chỉnh sửa thông tin thú nuôi";
     }
 
-    const detailContainer = document.getElementById("pet-detail-view-container");
     if (detailContainer) detailContainer.style.display = "none";
 }
 
@@ -428,7 +405,7 @@ async function loadPricingOptionsToSelect() {
             if (Array.isArray(pricings) && pricings.length > 0) {
                 pricings.forEach(item => {
                     // item mẫu: { id: 1, petType: "Dog", weightFrom: 0, weightTo: 10, actualPrice: 120000 }
-                    html += `<option value="${item.id}">
+                    html += `<option value="${item.petType}" weight-from ="${item.weightFrom}" weight-to ="${item.weightTo}" >
                         [${item.petType}] Từ ${item.weightFrom}kg - ${item.weightTo}kg 
                         (Giá: ${item.actualPrice ? item.actualPrice.toLocaleString('vi-VN') : 0} VNĐ)
                     </option>`;
@@ -446,7 +423,6 @@ async function loadPricingOptionsToSelect() {
     }
 }
 
-// Hàm phụ trợ để tải danh sách chủ nuôi đổ vào thẻ <select id="pet-owner-select">
 async function loadOwnerOptionsToSelect() {
     const ownerSelect = document.getElementById("pet-owner-select");
     if (!ownerSelect) return;
@@ -455,7 +431,6 @@ async function loadOwnerOptionsToSelect() {
         const response = await fetch(API.owners);
         if (response.ok) {
             const owners = await response.json();
-            
             let html = `<option value="">-- Chọn chủ nuôi --</option>`;
             if (Array.isArray(owners) && owners.length > 0) {
                 owners.forEach(owner => {
@@ -483,22 +458,26 @@ function closePetModal() {
 
 async function savePet(event) {
     if (event) event.preventDefault();
-    const idInput = document.getElementById("pet-id");
+    const idInput = document.getElementById("pet-id-detail");
     const nameInput = document.getElementById("pet-name");
-    const typeSelect = document.getElementById("pet-type");
+    const typeSelect = document.getElementById("pet-pricing-select");
     const breedInput = document.getElementById("pet-breed");
     const ageInput = document.getElementById("pet-age");
     const weightInput = document.getElementById("pet-weight");
     const ownerSelect = document.getElementById("pet-owner-select");
     const imageInput = document.getElementById("pet-image");
-    
-    const id = idInput ? idInput.value : "";
+   	const id = idInput ? Number(idInput.value) : 0;
     const ownerId = ownerSelect ? Number(ownerSelect.value) : 0;
     const name = nameInput ? nameInput.value.trim() : "";
     const type = typeSelect ? typeSelect.value : "Dog";
+	console.log(type)
     const age = ageInput ? Number(ageInput.value) : 0;
     const weight = weightInput ? Number(weightInput.value) : 0;
-
+	const selectedOption = typeSelect.options[typeSelect.selectedIndex];
+	let petWeightFrom = Number(selectedOption.getAttribute("weight-from")) || 0;
+	let petWeightTo = Number(selectedOption.getAttribute("weight-to")) || 0;
+	console.log(petWeightFrom);
+	console.log(petWeightTo);
     if (!ownerId) {
         showToast("Vui lòng chọn chủ nuôi hợp lệ!", "error");
         return;
@@ -507,12 +486,12 @@ async function savePet(event) {
         showToast("Vui lòng nhập tên thú cưng!", "error");
         return;
     }
-    if (isNaN(age) || age <= 0) {
-        showToast("Tuổi thú cưng phải lớn hơn 0!", "error");
+    if (isNaN(age) || age <= 0 || age > 150) {
+        showToast("Tuổi thú cưng phải lớn hơn 0 và nhỏ hơn 150!", "error");
         return;
     }
-    if (isNaN(weight) || weight <= 0) {
-        showToast("Cân nặng thú cưng phải lớn hơn 0!", "error");
+    if (isNaN(weight) || weight < petWeightFrom || weight >= petWeightTo) {
+        showToast("Cân nặng thú cưng phải nằm trong khoảng đã chọn ở phía trên!", "error");
         return;
     }
     
@@ -586,9 +565,6 @@ function editPet(id) {
     openPetModal(pet);
 }
 
-/* =====================================================
-   XÓA THÚ CƯNG (DỰA TRÊN LOGIC TRẠNG THÁI pet.status)
-===================================================== */
 async function deletePet(id) {
     const pet = pets.find(item => Number(item.id) === Number(id));
     if (!pet) {
@@ -628,25 +604,17 @@ async function deletePet(id) {
     }
 }
 
-/* =====================================================
-    XEM CHI TIẾT THÚ CƯNG & THỐNG KÊ LẦN GỬI
-===================================================== */
 async function viewPetDetail(id) {
     const pet = pets.find(item => Number(item.id) === Number(id));
     if (!pet) return;
-
-    // 1. Mở modal chính
     const modal = document.getElementById("pet-modal");
     if (!modal) {
         showToast("Không tìm thấy modal hiển thị!", "error");
         return;
     }
     modal.style.display = "flex";
-
-    // 2. Ẩn form chỉnh sửa, hiện container xem chi tiết
     const form = document.getElementById("pet-form");
     if (form) form.style.display = "none";
-
     let detailContainer = document.getElementById("pet-detail-view-container");
     if (!detailContainer) {
         // Nếu chưa có container chi tiết trong HTML, tự động tạo bên trong modal-content
@@ -656,11 +624,7 @@ async function viewPetDetail(id) {
         if (modalContent) modalContent.appendChild(detailContainer);
     }
     detailContainer.style.display = "block";
-
-    // 3. Lấy thông tin chủ nuôi
     const owner = await getOwnerById(pet.ownerId);
-
-    // 4. Lấy lịch sử gửi thú cưng (boarding records) để tính toán số lần & thời gian gần nhất
     let totalBoardingCount = 0;
     let latestBoardingText = "Chưa từng gửi";
 
@@ -668,19 +632,12 @@ async function viewPetDetail(id) {
         const response = await fetch(API.boarding);
         if (response.ok) {
             const boardingRecords = await response.json();
-            // Lọc các bản ghi gửi của thú cưng này dựa trên petId
-            const petRecords = boardingRecords.filter(item => Number(item.petId) === Number(pet.id));
-            
+            const petRecords = boardingRecords.filter(item => Number(item.petId) === Number(pet.id));           
             totalBoardingCount = petRecords.length;
-
-            if (totalBoardingCount > 0) {
-                // Sắp xếp giảm dần theo checkInDate mới nhất
-                petRecords.sort((a, b) => new Date(b.checkInDate) - new Date(a.checkInDate));
-                
+            if (totalBoardingCount > 0) {          
+                petRecords.sort((a, b) => new Date(b.checkInDate) - new Date(a.checkInDate));               
                 const latest = petRecords[0];
-                const checkIn = latest.checkInDate ? new Date(latest.checkInDate).toLocaleDateString("vi-VN") : "N/A";
-                
-                // Ưu tiên hiển thị ngày trả thực tế (actualCheckOut), nếu chưa có thì lấy ngày dự kiến (expectedReturn), nếu không thì ghi "Đang gửi"
+                const checkIn = latest.checkInDate ? new Date(latest.checkInDate).toLocaleDateString("vi-VN") : "N/A";            
                 let checkOut = "Đang gửi";
                 if (latest.actualCheckOut) {
                     checkOut = new Date(latest.actualCheckOut).toLocaleDateString("vi-VN");
@@ -694,8 +651,6 @@ async function viewPetDetail(id) {
     } catch (error) {
         console.error("Lỗi khi tải lịch sử gửi:", error);
     }
-
-    // 5. Render nội dung chi tiết vào modal
     detailContainer.innerHTML = `
         <div class="pet-detail-header" style="text-align: center; margin-bottom: 20px;">
             <img src="${pet.image || ''}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 3px solid #f3f4f6; margin-bottom: 10px;">

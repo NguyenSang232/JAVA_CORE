@@ -1,7 +1,3 @@
--- ================================================================
--- PET BOARDING — Database Schema & Data Seeding (Cập nhật discount_fee)
--- Java Web Exam
--- ================================================================
 
 CREATE DATABASE IF NOT EXISTS pet_boarding_ntsang
     CHARACTER SET utf8mb4
@@ -61,7 +57,7 @@ CREATE TABLE boarding_records (
     price_per_day      BIGINT,               
     base_fee           BIGINT,
     late_fee           BIGINT       DEFAULT 0,
-    discount_fee       BIGINT       NOT NULL DEFAULT 0, -- Thêm cột discount_fee mặc định là 0
+    discount_fee       BIGINT       NOT NULL DEFAULT 0,
     total_fee          BIGINT,
     status             VARCHAR(20)  NOT NULL DEFAULT 'BOARDING', 
     notes              TEXT,
@@ -111,13 +107,13 @@ INSERT INTO prices (pet_type, weight_from, weight_to, base_price) VALUES
 
 INSERT INTO pets (id, name, type, breed, age, weight, image_url, owner_id) VALUES
 (1, 'Milo',   'Dog',    'Golden Retriever', 3, 28.50, 'https://placedog.net/200/200?id=1',  1), 
-(2, 'Kiki',   'Cat',    'Anh lông ngắn',    2,  4.20, 'https://placekitten.com/200/200',    1), 
+(2, 'Kiki',   'Cat',    'Anh lông ngắn',    2,  4.20, 'https://placedog.net/200/200?id=3',    1), 
 (3, 'Buddy',  'Dog',    'Poodle',           5,  6.80, 'https://placedog.net/200/200?id=2',  2), 
-(4, 'Tweety', 'Bird',   'Vẹt Cockatiel',    1,  0.10, NULL,                         3), 
-(5, 'Snow',   'Rabbit', 'Holland Lop',      2,  1.80, NULL,                         4), 
-(6, 'Max',    'Dog',    'Husky',            4, 25.00, 'https://placedog.net/200/200?id=3',  5), 
-(7, 'Luna',   'Cat',    'Mèo Ta',           3,  3.50, 'https://placekitten.com/201/200',    6), 
-(8, 'Nemo',   'Other',  'Rùa cạn',          8,  0.80, NULL,                         2); 
+(4, 'Tweety', 'Bird',   'Vẹt Cockatiel',    1,  0.10, 'https://placedog.net/200/200?id=1', 3), 
+(5, 'Snow',   'Rabbit', 'Holland Lop',      2,  1.80, 'https://placedog.net/200/200?id=1',  4), 
+(6, 'Max',    'Dog',    'Husky',            4, 25.00, 'https://placedog.net/200/200?id=3', 5), 
+(7, 'Luna',   'Cat',    'Mèo Ta',           3,  3.50, 'https://placedog.net/200/200?id=3', 6), 
+(8, 'Nemo',   'Other',  'Rùa cạn',          8,  0.80, 'https://placedog.net/200/200?id=1', 2); 
 
 INSERT INTO boarding_records 
     (id, pet_id, check_in_date, expected_day, actual_check_out, price_per_day, base_fee, late_fee, discount_fee, total_fee, status, notes)

@@ -50,7 +50,6 @@
             NOW()
         )
     </insert>
-
     <!-- Lấy tất cả (Mặc định không lấy bản ghi đã xóa, hoặc nếu cần lấy tất cả có thể bỏ điều kiện) -->
     <select id="findAll" resultMap="PetDTOMap">
         SELECT p.*,
@@ -68,7 +67,6 @@
         WHERE p.id = #{id}
     </select>
     
-    <!-- Đã sửa lại cú pháp SQL cho đúng chuẩn Group By & Where -->
     <select id="countPet" parameterType="long" resultType="int">
         SELECT COUNT(*) FROM pets WHERE owner_id = #{id} AND deleted_at = false
     </select>
@@ -108,14 +106,13 @@
             updated_at = NOW()
         WHERE id = #{id}
     </update>
-    
-     <update id="softDeleteByOwnerId">
-        UPDATE pets
-        SET deleted_at = true,
-            updated_at = NOW()
-        WHERE owner_id = #{id}
-    </update>
-    
+   
+    <update id="softDeleteByOwnerId">
+		    UPDATE pets
+		    SET deleted_at = true,
+		        updated_at = NOW()
+		    WHERE owner_id = #{id}
+	</update>
     <select id="findByType" parameterType="string" resultMap="PetDTOMap">
         SELECT p.*,
                o.name AS owner_name

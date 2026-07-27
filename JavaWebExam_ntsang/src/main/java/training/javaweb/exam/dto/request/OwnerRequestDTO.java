@@ -2,7 +2,6 @@ package training.javaweb.exam.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class OwnerRequestDTO {
@@ -12,7 +11,6 @@ public class OwnerRequestDTO {
 	private String name;
 
 	@NotBlank(message = "Phone cannot be blank")
-	@Pattern(regexp = "^(0[3|5|7|8|9])[0-9]{8}$", message = "Phone number is invalid")
 	private String phone;
 
 	@Email(message = "Email format is invalid")

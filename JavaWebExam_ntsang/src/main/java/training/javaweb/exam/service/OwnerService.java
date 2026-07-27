@@ -6,19 +6,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import training.javaweb.exam.dto.request.OwnerRequestDTO;
+import training.javaweb.exam.dto.response.BoardingRecordResponseDTO;
 import training.javaweb.exam.dto.response.OwnerDTO;
 import training.javaweb.exam.entity.Owner;
+import training.javaweb.exam.exception.GlobalExceptionHandler;
+import training.javaweb.exam.repository.BoardingRecordRepository;
 import training.javaweb.exam.repository.OwnerRepository;
 import training.javaweb.exam.repository.PetRepository;
 
 @Service
 public class OwnerService {
 
+	private final GlobalExceptionHandler globalExceptionHandler;
 	@Autowired
 	private OwnerRepository ownerRepository;
-
 	@Autowired
 	private PetRepository petRepository;
+	@Autowired
+	private BoardingRecordRepository boardingrecordRepository;
+
+	OwnerService(GlobalExceptionHandler globalExceptionHandler) {
+		this.globalExceptionHandler = globalExceptionHandler;
+	}
 
 	public OwnerDTO createOwner(OwnerRequestDTO dto) {
 		Owner owner = toEntity(dto);
@@ -54,13 +63,20 @@ public class OwnerService {
 	}
 
 	public void delete(Long id) {
+		List<BoardingRecordResponseDTO> pets = boardingrecordRepository.findHistoryByOwner(id);
+		for (BoardingRecordResponseDTO pet : pets) {
+			if (pet.getStatus() == "BOARDING") {
+				System.out.println(pet.getStatus());
+				return;
+			}
+		}
+		petRepository.softDeleteByOnwerId(id);
 		ownerRepository.softDelete(id);
-		petRepository.softDelete(id);
 	}
 
 	public boolean restoreOwner(Long id) {
-        return ownerRepository.restoreOwner(id) > 0;
-    }
+		return ownerRepository.restoreOwner(id) > 0;
+	}
 
 	public Owner toEntity(OwnerRequestDTO dto) {
 		if (dto == null) {

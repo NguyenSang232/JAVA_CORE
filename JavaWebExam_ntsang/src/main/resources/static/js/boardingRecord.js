@@ -3,7 +3,8 @@
 ===================================================== */
 
 let allBoardingRecords = [];
-
+let currentBoardingFilter = 'ALL';
+let currentBoardingSort = "NEW";
 async function showBoardingRecords() {
     const mainView = document.getElementById("content");
     if (!mainView) return;
@@ -443,8 +444,7 @@ async function openBoardingModal(record = null) {
     try {
         const response = await fetch(API.pets);
         const allPets = await response.json();
-        
-        // Chỉ cho phép chọn thú cưng chưa từng được gửi hoặc đã trả (loại bỏ những con đang ở trạng thái BOARDING)
+       
         const activePetIds = allBoardingRecords
             .filter(b => b.status === "BOARDING" && !(b.isDeleted || b.deleted) && (!record || b.id !== record.id))
             .map(b => String(b.petId));
@@ -459,7 +459,7 @@ async function openBoardingModal(record = null) {
                     data-owner-name="${p.ownerName || p.owner?.name || ''}" 
                     data-type="${p.type || 'Other'}" 
                     data-weight="${p.weight || 0}">
-                    ${p.name} (${p.type || 'Other'})
+                    ${p.name} (${p.type || 'Other'}) ${p.ownerName}
                 </option>
             `).join("")}
         `;
@@ -494,7 +494,7 @@ async function openBoardingModal(record = null) {
                 expectedReturnInput.min = checkInInput.value;
                 expectedReturnInput.value = record.expectedReturn ? record.expectedReturn.split('T')[0] : "";
             }
-            if (totalFeeInput) totalFeeInput.value = record.totalFee ?? 0;
+            if (totalFeeInput) totalFeeInput.value = record.baseFee ?? 0;
         }
     } catch (error) {
         console.error("Lỗi khi chuẩn bị dữ liệu trong Modal:", error);
@@ -502,7 +502,6 @@ async function openBoardingModal(record = null) {
     }
 }
 async function onModalPetChange() {
-    console.log("Tetdb");
     const petSelect = document.getElementById("modal-pet-select");
     const ownerNameResult = document.getElementById("modal-owner-name");
     const pricePerDayInput = document.getElementById("modal-price-per-day");
@@ -549,7 +548,6 @@ async function onModalPetChange() {
     }
     if (ownerNameResult) {
         ownerNameResult.value = ownerName;
-		console.log(ownerName);
     }
     try {
         const response = await fetch(`${API.prices}/search?typeOfAnimal=${encodeURIComponent(petType)}&weight=${petWeight}`);
@@ -686,6 +684,7 @@ async function saveBoarding(event) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data)
             });
+			
         } else {
             response = await fetch(API.boarding, {
                 method: "POST",
@@ -698,6 +697,7 @@ async function saveBoarding(event) {
             showToast("Lưu phiếu gửi thành công", "success");
             closeBoardingModal();
             await loadBoardingRecords();
+			await loadDashboardData();
         } else {
             showToast("Không thể lưu phiếu gửi", "error");
         }
@@ -720,7 +720,6 @@ async function checkoutBoarding(boardingId, totalFee) {
 		actualCheckOut: new Date().toISOString(),
 		baseFee: totalFee
 	}
-	console.log(checkoutInfor);
     try {
         const response = await fetch(`${API.boarding}/checkout/${boardingId}`, {
             method: "PUT",
@@ -767,8 +766,6 @@ async function showBoardingDetail(id) {
         const response = await fetch(`${API.boarding}/${id}`);
         if (!response.ok) throw new Error("Không thể tải phiếu gửi");
         const record = await response.json();
-        console.log("Chi tiết phiếu gửi:", record);
-        console.log(record.lateFee);   
         const detIdEl = document.getElementById("det-id-detail");
         if (detIdEl) detIdEl.value = record.id;
         let pet = null;
@@ -803,6 +800,7 @@ async function showBoardingDetail(id) {
         const lateFeeEl = document.getElementById("det-late-return-detail");
         const discountEl = document.getElementById("det-discount-detail");
         const feeEl = document.getElementById("det-fee-detail");
+		const expectedFee = document.getElementById("det-expected-fee-detail");
         if (actualReturnEl && feeEl) {
             if (record.status === "BOARDING") {
                 actualReturnEl.textContent = "—";
@@ -810,11 +808,13 @@ async function showBoardingDetail(id) {
                 if (discountEl) discountEl.textContent = "0đ";
                 feeEl.textContent = `${formatMoney(record.pricePerDay)} / ngày`;
                 feeEl.style.color = "#888";
+				const expectedFeeVal = record.baseFee || 0;
+				expectedFee.textContent = expectedFeeVal > 0 ? formatMoney(expectedFeeVal) : "0đ";
+				expectedFee.style.color = "#0275d8";
             } else {
                 actualReturnEl.textContent = formatDate(record.actualCheckOut || record.actualReturnDate);
                 if (lateFeeEl) {
-                   const lateFeeVal = Number(record.lateFee) || 0;
-                    console.log("Late fee value:", lateFeeVal);
+                   const lateFeeVal = Number(record.lateFee) || 0;            
                     lateFeeEl.textContent = lateFeeVal > 0 ? formatMoney(lateFeeVal) : "0đ";
                     lateFeeEl.style.color = lateFeeVal > 0 ? "#d9534f" : "#333";
                 }
@@ -822,7 +822,13 @@ async function showBoardingDetail(id) {
                     const discountVal = record.discount || 0;
                     discountEl.textContent = discountVal > 0 ? formatMoney(discountVal) : "0đ";
                     discountEl.style.color = discountVal > 0 ? "#0275d8" : "#333";
-                }
+				
+				}
+				if (expectedFee) {
+					const expectedFeeVal = record.baseFee || 0;
+					expectedFee.textContent = expectedFeeVal > 0 ? formatMoney(expectedFeeVal) : "0đ";
+					expectedFee.style.color = "#0275d8";
+				}
                 feeEl.textContent = record.totalFee !== undefined ? formatMoney(record.totalFee) : "0đ";
                 feeEl.style.color = "#15803d"; 
             }
@@ -916,7 +922,6 @@ async function openCheckoutModal(id) {
             return;
         }
         const item = await response.json();
-        console.log(item);
         currentCheckoutRecord = item;
 
         document.getElementById("checkout-boarding-id").value = item.id;
@@ -968,7 +973,7 @@ function calculateCheckoutFee() {
     
     const expectedStr = currentCheckoutRecord.expectedReturn || currentCheckoutRecord.expectedDay;
     const lateDaysEl = document.getElementById("checkout-late-days");
-    
+    const expectedFee = document.getElementById("checkout-expected-price");
     let expectedDays = 0;
     if (expectedStr) {
         const expectedDate = new Date(expectedStr);
@@ -990,25 +995,33 @@ function calculateCheckoutFee() {
             lateDaysEl.style.color = "#0275d8"; // Màu xanh dương
             lateFee = 0;
         }
+		const expectFeeVal = expectedDays * pricePerDay;
+		if(expectedFee){
+			expectedFee.value = expectFeeVal;
+		}
     }
     const lateFeeInput = document.getElementById("checkout-late-fee");
     if (lateFeeInput) {
         lateFeeInput.value = Number(lateFee) || 0;
     }
-    const baseFee = totalDays * pricePerDay;
+    const totalFeeVal = totalDays * pricePerDay + lateFee;
+	const finalFee = document.getElementById("checkout-actual-price");
+	if(finalFee){
+		finalFee.value = totalFeeVal;
+	}
     const evaluatingDays = Math.max(totalDays, expectedDays);
     let discountPercent = 0;
-    if (evaluatingDays >= 14) {
-        discountPercent = 0.10; // Giảm 10%
+    if (evaluatingDays >= 10) {
+        discountPercent = 0.10; 
     } else if (evaluatingDays >= 7) {
-        discountPercent = 0.05; // Giảm 5%
+        discountPercent = 0.05; // 
     }
-    discountFee = baseFee * discountPercent;
+    discountFee = totalFeeVal * discountPercent;
     const discountInput = document.getElementById("checkout-discount-fee");
     if (discountInput) {
         discountInput.value = discountFee;
     }
-    const totalFee = baseFee + Number(lateFee) - discountFee;
+    const totalFee = totalFeeVal - discountFee;
     const feeInput = document.getElementById("checkout-fee");
     if (feeInput) {
         feeInput.value = totalFee > 0 ? totalFee : 0;
@@ -1037,7 +1050,6 @@ async function submitCheckout(event) {
         actualCheckOut: actualReturnDate,
 		pricePerDay: feePerDay
     };
-	console.log(payload);
     try {
         const response = await fetch(`${API.boarding}/checkout/${id}`, {
             method: "PUT",

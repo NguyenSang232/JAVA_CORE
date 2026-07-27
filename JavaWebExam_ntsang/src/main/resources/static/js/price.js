@@ -83,7 +83,6 @@ async function loadPricesData() {
 // 3. Đổ dữ liệu vào bảng HTML
 function renderPriceTable(data) {
     const tbody = document.getElementById('priceTableBody');
-    console.log(data);
     if (!tbody) return;
 
     if (!data || data.length === 0) {

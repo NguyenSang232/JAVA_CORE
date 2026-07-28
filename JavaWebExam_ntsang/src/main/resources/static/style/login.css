@@ -1,129 +1,242 @@
-*{
+* {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-body{
-    height: 100vh;
-    background: #f4f7f6; /* Thay thế ảnh nền bằng màu nền sáng, hiện đại */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.container{
+body, html {
     width: 100%;
+    height: 100%;
+    background-color: #f1f5f9;
+}
+
+/* Bố cục tổng thể chia đôi màn hình */
+.login-wrapper {
     display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ================= PHẦN TRÁI: BRANDING & SLOGAN ================= */
+.brand-section {
+    flex: 1;
+    background: linear-gradient(180deg, #1e2538 0%, #283048 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 60px;
+    position: relative;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.05);
+}
+
+.brand-content {
+    max-width: 480px;
+    margin: auto 0;
+}
+
+.brand-logo-icon {
+    font-size: 48px;
+    background: rgba(255, 255, 255, 0.15);
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    padding: 20px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    backdrop-filter: blur(5px);
 }
 
-.login-card{
-    width: 400px;
-    background: white;
-    padding: 40px;
-    border-radius: 25px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Làm mờ hiệu ứng bóng đổ cho nhẹ nhàng */
-    text-align: center;
+.brand-section h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
 }
 
-.logo{
-    font-size: 60px;
-    margin-bottom: 10px;
-}
-
-h1{
-    color: #2e7d32;
-    font-size: 32px;
-}
-
-.subtitle{
-    color: #777;
+.brand-subtitle {
+    font-size: 18px;
+    opacity: 0.9;
     margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.brand-quote {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 4px solid #38bdf8;
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.6;
+    backdrop-filter: blur(5px);
+}
+
+.brand-quote i {
+    margin-right: 8px;
+    color: #38bdf8;
+}
+
+.brand-footer-text {
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+/* ================= PHẦN PHẢI: FORM ĐĂNG NHẬP ================= */
+.form-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    padding: 40px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+}
+
+.form-header {
+    margin-bottom: 32px;
+}
+
+.form-header h2 {
+    font-size: 28px;
+    color: #1e293b;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.form-header p {
+    color: #64748b;
     font-size: 14px;
 }
 
-.input-group{
-    text-align: left;
+/* Thông báo lỗi */
+.alert-error {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Nhóm input */
+.input-group {
     margin-bottom: 20px;
 }
 
-.input-group label{
-    font-weight: 600;
-    color: #444;
-    font-size: 14px;
-}
-
-.input-group input{
-    width: 100%;
-    padding: 14px;
-    margin-top: 8px;
-    border-radius: 12px;
-    border: 1px solid #ddd;
-    outline: none;
-    font-size: 15px;
-    transition: 0.2s;
-}
-
-.input-group input:focus{
-    border-color: #4caf50;
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-}
-
-.options{
-    text-align: left;
-    font-size: 14px;
-    margin-bottom: 25px;
-    color: #555;
-}
-
-button{
-    width: 100%;
-    padding: 15px;
-    border: none;
-    border-radius: 15px;
-    background: #4caf50;
-    color: white;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-button:hover{
-    background: #388e3c;
-}
-
-#message{
-    margin-top: 15px;
-    color: red;
-    font-size: 14px;
-}
-
-.footer{
-    margin-top: 30px;
-    color: #666;
+.input-group label {
+    display: block;
     font-size: 13px;
-    border-top: 1px solid #eee;
-    padding-top: 20px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
 }
-/* Kiểu dáng cho hộp thông báo lỗi hiện đại */
-.alert-error {
-    background-color: #f8d7da;
-    color: #842029;
-    border: 1px solid #f5c2c7;
-    padding: 10px 14px;
+
+.input-group label i {
+    color: #0284c7;
+    margin-right: 5px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
     font-size: 14px;
-    text-align: center;
-    margin-bottom: 20px;
-    display: none; /* Mặc định ẩn đi */
-    animation: fadeIn 0.3s ease-in-out;
+    transition: all 0.3s ease;
+    outline: none;
+    background-color: #f8fafc;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+.input-group input:focus {
+    border-color: #0284c7;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+/* Tùy chọn nhớ mật khẩu & quên mật khẩu */
+.options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    font-size: 13px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #475569;
+    cursor: pointer;
+}
+
+.forgot-pass {
+    color: #0284c7;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.forgot-pass:hover {
+    text-decoration: underline;
+}
+
+/* Nút Submit */
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: #283048;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.submit-btn:hover {
+    background-color: #0369a1;
+}
+
+.submit-btn:active {
+    transform: scale(0.99);
+}
+
+/* Responsive cho màn hình nhỏ (Mobile/Tablet) */
+@media (max-width: 900px) {
+    .login-wrapper {
+        flex-direction: column;
+        overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .brand-section {
+        padding: 40px 20px;
+        min-height: 250px;
+    }
+
+    .brand-content {
+        max-width: 100%;
+    }
+
+    .form-section {
+        padding: 40px 20px;
+    }
 }
